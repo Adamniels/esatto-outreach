@@ -1,0 +1,91 @@
+# --- .NET build artifacts ---
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/
+.vscode/
+.idea/
+
+# --- Tooling ---
+*.ncrunch*
+_ReSharper*/
+*.DotSettings.user
+*.DotCover
+*.orig
+
+# --- Mac / OS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# --- Logs & temp ---
+*.log
+*.tlog
+*.tmp
+*.bak
+*.swp
+*.cache
+*.pid
+*.seed
+*.sass-cache/
+*.vspscc
+*.vssscc
+*.vshost.*
+*.dbmdl
+
+# --- Environment / secrets ---
+**/Properties/launchSettings.json
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+*.env
+.env.*
+*.local
+
+# --- Entity Framework ---
+Migrations/obj/
+*.sqlite
+*.db
+*.db-shm
+*.db-wal
+__EFMigrationsHistory
+__EFMigrationsLock
+
+# --- SQLite database (local dev only) ---
+outreach.db
+outreach.db-shm
+outreach.db-wal
+
+# --- User-specific ---
+*.DotSettings
+*.userprefs
+
+# --- JetBrains / Rider / VS Code ---
+.idea/
+.vscode/
+
+# --- n8n / misc ---
+*.n8n-backup.json
+*.n8n-env
+*.n8n-data/
+
+# --- Node/npm (if you add a UI later) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.env
+
+# --- Docker ---
+*.pid
+docker-compose.override.yml
