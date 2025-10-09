@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Http;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Esatto.Outreach.Infrastructure.Email;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +32,9 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IProspectRepository, ProspectRepository>();
+
+        services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
+        services.AddHttpClient<ICustomEmailGenerator, OpenAiCustomEmailGenerator>();
         return services;
     }
 }
