@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Use-cases (enkelt att börja så här)
+// en handling som systemet kan utföra
 builder.Services.AddScoped<CreateProspect>();
 builder.Services.AddScoped<UpdateProspect>();
 builder.Services.AddScoped<GetProspectById>();
@@ -44,6 +45,7 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
 // --- Prospects endpoints (via use-cases) ---
 
+// Här injiceras usecaset från ovan
 app.MapGet("/prospects", async (ListProspects useCase, CancellationToken ct) =>
 {
     var list = await useCase.Handle(ct);
