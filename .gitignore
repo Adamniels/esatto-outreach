@@ -52,17 +52,8 @@ secrets.json
 
 # --- Entity Framework ---
 Migrations/obj/
-*.sqlite
-*.db
-*.db-shm
-*.db-wal
 __EFMigrationsHistory
 __EFMigrationsLock
-
-# --- SQLite database (local dev only) ---
-outreach.db
-outreach.db-shm
-outreach.db-wal
 
 # --- User-specific ---
 *.DotSettings
