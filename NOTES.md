@@ -4,5 +4,5 @@ eller om det helt enkelt bara är bättre att låta AI göra research och skriva
 ## Features som jag vill ha, som inte är mvp
 - [ ] kunna chatta med en ai som ändrar mejlet live
 
-
+# Det verkar behöva vara i development environment för att user-secrets ska funka
 

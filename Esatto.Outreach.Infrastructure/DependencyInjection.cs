@@ -34,7 +34,9 @@ public static class DependencyInjection
         services.AddScoped<IProspectRepository, ProspectRepository>();
 
         services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
-        services.AddHttpClient<ICustomEmailGenerator, OpenAiCustomEmailGenerator>();
+        // OpenAI client factory + generator
+        services.AddSingleton<IOpenAIResponseClientFactory, OpenAIResponseClientFactory>();
+        services.AddScoped<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
         return services;
     }
 }

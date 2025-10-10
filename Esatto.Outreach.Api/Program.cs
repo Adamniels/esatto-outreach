@@ -15,6 +15,7 @@ builder.Services.AddScoped<CreateProspect>();
 builder.Services.AddScoped<UpdateProspect>();
 builder.Services.AddScoped<GetProspectById>();
 builder.Services.AddScoped<ListProspects>();
+builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -78,5 +79,27 @@ app.MapDelete("/prospects/{id:guid}", async (Guid id, IProspectRepository repo, 
     await repo.DeleteAsync(id, ct);
     return Results.NoContent();
 });
+
+
+app.MapPost("/prospects/{id:guid}/email/draft", async (
+   Guid id,
+   CustomEmailRequestDto dto,
+   GenerateMailOpenAIResponeAPI useCase,
+   CancellationToken ct) =>
+   {
+       if (string.IsNullOrWhiteSpace(dto.CompanyName))
+           return Results.BadRequest(new { error = "CompanyName is required" });
+
+       try
+       {
+           var draft = await useCase.Handle(id, dto, ct);
+           return Results.Ok(draft);
+       }
+       catch (InvalidOperationException ex)
+       {
+           // e.g. prospect not found
+           return Results.NotFound(new { error = ex.Message });
+       }
+   });
 
 app.Run();
