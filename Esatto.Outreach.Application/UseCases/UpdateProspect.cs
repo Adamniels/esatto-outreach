@@ -14,7 +14,7 @@ public class UpdateProspect
         var entity = await _repo.GetByIdAsync(id, ct);
         if (entity is null) return null;
 
-        entity.UpdateBasics(dto.CompanyName, dto.Domain, dto.ContactName, dto.ContactEmail, dto.LinkedinUrl, dto.Notes);
+        entity.UpdateBasics(dto.CompanyName, dto.Domain, dto.ContactName, dto.ContactEmail, dto.LinkedinUrl, dto.Notes, dto.MailTitle, dto.MailBodyPlain, dto.MailBodyHTML);
 
         if (dto.Status.HasValue)
             entity.SetStatus(dto.Status.Value);

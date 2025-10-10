@@ -83,16 +83,12 @@ app.MapDelete("/prospects/{id:guid}", async (Guid id, IProspectRepository repo, 
 
 app.MapPost("/prospects/{id:guid}/email/draft", async (
    Guid id,
-   CustomEmailRequestDto dto,
    GenerateMailOpenAIResponeAPI useCase,
    CancellationToken ct) =>
    {
-       if (string.IsNullOrWhiteSpace(dto.CompanyName))
-           return Results.BadRequest(new { error = "CompanyName is required" });
-
        try
        {
-           var draft = await useCase.Handle(id, dto, ct);
+           var draft = await useCase.Handle(id, ct);
            return Results.Ok(draft);
        }
        catch (InvalidOperationException ex)

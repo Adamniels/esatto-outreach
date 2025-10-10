@@ -16,6 +16,11 @@ public class Prospect : Entity
     public string? ContactEmail { get; private set; }
     public string? LinkedinUrl { get; private set; }
     public string? Notes { get; private set; }
+    public string? MailTitle { get; private set; }
+    public string? MailBodyPlain { get; private set; }
+    public string? MailBodyHTML { get; private set; }
+
+
 
     public ProspectStatus Status { get; private set; } = ProspectStatus.New;
 
@@ -28,7 +33,10 @@ public class Prospect : Entity
                                   string? contactName = null,
                                   string? contactEmail = null,
                                   string? linkedinUrl = null,
-                                  string? notes = null)
+                                  string? notes = null,
+                                  string? mailTitle = null,
+                                  string? mailBodyPlain = null,
+                                  string? mailBodyHTML = null)
     {
         if (string.IsNullOrWhiteSpace(companyName))
             throw new ArgumentException("CompanyName is required", nameof(companyName));
@@ -40,7 +48,10 @@ public class Prospect : Entity
             ContactName = contactName?.Trim(),
             ContactEmail = contactEmail?.Trim(),
             LinkedinUrl = linkedinUrl?.Trim(),
-            Notes = notes
+            Notes = notes,
+            MailTitle = mailTitle,
+            MailBodyPlain = mailBodyPlain,
+            MailBodyHTML = mailBodyHTML
         };
 
         return p;
@@ -52,7 +63,10 @@ public class Prospect : Entity
                              string? contactName = null,
                              string? contactEmail = null,
                              string? linkedinUrl = null,
-                             string? notes = null)
+                             string? notes = null,
+                             string? mailTitle = null,
+                             string? mailBodyPlain = null,
+                             string? mailBodyHTML = null)
     {
         if (!string.IsNullOrWhiteSpace(companyName))
             CompanyName = companyName.Trim();
@@ -62,6 +76,9 @@ public class Prospect : Entity
         ContactEmail = contactEmail?.Trim();
         LinkedinUrl = linkedinUrl?.Trim();
         Notes = notes;
+        MailTitle = mailTitle;
+        MailBodyPlain = mailBodyPlain;
+        MailBodyHTML = mailBodyHTML;
 
         Touch();
     }

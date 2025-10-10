@@ -47,8 +47,18 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
 
         b.Property(x => x.UpdatedUtc);
 
+        b.Property(x => x.MailTitle)
+         .HasMaxLength(200);
+
+        b.Property(x => x.MailBodyPlain)
+        .HasColumnType("text"); // långtext
+
+        b.Property(x => x.MailBodyHTML)
+        .HasColumnType("text"); // långtext
+
         b.HasIndex(x => x.CompanyName);
         b.HasIndex(x => x.Domain);
         b.HasIndex(x => new { x.Status, x.CreatedUtc });
+        b.HasIndex(x => x.MailTitle);
     }
 }

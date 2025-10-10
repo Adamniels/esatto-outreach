@@ -18,9 +18,11 @@ public record ProspectUpdateDto(
     string? ContactEmail,
     string? LinkedinUrl,
     string? Notes,
-    ProspectStatus? Status);
+    ProspectStatus? Status,
+    string? MailTitle,
+    string? MailBodyPlain,
+    string? MailBodyHTML);
 
-// TODO: lägg till custom mail i denna klass
 public record ProspectViewDto(
     Guid Id,
     string CompanyName,
@@ -31,7 +33,11 @@ public record ProspectViewDto(
     string? Notes,
     ProspectStatus Status,
     DateTime CreatedUtc,
-    DateTime? UpdatedUtc)
+    DateTime? UpdatedUtc,
+    string? MailTitle,
+    string? MailBodyPlain,
+    string? MailBodyHTML)
+
 {
     public static ProspectViewDto FromEntity(Prospect p) =>
         new(
@@ -44,5 +50,8 @@ public record ProspectViewDto(
             p.Notes,
             p.Status,
             p.CreatedUtc,
-            p.UpdatedUtc);
+            p.UpdatedUtc,
+            p.MailTitle,
+            p.MailBodyPlain,
+            p.MailBodyHTML);
 }

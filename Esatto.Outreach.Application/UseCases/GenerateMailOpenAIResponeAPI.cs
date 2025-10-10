@@ -3,7 +3,6 @@ using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Entities;
 
 namespace Esatto.Outreach.Application.UseCases;
-
 public class GenerateMailOpenAIResponeAPI
 {
     private readonly IProspectRepository _repo;
@@ -15,36 +14,38 @@ public class GenerateMailOpenAIResponeAPI
         _client = client;
     }
 
-    // TODO: ska returnera Task<ProspectViewDto> sen men vill bara se att det funkar nu 
-    // Den ska inte heller behöva ta in CustomEmailRequestDto för det kan jag skapa utifrån id här inne
-    public async Task<CustomEmailDraftDto> Handle(Guid id, CustomEmailRequestDto dto, CancellationToken ct = default)
+    // Alternativ A: returnera utkastet, spara även på entiteten
+    public async Task<ProspectViewDto> Handle(Guid id, CancellationToken ct = default)
     {
-        // TODO: Gör inte vad den ska göra här, inte klar
-        if (string.IsNullOrWhiteSpace(dto.CompanyName))
-            throw new ArgumentException("CompanyName is required");
+        var entity = await _repo.GetByIdAsync(id, ct)
+            ?? throw new InvalidOperationException($"Prospect with id {id} not found");
 
-        // TODO: Generate the email
-        // Här anropas din OpenAI-generator som använder Response API + WebSearch.
-        // Den returnerar ett färdigt CustomEmailDraftDto med Title, BodyPlain och BodyHTML.
-        var draft = await _client.GenerateAsync(dto, ct);
+        var request = BuildRequestFromEntity(entity);
 
-        // get entity       
-        var entity = await _repo.GetByIdAsync(id, ct);
-        if (entity == null)
-            throw new InvalidOperationException($"Prospect with id {id} not found");
+        var draft = await _client.GenerateAsync(request, ct);
 
-        // TODO: add the genereted Mail to the entity
-        // Här skulle man i framtiden kunna lägga till fält på entity, t.ex.:
-        // entity.LastGeneratedEmailTitle = draft.Title;
-        // entity.LastGeneratedEmailBody = draft.BodyPlain;
-        // Men just nu hoppar vi över detta steg för test.
+        // Spara utkastet på entiteten (valfritt men rekommenderat)
+        entity.UpdateBasics(
+            mailTitle: draft.Title,
+            mailBodyPlain: draft.BodyPlain,
+            mailBodyHTML: draft.BodyHTML
+        );
 
-        // TODO: save the entity with the updated fields
-        // Här sparas inte något ännu, för vi vill bara testa att OpenAI-delen fungerar.
-        // var saved = await _repo.AddAsync(entity, ct);
-        // return ProspectViewDto.FromEntity(saved);
+        await _repo.UpdateAsync(entity, ct);
 
-        // För tillfället returnerar vi bara utkastet som genererats av OpenAI
-        return draft;
+        return ProspectViewDto.FromEntity(entity);
     }
+
+    private static CustomEmailRequestDto BuildRequestFromEntity(Prospect e)
+    {
+        return new CustomEmailRequestDto(
+            CompanyName: e.CompanyName,
+            Domain: e.Domain,
+            ContactName: e.ContactName,
+            ContactEmail: e.ContactEmail,
+            LinkedinUrl: e.LinkedinUrl,
+            Notes: e.Notes
+        );
+    }
+
 }
