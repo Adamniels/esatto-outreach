@@ -8,22 +8,27 @@ public class GenerateMailOpenAIResponeAPI
 {
     private readonly IProspectRepository _repo;
     private readonly ICustomEmailGenerator _client;
-    public GenerateMailOpenAIResponeAPI(IProspectRepository repo, ICustomEmailGenerator client) => _repo = repo;
 
-    public async Task<ProspectViewDto> Handle(ProspectCreateDto dto, CancellationToken ct = default)
+    public GenerateMailOpenAIResponeAPI(IProspectRepository repo, ICustomEmailGenerator client)
     {
+        _repo = repo;
+        _client = client;
+    }
+
+    public async Task<ProspectViewDto> Handle(Guid id, CustomEmailRequestDto dto, CancellationToken ct = default)
+    {
+        // TODO: Gör inte vad den ska göra här, inte klar
         if (string.IsNullOrWhiteSpace(dto.CompanyName))
             throw new ArgumentException("CompanyName is required");
 
-        var entity = Prospect.Create(
-            companyName: dto.CompanyName,
-            domain: dto.Domain,
-            contactName: dto.ContactName,
-            contactEmail: dto.ContactEmail,
-            linkedinUrl: dto.LinkedinUrl,
-            notes: dto.Notes
-        );
+        // TODO: Generate the email
 
+        // get entity       
+        var entity = await _repo.GetByIdAsync(id, ct);
+
+        // TODO: add the genereted Mail to the entity
+
+        // TODO: save the entity with the updated fields
         var saved = await _repo.AddAsync(entity, ct);
         return ProspectViewDto.FromEntity(saved);
     }

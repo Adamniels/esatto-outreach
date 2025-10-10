@@ -20,6 +20,7 @@ public record ProspectUpdateDto(
     string? Notes,
     ProspectStatus? Status);
 
+// TODO: lägg till custom mail i denna klass
 public record ProspectViewDto(
     Guid Id,
     string CompanyName,
