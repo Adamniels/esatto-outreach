@@ -6,3 +6,29 @@ eller om det helt enkelt bara är bättre att låta AI göra research och skriva
 
 # Det verkar behöva vara i development environment för att user-secrets ska funka
 
+```python
+from openai import OpenAI
+
+client = OpenAI(api_key="OPENAIKEY")
+
+# 1) Tom konversation
+conversation = client.conversations.create()
+print("Conversation ID:", conversation.id)
+
+# 2) Första turen – MÅSTE skicka input i första responses.create
+r1 = client.responses.create(
+    model="gpt-4.1",
+    input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
+    conversation=conversation.id,
+)
+print("\\nResponse 1:\\n", r1.output_text)
+
+# 3) Fortsätt i samma konversation
+r2 = client.responses.create(
+    model="gpt-4.1",
+    input=[{"role": "user", "content": "And who said that quote?"}],
+    conversation=conversation.id,
+)
+print("\\nResponse 2:\\n", r2.output_text)
+
+```
