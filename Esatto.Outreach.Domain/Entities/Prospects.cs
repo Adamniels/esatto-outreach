@@ -5,7 +5,6 @@ namespace Esatto.Outreach.Domain.Entities;
 
 public class Prospect : Entity
 {
-    // TODO: måste uppdatera här när jag ska lägga till mail i prospects
 
     // Minimalt krav: CompanyName
     public string CompanyName { get; private set; } = default!;

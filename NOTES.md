@@ -7,6 +7,7 @@ eller om det helt enkelt bara är bättre att låta AI göra research och skriva
 # Det verkar behöva vara i development environment för att user-secrets ska funka
 
 ```python
+# Ett fel är att man ska använda prev id inte bara det första varje gång
 from openai import OpenAI
 
 client = OpenAI(api_key="OPENAIKEY")
