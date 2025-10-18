@@ -7,6 +7,7 @@ using Esatto.Outreach.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Esatto.Outreach.Infrastructure;
 
@@ -37,6 +38,13 @@ public static class DependencyInjection
         // OpenAI client factory + generator
         services.AddSingleton<IOpenAIResponseClientFactory, OpenAIResponseClientFactory>();
         services.AddScoped<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
+
+        services.Configure<N8nOptions>(configuration.GetSection("N8n"));
+        services.AddHttpClient<IN8nEmailService, N8nEmailService>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<N8nOptions>>().Value;
+            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+        });
         return services;
     }
 }

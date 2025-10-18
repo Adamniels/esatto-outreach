@@ -57,6 +57,7 @@ public class Prospect : Entity
     }
 
     // Enkla uppdateringar (sätter UpdatedUtc via Touch)
+    // Endast fält som skickas in (inte null) uppdateras
     public void UpdateBasics(string? companyName = null,
                              string? domain = null,
                              string? contactName = null,
@@ -67,17 +68,34 @@ public class Prospect : Entity
                              string? mailBodyPlain = null,
                              string? mailBodyHTML = null)
     {
-        if (!string.IsNullOrWhiteSpace(companyName))
-            CompanyName = companyName.Trim();
+        if (companyName is not null)
+            CompanyName = string.IsNullOrWhiteSpace(companyName) 
+                ? CompanyName  // Behåll befintligt om tomt
+                : companyName.Trim();
 
-        Domain = domain?.Trim();
-        ContactName = contactName?.Trim();
-        ContactEmail = contactEmail?.Trim();
-        LinkedinUrl = linkedinUrl?.Trim();
-        Notes = notes;
-        MailTitle = mailTitle;
-        MailBodyPlain = mailBodyPlain;
-        MailBodyHTML = mailBodyHTML;
+        if (domain is not null)
+            Domain = string.IsNullOrWhiteSpace(domain) ? null : domain.Trim();
+            
+        if (contactName is not null)
+            ContactName = string.IsNullOrWhiteSpace(contactName) ? null : contactName.Trim();
+            
+        if (contactEmail is not null)
+            ContactEmail = string.IsNullOrWhiteSpace(contactEmail) ? null : contactEmail.Trim();
+            
+        if (linkedinUrl is not null)
+            LinkedinUrl = string.IsNullOrWhiteSpace(linkedinUrl) ? null : linkedinUrl.Trim();
+            
+        if (notes is not null)
+            Notes = notes;
+            
+        if (mailTitle is not null)
+            MailTitle = mailTitle;
+            
+        if (mailBodyPlain is not null)
+            MailBodyPlain = mailBodyPlain;
+            
+        if (mailBodyHTML is not null)
+            MailBodyHTML = mailBodyHTML;
 
         Touch();
     }

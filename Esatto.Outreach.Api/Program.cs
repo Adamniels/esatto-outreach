@@ -16,6 +16,7 @@ builder.Services.AddScoped<UpdateProspect>();
 builder.Services.AddScoped<GetProspectById>();
 builder.Services.AddScoped<ListProspects>();
 builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
+builder.Services.AddScoped<SendEmailViaN8n>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -85,17 +86,41 @@ app.MapPost("/prospects/{id:guid}/email/draft", async (
    Guid id,
    GenerateMailOpenAIResponeAPI useCase,
    CancellationToken ct) =>
-   {
-       try
-       {
-           var draft = await useCase.Handle(id, ct);
-           return Results.Ok(draft);
-       }
-       catch (InvalidOperationException ex)
-       {
-           // e.g. prospect not found
-           return Results.NotFound(new { error = ex.Message });
-       }
-   });
+{
+    try
+    {
+        var draft = await useCase.Handle(id, ct);
+        return Results.Ok(draft);
+    }
+    catch (InvalidOperationException ex)
+    {
+        // e.g. prospect not found
+        return Results.NotFound(new { error = ex.Message });
+    }
+});
+
+app.MapPost("/prospects/{id:guid}/email/send", async (
+    Guid id,
+    SendEmailViaN8n useCase,
+    CancellationToken ct) =>
+{
+    try
+    {
+        var result = await useCase.Handle(id, ct);
+        return result.Success
+            ? Results.Ok(result)
+            : Results.BadRequest(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500);
+    }
+});
 
 app.Run();

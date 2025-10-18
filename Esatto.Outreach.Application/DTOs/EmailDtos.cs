@@ -19,3 +19,14 @@ public record CustomEmailDraftDto(
    string BodyHTML
 );
 
+
+public record SendOutreachToN8nDTO(
+   string To,
+   string Subject,
+   string Body
+);
+
+public record ResponseSendOutreachToN8nDTO(
+        bool Success,
+        string? Message
+);
