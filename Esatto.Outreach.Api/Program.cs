@@ -17,6 +17,7 @@ builder.Services.AddScoped<GetProspectById>();
 builder.Services.AddScoped<ListProspects>();
 builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<SendEmailViaN8n>();
+builder.Services.AddScoped<ChatWithProspect>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -122,5 +123,28 @@ app.MapPost("/prospects/{id:guid}/email/send", async (
             statusCode: 500);
     }
 });
+
+app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, CancellationToken ct) =>
+{
+    try
+    {
+        var res = await useCase.Handle(id, dto, ct);
+        return Results.Ok(res);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.NotFound(new { error = ex.Message });
+    }
+});
+
+app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, IProspectRepository repo, CancellationToken ct) =>
+{
+    var prospect = await repo.GetByIdAsync(id, ct);
+    if (prospect is null) return Results.NotFound();
+    prospect.SetLastOpenAIResponseId(null);
+    await repo.UpdateAsync(prospect, ct);
+    return Results.NoContent();
+});
+
 
 app.Run();
