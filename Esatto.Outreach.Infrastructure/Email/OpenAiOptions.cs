@@ -7,4 +7,6 @@ public sealed class OpenAiOptions
     public string Model { get; set; } = "gpt-4.1";
     public bool StoreRawOutput { get; set; } = false;
     public bool UseWebSearch { get; set; } = true;
+    public double DefaultTemperature { get; set; } = 0.3;
+    public int DefaultMaxOutputTokens { get; set; } = 1200;
 }

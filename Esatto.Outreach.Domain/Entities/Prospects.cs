@@ -18,6 +18,7 @@ public class Prospect : Entity
     public string? MailTitle { get; private set; }
     public string? MailBodyPlain { get; private set; }
     public string? MailBodyHTML { get; private set; }
+    public string? LastOpenAIResponseId { get; private set; }
 
 
 
@@ -69,31 +70,31 @@ public class Prospect : Entity
                              string? mailBodyHTML = null)
     {
         if (companyName is not null)
-            CompanyName = string.IsNullOrWhiteSpace(companyName) 
+            CompanyName = string.IsNullOrWhiteSpace(companyName)
                 ? CompanyName  // Behåll befintligt om tomt
                 : companyName.Trim();
 
         if (domain is not null)
             Domain = string.IsNullOrWhiteSpace(domain) ? null : domain.Trim();
-            
+
         if (contactName is not null)
             ContactName = string.IsNullOrWhiteSpace(contactName) ? null : contactName.Trim();
-            
+
         if (contactEmail is not null)
             ContactEmail = string.IsNullOrWhiteSpace(contactEmail) ? null : contactEmail.Trim();
-            
+
         if (linkedinUrl is not null)
             LinkedinUrl = string.IsNullOrWhiteSpace(linkedinUrl) ? null : linkedinUrl.Trim();
-            
+
         if (notes is not null)
             Notes = notes;
-            
+
         if (mailTitle is not null)
             MailTitle = mailTitle;
-            
+
         if (mailBodyPlain is not null)
             MailBodyPlain = mailBodyPlain;
-            
+
         if (mailBodyHTML is not null)
             MailBodyHTML = mailBodyHTML;
 
@@ -103,6 +104,12 @@ public class Prospect : Entity
     public void SetStatus(ProspectStatus status)
     {
         Status = status;
+        Touch();
+    }
+
+    public void SetLastOpenAIResponseId(string? id)
+    {
+        LastOpenAIResponseId = string.IsNullOrWhiteSpace(id) ? null : id.Trim();
         Touch();
     }
 }

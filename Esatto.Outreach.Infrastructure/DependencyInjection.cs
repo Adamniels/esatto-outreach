@@ -45,6 +45,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<IOptions<N8nOptions>>().Value;
             client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         });
+
+        services.AddHttpClient<IOpenAIChatClient, OpenAiChatClient>();
         return services;
     }
 }
