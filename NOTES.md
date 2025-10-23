@@ -5,6 +5,10 @@ eller om det helt enkelt bara är bättre att låta AI göra research och skriva
 - [ ] kunna chatta med en ai som ändrar mejlet live
 
 # Det verkar behöva vara i development environment för att user-secrets ska funka
+så kör:
+```bash
+DOTNET_ENVIRONMENT=Development dotnet run --project Esatto.Outreach.Api
+```
 
 ```python
 # Ett fel är att man ska använda prev id inte bara det första varje gång
