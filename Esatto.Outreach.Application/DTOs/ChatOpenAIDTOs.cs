@@ -1,5 +1,6 @@
 namespace Esatto.Outreach.Application.DTOs;
 
+// TODO: är webSearch på som standard?
 public record ChatRequestDto(
     string UserInput,
     bool? UseWebSearch,
@@ -8,5 +9,9 @@ public record ChatRequestDto(
 );
 
 public record ChatResponseDto(
-    string Text
+    string AiMessage,
+    bool ImprovedMail,
+    string? MailTitle,
+    string? MailBodyPlain,
+    string? MailBodyHTML
 );

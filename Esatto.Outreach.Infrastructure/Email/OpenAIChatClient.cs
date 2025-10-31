@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.DTOs;
 using Microsoft.Extensions.Options;
 
 namespace Esatto.Outreach.Infrastructure.Email;
@@ -27,7 +28,7 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
         _options = options.Value;
     }
 
-    public async Task<(string Text, string ResponseId)> SendChatMessageAsync(
+    public async Task<(ChatResponseDto response, string ResponseId)> SendChatMessageAsync(
         string userInput,
         string? systemPrompt,
         string? previousResponseId,
@@ -51,7 +52,86 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
         );
 
         var (outputText, responseId) = await CallResponses(_options.ApiKey, payload, ct);
-        return (string.IsNullOrWhiteSpace(outputText) ? "[Tomt svar]" : outputText.Trim(), responseId);
+        
+        // Parse och validera JSON-svaret
+        var response = ParseAndValidateResponse(outputText);
+        
+        return (response, responseId);
+    }
+
+    private static ChatResponseDto ParseAndValidateResponse(string outputText)
+    {
+        if (string.IsNullOrWhiteSpace(outputText))
+        {
+            return new ChatResponseDto(
+                AiMessage: "[Tomt svar från AI]",
+                ImprovedMail: false,
+                MailTitle: null,
+                MailBodyPlain: null,
+                MailBodyHTML: null
+            );
+        }
+
+        // Trimma och ta bort eventuella code fences
+        var cleanText = outputText.Trim();
+        if (cleanText.StartsWith("```json"))
+        {
+            cleanText = cleanText.Substring(7);
+        }
+        if (cleanText.StartsWith("```"))
+        {
+            cleanText = cleanText.Substring(3);
+        }
+        if (cleanText.EndsWith("```"))
+        {
+            cleanText = cleanText.Substring(0, cleanText.Length - 3);
+        }
+        cleanText = cleanText.Trim();
+
+        try
+        {
+            var dto = JsonSerializer.Deserialize<ChatResponseDto>(cleanText, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            });
+
+            if (dto == null)
+            {
+                throw new JsonException("Deserialisering returnerade null");
+            }
+
+            // Validera: Om ImprovedMail är true måste mejlfälten finnas
+            if (dto.ImprovedMail)
+            {
+                if (string.IsNullOrWhiteSpace(dto.MailTitle) ||
+                    string.IsNullOrWhiteSpace(dto.MailBodyPlain) ||
+                    string.IsNullOrWhiteSpace(dto.MailBodyHTML))
+                {
+                    // AI påstod att det finns mejl men fälten saknas - sätt ImprovedMail till false
+                    return dto with
+                    {
+                        ImprovedMail = false,
+                        MailTitle = null,
+                        MailBodyPlain = null,
+                        MailBodyHTML = null
+                    };
+                }
+            }
+
+            return dto;
+        }
+        catch (JsonException)
+        {
+            // Om JSON parsing misslyckas, returnera texten som ett vanligt meddelande
+            return new ChatResponseDto(
+                AiMessage: $"[Kunde inte parsa JSON-svar. Rå text:]\n{cleanText}",
+                ImprovedMail: false,
+                MailTitle: null,
+                MailBodyPlain: null,
+                MailBodyHTML: null
+            );
+        }
     }
 
     private static object BuildPayload(

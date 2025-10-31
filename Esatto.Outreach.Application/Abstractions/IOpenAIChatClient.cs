@@ -1,12 +1,13 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Esatto.Outreach.Application.DTOs;
 
 namespace Esatto.Outreach.Application.Abstractions;
 
 public interface IOpenAIChatClient
 {
-    Task<(string Text, string ResponseId)> SendChatMessageAsync(
+    Task<(ChatResponseDto response, string ResponseId)> SendChatMessageAsync(
     string userInput,
     string? systemPrompt,
     string? previousResponseId,
