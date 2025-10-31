@@ -14,6 +14,7 @@ public interface IOpenAIChatClient
     bool? useWebSearch,
     double? temperature,
     int? maxOutputTokens,
+    string? initialMailContext,
     CancellationToken ct = default
     );
 }

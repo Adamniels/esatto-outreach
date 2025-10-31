@@ -35,6 +35,7 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
         bool? useWebSearch,
         double? temperature,
         int? maxOutputTokens,
+        string? initialMailContext,
         CancellationToken ct = default)
     {
 
@@ -45,6 +46,7 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
             model: _options.Model,
             userText: userInput,
             systemPrompt: string.IsNullOrWhiteSpace(previousResponseId) ? systemPrompt : null,
+            initialMailContext: initialMailContext,
             previousResponseId: previousResponseId,
             useWebSearch: effectiveUseWeb,
             temperature: effectiveTemp,
@@ -52,10 +54,10 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
         );
 
         var (outputText, responseId) = await CallResponses(_options.ApiKey, payload, ct);
-        
+
         // Parse och validera JSON-svaret
         var response = ParseAndValidateResponse(outputText);
-        
+
         return (response, responseId);
     }
 
@@ -138,6 +140,7 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
         string model,
         string userText,
         string? systemPrompt,
+        string? initialMailContext,
         string? previousResponseId,
         bool useWebSearch,
         double temperature,
@@ -165,6 +168,19 @@ public sealed class OpenAiChatClient : IOpenAIChatClient
                   new { type = "input_text", text = userText }
             }
         });
+
+
+        if (!string.IsNullOrWhiteSpace(initialMailContext))
+        {
+            input.Add(new
+            {
+                role = "user",
+                content = new object[]
+                {
+                    new { type = "input_text", text = initialMailContext }
+                }
+            });
+        }
 
         var dict = new Dictionary<string, object?>()
         {

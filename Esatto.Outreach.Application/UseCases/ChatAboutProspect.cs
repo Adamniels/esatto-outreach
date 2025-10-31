@@ -1,5 +1,6 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Domain.Entities;
 using Microsoft.Extensions.Options;
 
 namespace Esatto.Outreach.Application.UseCases;
@@ -25,6 +26,9 @@ public sealed class ChatWithProspect
         // Will be added to Prospect in next step
         var previousId = prospect.LastOpenAIResponseId;
 
+        // TODO: nu skickar jag med backend mejlet varje gång, men vill skicka med frontend mejlet ifall det uppdaterats, så kanske behöver ta med det från fronted
+        var initialMailContext = BuildInitialMailContext(prospect);
+
         // Only include system prompt if no previous response
         var systemPrompt = previousId is null ? GetSystemPrompt() : null;
 
@@ -38,6 +42,7 @@ public sealed class ChatWithProspect
             useWebSearch: req.UseWebSearch,
             temperature: req.Temperature,
             maxOutputTokens: req.MaxOutputTokens,
+            initialMailContext: initialMailContext,
             ct: ct
         );
 
@@ -47,6 +52,18 @@ public sealed class ChatWithProspect
 
         return response;
 
+    }
+    private static string BuildInitialMailContext(Prospect prospect)
+    {
+
+        return $"""
+    Nuvarande mejlutkast:
+    ---
+    Ämne: {prospect.MailTitle ?? "[saknas]"}
+    Body (plaintext):
+    {prospect.MailBodyPlain ?? "[saknas]"}
+    ---
+    """;
     }
 
     private static string GetJsonFormatReminder()
