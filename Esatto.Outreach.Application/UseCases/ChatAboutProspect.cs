@@ -4,24 +4,38 @@ using Esatto.Outreach.Domain.Entities;
 using Microsoft.Extensions.Options;
 
 namespace Esatto.Outreach.Application.UseCases;
+using Microsoft.Extensions.Logging;
 
 public sealed class ChatWithProspect
 {
     private readonly IProspectRepository _repo;
     private readonly IOpenAIChatClient _chat;
+    private readonly ILogger<ChatWithProspect> _logger;
 
     public ChatWithProspect(
         IProspectRepository repo,
-        IOpenAIChatClient chat)
+        IOpenAIChatClient chat,
+        ILogger<ChatWithProspect> logger)
     {
         _repo = repo;
         _chat = chat;
+        _logger = logger;
     }
 
     public async Task<ChatResponseDto> Handle(Guid prospectId, ChatRequestDto req, CancellationToken ct = default)
     {
         var prospect = await _repo.GetByIdAsync(prospectId, ct)
             ?? throw new InvalidOperationException("Prospect not found");
+
+        // Trying out logging, pretty straight forward
+        var hasDraft = !string.IsNullOrWhiteSpace(prospect.MailBodyPlain) ||
+                            !string.IsNullOrWhiteSpace(prospect.MailBodyHTML);
+        var effectiveUseWeb = req.UseWebSearch ?? false; // eller läs default från options om du har den
+
+        _logger.LogInformation("Handling chat for prospect {ProspectId}. UseWebSearch={UseWebSearch}, HasDraft ={HasDraft}",
+          prospect.Id,
+          effectiveUseWeb,
+          hasDraft);
 
         // Will be added to Prospect in next step
         var previousId = prospect.LastOpenAIResponseId;
