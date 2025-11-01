@@ -26,8 +26,8 @@ public sealed class ChatWithProspect
         // Will be added to Prospect in next step
         var previousId = prospect.LastOpenAIResponseId;
 
-        // TODO: nu skickar jag med backend mejlet varje gång, men vill skicka med frontend mejlet ifall det uppdaterats, så kanske behöver ta med det från fronted
-        var initialMailContext = BuildInitialMailContext(prospect);
+        // Add the mail that is currently in the frontent, we get the current mail from frontend
+        var initialMailContext = BuildInitialMailContext(req.MailTitle, req.MailBodyPlain);
 
         // Only include system prompt if no previous response
         var systemPrompt = previousId is null ? GetSystemPrompt() : null;
@@ -53,15 +53,15 @@ public sealed class ChatWithProspect
         return response;
 
     }
-    private static string BuildInitialMailContext(Prospect prospect)
+    private static string BuildInitialMailContext(string? mailTitle, string? mailBody)
     {
 
         return $"""
     Nuvarande mejlutkast:
     ---
-    Ämne: {prospect.MailTitle ?? "[saknas]"}
+    Ämne: {mailTitle ?? "[saknas]"}
     Body (plaintext):
-    {prospect.MailBodyPlain ?? "[saknas]"}
+    {mailBody ?? "[saknas]"}
     ---
     """;
     }
