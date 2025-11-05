@@ -81,14 +81,15 @@ Do not include code fences, explanations, or any extra text.
         return dto;
     }
 
-    // TODO: ändra och fixa prompten
+    // TODO: ändra och fixa prompten jobba på tonen
     private static string BuildPrompt(CustomEmailRequestDto req)
     {
         // Huvudprompten (på svenska) för att generera mejlet
         return @$"
-            Skriv ett kort, personligt säljmejl på svenska (max 120 ord).
-            Fokusera på hur vi kan hjälpa {req.CompanyName}; konkret och utan fluff.
-            Ingen hälsningsfras eller signatur i brödtexten.
+            Skriv ett kort, personligt säljmejl på svenska (max 500 ord).
+            Fokusera på hur vi(Esatto AB) kan hjälpa {req.CompanyName}; Se till att undersöka vad esatto 
+            gör så att du kan använda något av deras cases för att verkligen visa att vi(esatto) 
+            förstår oss på kundens behov. Skriv det i Esattos ton.
 
             Företag: {req.CompanyName}
             Domän: {req.Domain}
