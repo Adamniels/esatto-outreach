@@ -11,6 +11,8 @@ public sealed class ChatWithProspect
     private readonly IProspectRepository _repo;
     private readonly IOpenAIChatClient _chat;
     private readonly ILogger<ChatWithProspect> _logger;
+    private static string? _esattoCompanyInfo;
+    private static readonly object _lock = new();
 
     public ChatWithProspect(
         IProspectRepository repo,
@@ -20,6 +22,34 @@ public sealed class ChatWithProspect
         _repo = repo;
         _chat = chat;
         _logger = logger;
+        LoadEsattoCompanyInfo();
+    }
+
+    private static void LoadEsattoCompanyInfo()
+    {
+        if (_esattoCompanyInfo != null) return;
+        
+        lock (_lock)
+        {
+            if (_esattoCompanyInfo != null) return;
+
+            try
+            {
+                var filePath = Path.Combine(AppContext.BaseDirectory, "Data", "esatto-company-info.json");
+                if (File.Exists(filePath))
+                {
+                    _esattoCompanyInfo = File.ReadAllText(filePath);
+                }
+                else
+                {
+                    _esattoCompanyInfo = "{}"; // Fallback om filen inte hittas
+                }
+            }
+            catch
+            {
+                _esattoCompanyInfo = "{}";
+            }
+        }
     }
 
     public async Task<ChatResponseDto> Handle(Guid prospectId, ChatRequestDto req, CancellationToken ct = default)
@@ -99,13 +129,7 @@ public sealed class ChatWithProspect
     // TODO: vill dra ut sånna här saker som är liksom "config saker" som man vill mixa och testa med
     private static string GetSystemPrompt()
     {
-        return """
-          Du är en hjälpfull AI-assistent i en terminalchatt.
-          - Svara kort, korrekt och med steg-för-steg när relevant.
-          - Använd web_search-verktyget när frågan kräver färsk information, fakta, nyheter eller osäkra detaljer.
-          - När du använder web_search, sammanfatta källor mycket kort.
-          
-          VIKTIGT: Svara ALLTID med ett JSON-objekt i följande exakta format:
+        var jsonFormat = """
           {
             "AiMessage": "ditt svar här",
             "ImprovedMail": true eller false,
@@ -113,6 +137,26 @@ public sealed class ChatWithProspect
             "MailBodyPlain": "mejltext i plaintext eller null om inget mejl",
             "MailBodyHTML": "mejltext i HTML eller null om inget mejl"
           }
+          """;
+
+        return $"""
+          Du är en hjälpfull AI-assistent som hjälper säljare på Esatto AB att skapa och förbättra säljmejl.
+          
+          === INFORMATION OM ESATTO AB ===
+          {_esattoCompanyInfo}
+          
+          === INSTRUKTIONER ===
+          - Svara kort, korrekt och med steg-för-steg när relevant.
+          - Använd web_search-verktyget när frågan kräver färsk information, fakta, nyheter eller osäkra detaljer.
+          - När du använder web_search, sammanfatta källor mycket kort.
+          - När du skapar eller förbättrar mejl, använd informationen om Esatto ovan för att:
+            * Hitta relevanta cases som liknar kundens bransch eller utmaningar
+            * Visa konkret förståelse för kundens behov genom att referera till liknande projekt
+            * Matcha rätt tjänster och metoder till kundens situation
+            * Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
+          
+          VIKTIGT: Svara ALLTID med ett JSON-objekt i följande exakta format:
+          {jsonFormat}
           
           - Om användaren inte ber om ett mejl, sätt ImprovedMail till false och alla mail-fält till null.
           - Om användaren ber om att skapa/förbättra ett mejl, sätt ImprovedMail till true och fyll i alla mail-fält.
