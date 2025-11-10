@@ -11,6 +11,8 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
 {
     private readonly IOpenAIResponseClientFactory _factory;
     private readonly OpenAiOptions _options;
+    private static string? _esattoCompanyInfo;
+    private static readonly object _lock = new();
 
     public OpenAICustomEmailGenerator(
         IOpenAIResponseClientFactory factory,
@@ -18,6 +20,34 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
     {
         _factory = factory;
         _options = options.Value;
+        LoadEsattoCompanyInfo();
+    }
+
+    private static void LoadEsattoCompanyInfo()
+    {
+        if (_esattoCompanyInfo != null) return;
+        
+        lock (_lock)
+        {
+            if (_esattoCompanyInfo != null) return;
+
+            try
+            {
+                var filePath = Path.Combine(AppContext.BaseDirectory, "Data", "esatto-company-info.json");
+                if (File.Exists(filePath))
+                {
+                    _esattoCompanyInfo = File.ReadAllText(filePath);
+                }
+                else
+                {
+                    _esattoCompanyInfo = "{}"; // Fallback om filen inte hittas
+                }
+            }
+            catch
+            {
+                _esattoCompanyInfo = "{}";
+            }
+        }
     }
 
     public async Task<CustomEmailDraftDto> GenerateAsync(
@@ -86,19 +116,29 @@ Do not include code fences, explanations, or any extra text.
     {
         // Huvudprompten (på svenska) för att generera mejlet
         return @$"
-            Skriv ett kort, personligt säljmejl på svenska (max 500 ord).
-            Fokusera på hur vi(Esatto AB) kan hjälpa {req.CompanyName}; Se till att undersöka vad esatto 
-            gör så att du kan använda något av deras cases för att verkligen visa att vi(esatto) 
-            förstår oss på kundens behov. Skriv det i Esattos ton.
-
+            Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).
+            
+            === INFORMATION OM ESATTO AB ===
+            {_esattoCompanyInfo}
+            
+            === MÅLFÖRETAG ===
             Företag: {req.CompanyName}
             Domän: {req.Domain}
             Kontakt: {req.ContactName} ({req.ContactEmail})
             Anteckningar: {req.Notes}
 
+            === INSTRUKTIONER ===
+            Fokusera på hur vi (Esatto AB) kan hjälpa {req.CompanyName}. 
+            Använd informationen ovan om Esatto för att:
+            - Hitta relevanta cases som liknar kundens bransch eller utmaningar
+            - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
+            - Matcha rätt tjänster och metoder till kundens situation
+            - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
+
             Krav:
             - Hook i första meningen.
             - 1–2 konkreta värdeförslag anpassade till företaget.
+            - Referera gärna till ett eller två relevant Esatto-case som exempel
             - Avsluta med en enkel call-to-action (t.ex. 'Vill du att jag skickar ett konkret förslag?').";
     }
 }

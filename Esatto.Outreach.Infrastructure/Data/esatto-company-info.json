@@ -1,0 +1,1119 @@
+[
+  {
+    "overview": "Esatto är ett svenskt företag specialiserat på digital utveckling och affärsutveckling, med en tydlig inriktning på att hjälpa företag och organisationer att förverkliga sina digitala mål genom innovativa och kundanpassade lösningar. Med en holistisk förståelse för både teknik och verksamhet erbjuder Esatto en bred portfölj av tjänster som spänner över hela den digitala transformationsresan, från strategisk rådgivning och konceptutveckling till implementation och kontinuerligt förbättringsarbete.\n\nEsatto arbetar nära sina uppdragsgivare för att skapa hållbara digitala affärer och lösningar som inte bara möter dagens behov utan också framtidssäkrar verksamheten. Företaget betonar vikten av att förstå kundernas affärsutmaningar och deras långsiktiga mål, och bygger därför sina erbjudanden kring att tillföra strategiskt värde genom teknik och digitalisering. Tjänsteutbudet inkluderar bland annat affärs- och digital strategisk rådgivning, UX-design, utveckling av skräddarsydda webblösningar, integration av molntjänster samt datadrivna insikter och analys. \n\nEsatto är verksamt inom flera sektorer med särskilt fokus på företag och organisationer som har komplexa verksamheter och höga krav på kvalitet och användarupplevelse. Genom sin erfarenhet av olika branscher kan de erbjuda välgrundade insikter och lösningar som är specifikt anpassade till varje kunds unika behov och marknadssituation.\n\nI sitt arbetssätt lyfter Esatto fram vikten av agila metoder och nära samarbete med kunderna, där kontinuerlig feedback och användarcentrering är centrala komponenter. Företaget kombinerar robust teknikkompetens med en stark förståelse för användarbeteende och affärslogik, vilket möjliggör utveckling av lösningar som verkligen gör skillnad. De använder modern teknologi och molntjänster, och har en tydlig ambition att arbeta datadrivet och insiktsbaserat för att säkerställa att investeringen ger maximal effekt.\n\nKulturen inom Esatto präglas av en stark värdegrund som betonar ärlighet, engagemang och omtanke – både internt i teamet och i relation till kunderna. Företaget ser digital utveckling som något mer än tekniska lösningar; det är ett verktyg för att skapa positiva effekter för människorna som använder tjänsterna och för de verksamheter som ska växa och utvecklas. Genom att kombinera passion för teknik med affärssinne och fokus på långsiktiga relationer strävar Esatto efter att vara en pålitlig partner i digitala transformationsprojekt.\n\nSammanfattningsvis är Esatto ett digitalt utvecklingsbolag med bred kompetens inom strategi, design och teknik som hjälper komplexa organisationer att utveckla användarvänliga, hållbara och affärsdrivande digitala lösningar. Genom ett agilt och insiktsbaserat arbetssätt, kopplat till en stark värdegrund och fokus på samarbete, bidrar de till att forma framtidens digitala affärer tillsammans med sina kunder.",
+    "cases": [
+      {
+        "pageTitle": "Ridely | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Ridely",
+          "industry": "Ridsport",
+          "challenge": "Det fanns få nischade appar för ridsport trots många appar för andra sporter, vilket skapade en lucka på marknaden.",
+          "solution": "Esatto bidrog med framtagande av koncept och innehåll, design, UX och teknisk utveckling av appen Ridely.",
+          "result": "Appen lanserades juni 2017 och fick cirka 17 000 nedladdningar de första två månaderna, var en av de mest nedladdade apparna i Sverige och fungerade stabilt trots snabb tillväxt."
+        },
+        "services": [
+          "Konceptutveckling",
+          "Digital design",
+          "UX-design",
+          "Apputveckling"
+        ],
+        "industries": [
+          "Ridsport"
+        ],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Köpa hund | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Svenska Kennelklubben",
+          "industry": "medlemsorganisation",
+          "challenge": "Förbättra en välbesökt digital tjänst för hundköpare och uppfödare så att den blir enkel, intuitiv och tillgänglig för alla samt förbättra prestandan.",
+          "solution": "Esatto utvecklade UX-design, digital design, webbutveckling och implementerade digital tillgänglighet enligt WCAG. Tagit fram en ny visuell identitet och logotyp med tydligt arv från SKK, samt samlat användarfeedback för kontinuerlig förbättring.",
+          "result": "Köpahund.se har över 20 miljoner sidvisningar och cirka 800 000 unika besökare per år. Tjänsten är mer användarvänlig och inkluderande för både hundköpare och uppfödare."
+        },
+        "services": [
+          "Förstudie",
+          "UX-design",
+          "digital design",
+          "webbutveckling",
+          "digital tillgänglighet",
+          "redaktörsstöd"
+        ],
+        "industries": [
+          "medlemsorganisation"
+        ],
+        "methodsOrTech": [
+          "WCAG",
+          "varumärkesanalys",
+          "kontinuerlig användarfeedback"
+        ],
+        "valuesOrTone": [
+          "tillgänglighet",
+          "inkluderande och inbjudande design",
+          "användarfokus",
+          "trygghet och seriositet"
+        ]
+      },
+      {
+        "pageTitle": "IAR Systems | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "IAR Systems",
+          "industry": "Mjukvaruutveckling",
+          "challenge": "Behov av en ny webbplats för att ersätta fysiska mässor som försvunnit under pandemin och hantera olika målgruppers (utvecklare och investerare) olika behov och beteenden.",
+          "solution": "Utvecklade en webb med två sökfunktioner (fritextsök och kategori-navigering), filtermöjligheter samt en dynamisk design som ändras beroende på besökare, inklusive en 'developers mode' för att attrahera utvecklare.",
+          "result": "Skapade en digital hemvist för användare som driver digitalisering och förenklade vägen till köp via webben."
+        },
+        "services": [
+          "Digital design",
+          "UX-design",
+          "Webbutveckling"
+        ],
+        "industries": [
+          "Mjukvaruutveckling",
+          "Teknologi"
+        ],
+        "methodsOrTech": [
+          "dynamisk webbdesign",
+          "fritextsök",
+          "kategorinavigation",
+          "användaranpassning"
+        ],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Digital produktutveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Ecometrix",
+          "industry": "hållbarhetstjänster",
+          "challenge": "Behov av en plattform för att mäta och jämföra hållbarhetsutveckling och minska CO2-utsläpp i olika branscher.",
+          "solution": "Affärsutveckling, insiktsarbete och utveckling av datainsamlings- och analysplattform i ett tvärfunktionellt team.",
+          "result": ""
+        },
+        "services": [
+          "digital produktutveckling",
+          "affärsmodell och strategi",
+          "tvärfunktionellt team",
+          "UX-design",
+          "digital design",
+          "innehåll",
+          "frontend",
+          "backend",
+          "marknadsföring"
+        ],
+        "industries": [
+          "startups",
+          "hållbarhetsfokuserade företag",
+          "e-handel",
+          "webbplatser",
+          "applikationer",
+          "affärssystem"
+        ],
+        "methodsOrTech": [
+          "agila metoder",
+          "design thinking",
+          "skalbar arkitektur, teknik och design"
+        ],
+        "valuesOrTone": [
+          "användardriven utveckling",
+          "maximalt värde för användare och affär",
+          "låg risk",
+          "hållbar utveckling",
+          "tvärfunktionella team",
+          "snabb lansering och kontinuerlig förbättring"
+        ]
+      },
+      {
+        "pageTitle": "Digital produktutveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Flowpass",
+          "industry": "flexibla arbetsytor",
+          "challenge": "Skapa ett effektivt system för bokning och användning av lokala arbetsytor anpassat för distansarbete och flexkontor.",
+          "solution": "Vidareutveckling av app och bokningsplattform i nära samarbete med produktägare.",
+          "result": ""
+        },
+        "services": [
+          "digital produktutveckling",
+          "affärsmodell och strategi",
+          "tvärfunktionellt team",
+          "UX-design",
+          "digital design",
+          "innehåll",
+          "frontend",
+          "backend",
+          "marknadsföring"
+        ],
+        "industries": [
+          "startups",
+          "hållbarhetsfokuserade företag",
+          "e-handel",
+          "webbplatser",
+          "applikationer",
+          "affärssystem"
+        ],
+        "methodsOrTech": [
+          "agila metoder",
+          "design thinking",
+          "skalbar arkitektur, teknik och design"
+        ],
+        "valuesOrTone": [
+          "användardriven utveckling",
+          "maximalt värde för användare och affär",
+          "låg risk",
+          "hållbar utveckling",
+          "tvärfunktionella team",
+          "snabb lansering och kontinuerlig förbättring"
+        ]
+      },
+      {
+        "pageTitle": "Digital produktutveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Nordic Health Innovation / Healfy",
+          "industry": "medtech / digital vård",
+          "challenge": "Digitalisera och tillgängliggöra vården för att öka patientnöjdhet och effektivitet.",
+          "solution": "Design och utveckling av en modern digital produkt för vård på distans.",
+          "result": ""
+        },
+        "services": [
+          "digital produktutveckling",
+          "affärsmodell och strategi",
+          "tvärfunktionellt team",
+          "UX-design",
+          "digital design",
+          "innehåll",
+          "frontend",
+          "backend",
+          "marknadsföring"
+        ],
+        "industries": [
+          "startups",
+          "hållbarhetsfokuserade företag",
+          "e-handel",
+          "webbplatser",
+          "applikationer",
+          "affärssystem"
+        ],
+        "methodsOrTech": [
+          "agila metoder",
+          "design thinking",
+          "skalbar arkitektur, teknik och design"
+        ],
+        "valuesOrTone": [
+          "användardriven utveckling",
+          "maximalt värde för användare och affär",
+          "låg risk",
+          "hållbar utveckling",
+          "tvärfunktionella team",
+          "snabb lansering och kontinuerlig förbättring"
+        ]
+      },
+      {
+        "pageTitle": "Byggvarubedömningen | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Byggvarubedömningen",
+          "industry": "Bygg och fastigheter",
+          "challenge": "Behov av en ny webbtjänst på grund av en utdaterad lösning och förändrat användarbeteende.",
+          "solution": "Förstudie, UX-design, digital design, designsystem, webbutveckling, strategiarbete, kommunikationsplan och löpande utveckling av webbtjänsten.",
+          "result": "Ökad användarbas från 3 100 till 20 000 på fem år, projektantalet ökade från 1 500 till 7 500, och verksamheten växte från fem till 18 anställda."
+        },
+        "services": [
+          "förstudie",
+          "kravhantering",
+          "konceptutveckling",
+          "UX-design",
+          "digital design",
+          "designsystem",
+          "webbutveckling",
+          "strategiarbete",
+          "kommunikationsplanering",
+          "marknadsföringsmaterial",
+          "löpande tjänsteutveckling"
+        ],
+        "industries": [
+          "bygg",
+          "fastigheter"
+        ],
+        "methodsOrTech": [
+          "UX",
+          "designsystem",
+          "digital design",
+          "webbutveckling"
+        ],
+        "valuesOrTone": [
+          "långsiktigt samarbete",
+          "aktiv dialog",
+          "relationsbyggande",
+          "flexibelt team",
+          "helhetsperspektiv på lösningar"
+        ]
+      },
+      {
+        "pageTitle": "Niam | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Niam",
+          "industry": "fastighetsfondbolag",
+          "challenge": "Behov av ny webbplats i samband med varumärkesarbete och behov av att bättre kommunicera till Niams olika målgrupper.",
+          "solution": "Utveckling av ny webbplats baserat på ny visuell identitet och varumärkesplattform, UX-design, design i Figma, teknisk förstudie och val av plattform Umbraco samt digital tillgänglighetsanpassning.",
+          "result": ""
+        },
+        "services": [
+          "anpassning av visuell identitet",
+          "digital design",
+          "UX-design",
+          "webbutveckling",
+          "digital tillgänglighet"
+        ],
+        "industries": [
+          "fastighetsfondbolag"
+        ],
+        "methodsOrTech": [
+          "agil process",
+          "tvärfunktionella team",
+          "Figma",
+          "Umbraco",
+          "mikroanimationer",
+          "tillgänglighetsanpassade färger"
+        ],
+        "valuesOrTone": [
+          "fokus på användarupplevelse",
+          "agil metod",
+          "samarbete med kunden"
+        ]
+      },
+      {
+        "pageTitle": "SCA Smart Timber | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "SCA SmartTimber",
+          "industry": "Skogsindustrin",
+          "challenge": "Behov av en snabb, säker och flexibel webbplats som vänder perspektivet från produkt- till kundfokus och ökar den organiska trafiken.",
+          "solution": "Utvecklade en ny webbplats med digital design, UX-design och webbutveckling, byggd med optimerad arkitektur och nära samarbete med en engagerad produktägare för att skapa en upplevelse som kombinerar bilder, text och funktioner.",
+          "result": "Lansering av en snabbt fungerande, säker och tekniskt flexibel webbplats som förbättrar kontroll över data och presentation och stöder affärsmål."
+        },
+        "services": [
+          "Digital design",
+          "UX-design",
+          "Webbutveckling"
+        ],
+        "industries": [
+          "Skogsindustrin"
+        ],
+        "methodsOrTech": [
+          "byggde arkitekturen med bästa byggstenar på respektive område",
+          "optimerade system för snabbhet och säkerhet",
+          "strategiskt arbete med affärsmål",
+          "engagerad produktägare",
+          "transparent dialog",
+          "kombination av text och bild för användarupplevelse"
+        ],
+        "valuesOrTone": [
+          "kundfokus framför produktfokus",
+          "affärsnytta som utgångspunkt",
+          "engagemang och samarbete",
+          "modigt förhållningssätt att angripa problem",
+          "sätta affärsmål som utgångspunkt",
+          "vikt av en upplevelse i digitala kanaler"
+        ]
+      },
+      {
+        "pageTitle": "Gardenize | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Gardenize",
+          "industry": "trädgård och odling",
+          "challenge": "Många användare laddar ner appen men få kommer igång och använder den.",
+          "solution": "Förbättra och förenkla onboardingprocessen, framhålla appens värde, förbättra navigering, profil, påminnelser och inställningar samt realisera ny visuell identitet med fokus på tillgänglighet.",
+          "result": "Efter lansering hamnade Gardenize på Apples lista \"Appar vi älskar just nu\" med höga betyg i App Store och Google Market. Många användare kan nu hantera sin trädgårdsmiljö samlat i appen."
+        },
+        "services": [
+          "UX-design",
+          "digital design",
+          "digital tillgänglighet",
+          "apputveckling"
+        ],
+        "industries": [
+          "trädgård och odling"
+        ],
+        "methodsOrTech": [
+          "digital tillgänglighet",
+          "WCAG-direktiv",
+          "datadriven förbättring",
+          "appdesign",
+          "onboarding"
+        ],
+        "valuesOrTone": [
+          "tillgänglighet för alla",
+          "datadriven förbättring",
+          "användarcentrerat fokus",
+          "hållbarhet",
+          "biologisk mångfald"
+        ]
+      },
+      {
+        "pageTitle": "Apputveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Stöldskyddsföreningen (SSF)",
+          "industry": "Säkerhet / Ideell organisation",
+          "challenge": "Behov av en app som hjälper grannar att öka tryggheten i sitt område.",
+          "solution": "Utvecklat appen Grannsamverkan för grannars samarbete och ökad trygghet.",
+          "result": ""
+        },
+        "services": [
+          "Apputveckling",
+          "iOS-apputveckling",
+          "Android-apputveckling",
+          "Native utveckling i Java och Swift",
+          "Flutter och React Native",
+          "Appdesign med fokus på användarvänlighet och tillgänglighet",
+          "Strategisk affärsutveckling för appidéer",
+          "Agil utveckling",
+          "Förvaltning och underhåll av appar"
+        ],
+        "industries": [],
+        "methodsOrTech": [
+          "Flutter",
+          "React Native",
+          "Java",
+          "Swift",
+          "Agila metoder",
+          "Sprintar"
+        ],
+        "valuesOrTone": [
+          "Användarcentrerad design",
+          "Affärsvärdesfokus",
+          "Flexibilitet",
+          "Snabb anpassning",
+          "Tillgänglighet"
+        ]
+      },
+      {
+        "pageTitle": "Apputveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "LRF Samköp",
+          "industry": "Medlemsorganisation / Jordbruk",
+          "challenge": "Behov av en medlemsapp som komplement till webbplattformen.",
+          "solution": "Utvecklat en medlemsapp för LRF Samköp.",
+          "result": ""
+        },
+        "services": [
+          "Apputveckling",
+          "iOS-apputveckling",
+          "Android-apputveckling",
+          "Native utveckling i Java och Swift",
+          "Flutter och React Native",
+          "Appdesign med fokus på användarvänlighet och tillgänglighet",
+          "Strategisk affärsutveckling för appidéer",
+          "Agil utveckling",
+          "Förvaltning och underhåll av appar"
+        ],
+        "industries": [],
+        "methodsOrTech": [
+          "Flutter",
+          "React Native",
+          "Java",
+          "Swift",
+          "Agila metoder",
+          "Sprintar"
+        ],
+        "valuesOrTone": [
+          "Användarcentrerad design",
+          "Affärsvärdesfokus",
+          "Flexibilitet",
+          "Snabb anpassning",
+          "Tillgänglighet"
+        ]
+      },
+      {
+        "pageTitle": "SSAB Special Steels | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "SSAB Special Steels",
+          "industry": "stålindustrin",
+          "challenge": "Behov att se över beteende, kvalitét och mätning av mål i digitala kanaler för att bättre bidra till försäljning av stål.",
+          "solution": "Skapade en global strategi och process baserad på insikter från workshops och kanaldata, omfördelade arbetsuppgifter och organiserade digital närvaro på nytt samt stöttade med kampanjstöd och utbildning.",
+          "result": "Kraftig ökning i räckvidd, trafik och leads med samma mediabudget som tidigare."
+        },
+        "services": [
+          "strategi",
+          "workshops",
+          "organisationsutveckling",
+          "utbildning",
+          "kampanjstöd"
+        ],
+        "industries": [
+          "stålindustrin"
+        ],
+        "methodsOrTech": [
+          "digital strategi",
+          "dataanalys",
+          "workshops",
+          "organisationsutveckling",
+          "utbildning"
+        ],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "SSF Stöldskyddsföreningen",
+          "industry": "",
+          "challenge": "",
+          "solution": "Utveckling av appen Grannsamverkan för goda grannar",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Coffee Analytics",
+          "industry": "",
+          "challenge": "",
+          "solution": "Strukturerad data för fler affärer och en bättre arbetsplats",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Bondens el",
+          "industry": "elbolag",
+          "challenge": "",
+          "solution": "Jordnära webb för böndernas eget elbolag",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Aller Media",
+          "industry": "media",
+          "challenge": "",
+          "solution": "Ny prenumerationssajt för enklare prenumeration av tidskrift",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Cornerstone",
+          "industry": "",
+          "challenge": "",
+          "solution": "Ny spårningsuppsättning och visualisering",
+          "result": "Tog Cornerstone till nya höjder"
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Techarenan news",
+          "industry": "media/startup",
+          "challenge": "",
+          "solution": "Nyhetssajt för att främja startup och tillväxtbolag",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "LRF Media",
+          "industry": "media",
+          "challenge": "",
+          "solution": "Distribuerade team från Krakow för digitala tjänster",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "BMW & MINI",
+          "industry": "fordon",
+          "challenge": "",
+          "solution": "Digital service med jämförbar kvalitet som bilen",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "ATL",
+          "industry": "lantbruk/media",
+          "challenge": "",
+          "solution": "Affärstidning som stödjer tillväxt i lantbruksaffärer",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Nobina",
+          "industry": "transport",
+          "challenge": "",
+          "solution": "Ny webb med fokus på människa och samhällen",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Taxi Stockholm",
+          "industry": "taxitjänst",
+          "challenge": "",
+          "solution": "Digital marknadsföring genom nya idétester",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Jämtkraft",
+          "industry": "energi",
+          "challenge": "",
+          "solution": "Digitalt partnerskap för nästa generations energisystem",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Case | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Digg",
+          "industry": "myndighet",
+          "challenge": "",
+          "solution": "Banbrytande webb till Sveriges digitala myndighet",
+          "result": ""
+        },
+        "services": [],
+        "industries": [],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "Varumärke & Koncept | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Grannsamverkan",
+          "industry": "App/socialt nätverk",
+          "challenge": "",
+          "solution": "Utveckling av en app för goda grannar",
+          "result": ""
+        },
+        "services": [
+          "Varumärkesdesign",
+          "Konceptutveckling",
+          "Digital tjänstelansering",
+          "Ompositionering",
+          "Affärsområdeslansering",
+          "Workshops",
+          "Varumärkesanalyser",
+          "Kampanjkoncept",
+          "Kravspecifikationer för upphandling",
+          "Stärkning av inhouse-team"
+        ],
+        "industries": [],
+        "methodsOrTech": [
+          "Tvärfunktionella team",
+          "Strategi",
+          "Kreativitet",
+          "UX-design",
+          "UI-design",
+          "Datadrivet mätbart arbetssätt"
+        ],
+        "valuesOrTone": [
+          "Lyhört och pragmatiskt arbetssätt",
+          "Hög kvalitet och stort engagemang",
+          "Fokus på faktisk värde",
+          "Trendmedvetna",
+          "Förmåga att leverera det lilla extra",
+          "Integration av varumärke, koncept och kommunikation med affärsstrategi och digital utveckling"
+        ]
+      },
+      {
+        "pageTitle": "Ny AI-plattform ska minska energianvändningen | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Calejo",
+          "industry": "vatten- och avloppshantering",
+          "challenge": "Öka effektiviteten i avloppssystem genom att hantera stora flödesvariationer vid nederbörd och minska spill av orenat vatten, samt förenkla kommunikationen och visualiseringen av komplexa system.",
+          "solution": "Esatto deltog i en innovationssprint för att skapa ett nytt användargränssnitt till AI-plattformen Smart Water, utvecklade en interaktiv karta som visar pumpstationer och reningsverk i realtid, samt fokuserade på automatisering av processer och användarstöd.",
+          "result": "Förbättrad styrning som bidrar till minskat bräddavlopp, minskad energianvändning och framtida möjlighet till självstyrande pumpoptimering. En prototyp är planerad för vidare användartestning och utveckling."
+        },
+        "services": [
+          "innovationssprint",
+          "användargränssnittsdesign",
+          "UX-design",
+          "automation av processer",
+          "digitala lösningar för vatten- och avloppssystem"
+        ],
+        "industries": [
+          "vatten- och avloppshantering",
+          "miljöteknik"
+        ],
+        "methodsOrTech": [
+          "AI-plattform",
+          "digital tvilling",
+          "interaktiv karta",
+          "utforskande designprocess",
+          "historisk data-analys",
+          "automatisering"
+        ],
+        "valuesOrTone": [
+          "användarcentrerad design",
+          "nära samarbete med slutanvändare",
+          "innovation",
+          "kombinera teknik och människa",
+          "hållbarhet"
+        ]
+      },
+      {
+        "pageTitle": "Techarenan News | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Techarenan",
+          "industry": "Branschorganisation",
+          "challenge": "Behov av en nyhetssajt för att lyfta personer som driver svenskt näringsliv framåt, med särskilt fokus på startups och tillväxtbolag.",
+          "solution": "Esatto levererade strategi för produktutveckling, design och UX, val av plattform, utveckling av sajten samt annonsstrategi för innehållsspridning.",
+          "result": "En ny nyhetssajt skapad i tätt samarbete som förväntas växa och bidra till att affärer och nätverk skapas."
+        },
+        "services": [
+          "Digital design",
+          "UX-design",
+          "Strategi",
+          "Webbutveckling",
+          "Annonsstrategi"
+        ],
+        "industries": [
+          "Branschorganisation",
+          "Startup",
+          "Tillväxtbolag"
+        ],
+        "methodsOrTech": [
+          "Produktutvecklingsstrategi",
+          "Design och UX",
+          "Webbplattform"
+        ],
+        "valuesOrTone": [
+          "Samarbete",
+          "Innovation",
+          "Entreprenörskap",
+          "Affärsdrivande",
+          "Premiumjournalistik"
+        ]
+      },
+      {
+        "pageTitle": "Teamleverans | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Köpahund.se",
+          "industry": "E-handel, djurägande",
+          "challenge": "Skapa en plattform för hundköp",
+          "solution": "Teamleverans för utveckling av köpahund.se",
+          "result": ""
+        },
+        "services": [
+          "teamleverans",
+          "produktutveckling",
+          "design",
+          "teknik",
+          "data",
+          "affär",
+          "agila leveranser",
+          "Scrum",
+          "Kanban",
+          "projektledning",
+          "UX",
+          "strategi"
+        ],
+        "industries": [],
+        "methodsOrTech": [
+          "tvärfunktionella team",
+          "agila metoder",
+          "Scrum",
+          "Kanban",
+          "iterativa processer",
+          "löpande demos",
+          "feedback",
+          "justeringar"
+        ],
+        "valuesOrTone": [
+          "snabb start",
+          "hög leveranstakt",
+          "hållbar leverans",
+          "transparens",
+          "kontinuerligt lärande",
+          "samspelade team",
+          "skalbarhet",
+          "del av Dizparc-koncernen"
+        ]
+      },
+      {
+        "pageTitle": "BMW och Mini | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "BMW och Mini",
+          "industry": "Bilindustrin",
+          "challenge": "Behov att skapa en nordisk kundportal där ägare kan få svar på frågor om finansiering, fakturor, privatleasing och erbjudanden.",
+          "solution": "Skapade och utvecklade nordiska kundportaler med fokus på en digital upplevelse i linje med bilarna.",
+          "result": "En användarvänlig portal som ger ägare en digital service lika körvänlig som bilen."
+        },
+        "services": [
+          "UX-design",
+          "digital design",
+          "webbutveckling"
+        ],
+        "industries": [
+          "Bilindustrin"
+        ],
+        "methodsOrTech": [],
+        "valuesOrTone": []
+      },
+      {
+        "pageTitle": "ATL – Lantbrukets affärstidning | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "ATL – Lantbrukets affärstidning",
+          "industry": "Press & media",
+          "challenge": "Förändrade målgruppsbeteenden och en tekniskt eftersatt digital plattform som var otillräckligt flexibel för nya tjänster och annonsaffär.",
+          "solution": "Skapade en ny flexibel teknisk plattform bakom ATL.nu med nytt visuellt formspråk inklusive logotyp, färgpalett, typografi, illustrationsmanér och designelement genom iterativa arbetssätt.",
+          "result": "En värdefull och framtidssäkrad digital plattform som renodlar varumärket, ökar konverteringen till digital prenumeration och tydliggör dess värde."
+        },
+        "services": [
+          "Digital design",
+          "UX-design",
+          "Webbutveckling"
+        ],
+        "industries": [
+          "Press & media",
+          "Jordbruk",
+          "Skog",
+          "Entreprenad"
+        ],
+        "methodsOrTech": [
+          "Iterativa arbetssätt",
+          "Ny teknisk plattform för innehållshantering"
+        ],
+        "valuesOrTone": [
+          "Stöttar ett enklare och roligare lantbruk"
+        ]
+      },
+      {
+        "pageTitle": "Esattos startup Ecometrix går in i viktigt Vinnovaprojekt | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "Betcrete 3.0",
+          "industry": "cement- och betongbranschen",
+          "challenge": "Minska CO2-utsläpp från betong och stödja klimatneutral betong till 2045 genom att adressera samverkansfrågor, legislativa, finansiella och tekniska utmaningar.",
+          "solution": "Ecometrix utvecklar en digital tjänst med branschspecifika hållbarhetsindikatorer och en MVP med riktig data för att göra hållbarhetsdata tillgänglig och begriplig.",
+          "result": ""
+        },
+        "services": [
+          "digitala tjänster för hållbarhetsindikatorer",
+          "affärsutveckling",
+          "metodik och processutveckling för KPI:er",
+          "dataplattform för hållbarhetsdata"
+        ],
+        "industries": [
+          "cement- och betongbranschen",
+          "hållbarhet"
+        ],
+        "methodsOrTech": [
+          "branschspecifika hållbarhetsindikatorer",
+          "datainsamling och presentation via plattform",
+          "metodik för nyckeltal och KPI:er",
+          "MVP utveckling med riktig data"
+        ],
+        "valuesOrTone": [
+          "fokus på hållbarhet",
+          "innovation inom klimatneutral teknik",
+          "samarbete och långsiktig satsning inom hållbarhet"
+        ]
+      },
+      {
+        "pageTitle": "SSF Stöldskyddsföreningen – Grannsamverkan | Esatto",
+        "pageType": "case",
+        "case": {
+          "name": "SSF Stöldskyddsföreningen - Grannsamverkan",
+          "industry": "brottsförebyggande organisation",
+          "challenge": "Den befintliga Grannsamverkans app var tekniskt föråldrad, med brister som ledde till minskat förtroende och användning samt nya BankID-regler som krävde uppdatering.",
+          "solution": "Utveckling av en ny användarvänlig app för iOS och Android med säker BankID-inloggning, förbättrad kommunikationsplattform mellan polis och boende samt fokus på tillgänglighet och stabilitet.",
+          "result": "Lansering i maj 2024 med kontinuerlig utveckling för att anpassa tjänsten till användarnas behov och öka engagemanget samt tryggheten i bostadsområden."
+        },
+        "services": [
+          "digital design",
+          "UX-design",
+          "apputveckling"
+        ],
+        "industries": [
+          "brottsförebyggande",
+          "organisationer"
+        ],
+        "methodsOrTech": [
+          "iOS och Android app",
+          "säker inloggning via BankID",
+          "användarfokus",
+          "tillgänglighet",
+          "regelbundna uppdateringar"
+        ],
+        "valuesOrTone": [
+          "fokus på enkelhet och användarvänlighet",
+          "kontinuerlig utveckling baserad på användarfeedback",
+          "säkerhet och trygghet i bostadsområden"
+        ]
+      },
+      {
+        "pageTitle": "Esatto Summer Edition 2025",
+        "pageType": "case",
+        "case": {
+          "name": "Café Bar",
+          "industry": "kaffe-/livsmedelsbranschen",
+          "challenge": "Behov av att omvandla vardaglig kaffekonsumtion till datadrivna affärsinsikter och förbättra arbetsplatsen med smart teknik.",
+          "solution": "Tillsammans med Dizparc och Esatto utvecklade Café Bar lösningen Coffee Analytics som använder smarta uppkopplade kaffemaskiner för att samla in och strukturera data.",
+          "result": "Datadrivna affärsinsikter och en bättre arbetsplats samt konkurrensfördelar genom digital innovation."
+        },
+        "services": [
+          "digitala lösningar",
+          "dataanalys",
+          "varumärkesutveckling",
+          "design",
+          "e-handel",
+          "cybersäkerhet",
+          "kundupplevelse",
+          "innovation Coffee Analytics"
+        ],
+        "industries": [
+          "kaffe-/livsmedelsbranschen",
+          "e-handel/skönhet",
+          "cybersäkerhet"
+        ],
+        "methodsOrTech": [
+          "strukturerad data",
+          "digital innovation",
+          "designprinciper",
+          "datadriven analys",
+          "digital varumärkesresa",
+          "digital kundupplevelse"
+        ],
+        "valuesOrTone": [
+          "inspiration",
+          "samarbete",
+          "innovation",
+          "konkreta insikter",
+          "kundfokus",
+          "ödmjukhet",
+          "engagemang"
+        ]
+      },
+      {
+        "pageTitle": "Esatto Summer Edition 2025",
+        "pageType": "case",
+        "case": {
+          "name": "Parfym.se",
+          "industry": "e-handel/skönhet",
+          "challenge": "Överfylld marknad med många kampanjer som krävde att varumärket tydliggjorde sin identitet och förbättrade sin digitala närvaro.",
+          "solution": "Esatto hjälpte Parfym.se att utveckla en ny varumärkesidentitet, designprinciper och ett digitalt uttryck för e-handel, sociala medier och butikskoncept.",
+          "result": "En starkare digital närvaro, tydligare kundupplevelse och framgångsrik e-handel samt nytt flagship store-koncept."
+        },
+        "services": [
+          "digitala lösningar",
+          "dataanalys",
+          "varumärkesutveckling",
+          "design",
+          "e-handel",
+          "cybersäkerhet",
+          "kundupplevelse",
+          "innovation Coffee Analytics"
+        ],
+        "industries": [
+          "kaffe-/livsmedelsbranschen",
+          "e-handel/skönhet",
+          "cybersäkerhet"
+        ],
+        "methodsOrTech": [
+          "strukturerad data",
+          "digital innovation",
+          "designprinciper",
+          "datadriven analys",
+          "digital varumärkesresa",
+          "digital kundupplevelse"
+        ],
+        "valuesOrTone": [
+          "inspiration",
+          "samarbete",
+          "innovation",
+          "konkreta insikter",
+          "kundfokus",
+          "ödmjukhet",
+          "engagemang"
+        ]
+      },
+      {
+        "pageTitle": "Esatto Summer Edition 2025",
+        "pageType": "case",
+        "case": {
+          "name": "Dizparc",
+          "industry": "cybersäkerhet",
+          "challenge": "Behov av att hantera Sveriges digitala styrkor och svagheter i en hotfull geopolitisk kontext med ökad cyberhotbild.",
+          "solution": "Presentation och rådgivning om cybersäkerhet som ett affärskritiskt ämne, med fokus på stärkt digital motståndskraft för organisationer.",
+          "result": "Ökad medvetenhet och förståelse för cybersäkerhetsutmaningar samt konkreta råd för att stärka organisationers skydd."
+        },
+        "services": [
+          "digitala lösningar",
+          "dataanalys",
+          "varumärkesutveckling",
+          "design",
+          "e-handel",
+          "cybersäkerhet",
+          "kundupplevelse",
+          "innovation Coffee Analytics"
+        ],
+        "industries": [
+          "kaffe-/livsmedelsbranschen",
+          "e-handel/skönhet",
+          "cybersäkerhet"
+        ],
+        "methodsOrTech": [
+          "strukturerad data",
+          "digital innovation",
+          "designprinciper",
+          "datadriven analys",
+          "digital varumärkesresa",
+          "digital kundupplevelse"
+        ],
+        "valuesOrTone": [
+          "inspiration",
+          "samarbete",
+          "innovation",
+          "konkreta insikter",
+          "kundfokus",
+          "ödmjukhet",
+          "engagemang"
+        ]
+      },
+      {
+        "pageTitle": "Systemutveckling | Esatto",
+        "pageType": "service",
+        "case": {
+          "name": "Svensk Kennelklubben",
+          "industry": "",
+          "challenge": "",
+          "solution": "Utveckling av ny webbplats",
+          "result": ""
+        },
+        "services": [
+          "Systemutveckling",
+          "Webbplatser",
+          "CMS-lösningar",
+          "App-utveckling",
+          "Integrationer",
+          "E-handelslösningar",
+          "Rådgivning",
+          "Förvaltning och support",
+          "Projekt- och teamförstärkning",
+          "Nearshoring"
+        ],
+        "industries": [],
+        "methodsOrTech": [
+          "Optimizely",
+          "Umbraco",
+          "Contentful",
+          ".NET",
+          "Node.js",
+          "React",
+          "Kubernetes",
+          "Azure",
+          "AWS",
+          "Mikrotjänster",
+          "API-first",
+          "DevOps",
+          "CI/CD",
+          "TeamCity",
+          "Octopus Deploy",
+          "Automatiserade tester",
+          "Prestanda- och säkerhetsgranskningar",
+          "AI",
+          "Machine Learning",
+          "Low-code/no-code"
+        ],
+        "valuesOrTone": [
+          "Nära samarbete",
+          "Full transparens",
+          "Inkluderande kundrelationer",
+          "Löpande demos och korta feedbackloopar",
+          "Flexibla och skalbara lösningar",
+          "Agilt mindset",
+          "Hög kvalitet",
+          "Snabb time-to-market"
+        ]
+      }
+    ]
+  }
+]
