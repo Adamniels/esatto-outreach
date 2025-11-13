@@ -35,7 +35,7 @@ public class N8nEmailService : IN8nEmailService
             };
 
             var response = await _httpClient.PostAsJsonAsync(
-                _options.WebhookUrl,
+                _options.GmailDraftWebhookUrl,
                 payload,
                 cancellationToken);
 

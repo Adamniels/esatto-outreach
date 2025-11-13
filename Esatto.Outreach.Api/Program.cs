@@ -3,6 +3,10 @@ using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Application.UseCases;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi.Models;
+using DotNetEnv;
+
+// Läs .env filen från root-mappen
+Env.Load("../.env");
 
 var builder = WebApplication.CreateBuilder(args);
 
