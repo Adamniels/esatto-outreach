@@ -33,6 +33,8 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IProspectRepository, ProspectRepository>();
+        services.AddScoped<IHardCompanyDataRepository, HardCompanyDataRepository>();
+        services.AddScoped<ISoftCompanyDataRepository, SoftCompanyDataRepository>();
 
         services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
         // OpenAI client factory + generator

@@ -10,6 +10,10 @@ public class OutreachDbContext : DbContext
 
     // Betyder bara: "jag har en tabell för prospect Entities"
     public DbSet<Prospect> Prospects => Set<Prospect>();
+    
+    public DbSet<HardCompanyData> HardCompanyData => Set<HardCompanyData>();
+    
+    public DbSet<SoftCompanyData> SoftCompanyData => Set<SoftCompanyData>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

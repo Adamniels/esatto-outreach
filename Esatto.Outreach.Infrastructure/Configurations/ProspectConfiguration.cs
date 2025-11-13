@@ -56,9 +56,27 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.MailBodyHTML)
         .HasColumnType("text"); // långtext
 
+        // Foreign Key till HardCompanyData (nullable, One-to-One)
+        b.Property(x => x.HardCompanyDataId);
+
+        b.HasOne(x => x.HardCompanyData)
+            .WithMany()
+            .HasForeignKey(x => x.HardCompanyDataId)
+            .OnDelete(DeleteBehavior.SetNull); // Om HardCompanyData raderas, sätt FK till null
+
+        // Foreign Key till SoftCompanyData (nullable, One-to-One)
+        b.Property(x => x.SoftCompanyDataId);
+
+        b.HasOne(x => x.SoftCompanyData)
+            .WithMany()
+            .HasForeignKey(x => x.SoftCompanyDataId)
+            .OnDelete(DeleteBehavior.SetNull); // Om SoftCompanyData raderas, sätt FK till null
+
         b.HasIndex(x => x.CompanyName);
         b.HasIndex(x => x.Domain);
         b.HasIndex(x => new { x.Status, x.CreatedUtc });
         b.HasIndex(x => x.MailTitle);
+        b.HasIndex(x => x.HardCompanyDataId);
+        b.HasIndex(x => x.SoftCompanyDataId);
     }
 }

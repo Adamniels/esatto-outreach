@@ -20,7 +20,17 @@ public class Prospect : Entity
     public string? MailBodyHTML { get; private set; }
     public string? LastOpenAIResponseId { get; private set; }
 
+    // Foreign Key till HardCompanyData (One-to-One, nullable)
+    public Guid? HardCompanyDataId { get; private set; }
+    
+    // Navigation property till HardCompanyData
+    public HardCompanyData? HardCompanyData { get; private set; }
 
+    // Foreign Key till SoftCompanyData (One-to-One, nullable)
+    public Guid? SoftCompanyDataId { get; private set; }
+    
+    // Navigation property till SoftCompanyData
+    public SoftCompanyData? SoftCompanyData { get; private set; }
 
     public ProspectStatus Status { get; private set; } = ProspectStatus.New;
 
@@ -110,6 +120,18 @@ public class Prospect : Entity
     public void SetLastOpenAIResponseId(string? id)
     {
         LastOpenAIResponseId = string.IsNullOrWhiteSpace(id) ? null : id.Trim();
+        Touch();
+    }
+
+    public void SetHardCompanyData(Guid? hardCompanyDataId)
+    {
+        HardCompanyDataId = hardCompanyDataId;
+        Touch();
+    }
+
+    public void SetSoftCompanyData(Guid? softCompanyDataId)
+    {
+        SoftCompanyDataId = softCompanyDataId;
         Touch();
     }
 }
