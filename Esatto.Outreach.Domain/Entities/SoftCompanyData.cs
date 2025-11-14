@@ -4,6 +4,12 @@ namespace Esatto.Outreach.Domain.Entities;
 
 public class SoftCompanyData : Entity
 {
+    // Foreign key till Prospect
+    public Guid ProspectId { get; private set; }
+    
+    // Navigation property till Prospect
+    public Prospect? Prospect { get; private set; }
+    
     // JSON-fält för dynamisk, tidskänslig data
 
     // Hooks: array av personliga hooks för mejl-öppnare
@@ -33,6 +39,7 @@ public class SoftCompanyData : Entity
     protected SoftCompanyData() { }
 
     public static SoftCompanyData Create(
+        Guid prospectId,
         string? hooksJson,
         string? recentEventsJson,
         string? newsItemsJson,
@@ -41,6 +48,7 @@ public class SoftCompanyData : Entity
     {
         var data = new SoftCompanyData
         {
+            ProspectId = prospectId,
             HooksJson = hooksJson,
             RecentEventsJson = recentEventsJson,
             NewsItemsJson = newsItemsJson,

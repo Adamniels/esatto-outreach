@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Http;
 using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Esatto.Outreach.Infrastructure.Email;
+using Esatto.Outreach.Infrastructure.OpenAI;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +49,8 @@ public static class DependencyInjection
         });
 
         services.AddHttpClient<IOpenAIChatClient, OpenAiChatClient>();
+        services.AddHttpClient<IOpenAIWebSearchClient, OpenAIWebSearchClient>();
+        
         return services;
     }
 }

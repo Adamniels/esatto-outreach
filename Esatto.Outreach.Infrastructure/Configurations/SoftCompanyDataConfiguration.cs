@@ -34,6 +34,15 @@ public class SoftCompanyDataConfiguration : IEntityTypeConfiguration<SoftCompany
 
         b.Property(x => x.UpdatedUtc);
 
+        // Foreign Key till Prospect (required, One-to-One)
+        b.Property(x => x.ProspectId)
+            .IsRequired();
+
+        b.HasOne(x => x.Prospect)
+            .WithOne(p => p.SoftCompanyData)
+            .HasForeignKey<SoftCompanyData>(x => x.ProspectId)
+            .OnDelete(DeleteBehavior.Cascade); // Om Prospect raderas, radera soft data också
+
         // Index för att snabbt hitta recent research
         b.HasIndex(x => x.ResearchedAt);
     }

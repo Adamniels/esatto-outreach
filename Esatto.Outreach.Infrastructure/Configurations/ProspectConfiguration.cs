@@ -68,9 +68,9 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.SoftCompanyDataId);
 
         b.HasOne(x => x.SoftCompanyData)
-            .WithMany()
-            .HasForeignKey(x => x.SoftCompanyDataId)
-            .OnDelete(DeleteBehavior.SetNull); // Om SoftCompanyData raderas, sätt FK till null
+            .WithOne(s => s.Prospect)
+            .HasForeignKey<SoftCompanyData>(s => s.ProspectId)
+            .OnDelete(DeleteBehavior.Cascade); // Om Prospect raderas, radera soft data också
 
         b.HasIndex(x => x.CompanyName);
         b.HasIndex(x => x.Domain);

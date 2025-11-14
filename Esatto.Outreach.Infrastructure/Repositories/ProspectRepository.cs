@@ -11,7 +11,9 @@ public class ProspectRepository : IProspectRepository
     public ProspectRepository(OutreachDbContext db) => _db = db;
 
     public async Task<Prospect?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => await _db.Prospects.FirstOrDefaultAsync(p => p.Id == id, ct);
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
 
     public async Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default)
         => await _db.Prospects

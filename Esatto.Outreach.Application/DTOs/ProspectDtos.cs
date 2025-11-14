@@ -36,7 +36,8 @@ public record ProspectViewDto(
     DateTime? UpdatedUtc,
     string? MailTitle,
     string? MailBodyPlain,
-    string? MailBodyHTML)
+    string? MailBodyHTML,
+    SoftCompanyDataDto? SoftCompanyData)
 
 {
     public static ProspectViewDto FromEntity(Prospect p) =>
@@ -53,5 +54,35 @@ public record ProspectViewDto(
             p.UpdatedUtc,
             p.MailTitle,
             p.MailBodyPlain,
-            p.MailBodyHTML);
+            p.MailBodyHTML,
+            p.SoftCompanyData != null ? SoftCompanyDataDto.FromEntity(p.SoftCompanyData) : null);
+}
+
+// ...existing code...
+
+public record SoftCompanyDataDto(
+    Guid Id,
+    Guid ProspectId,
+    string? HooksJson,              // JSON string med hooks
+    string? RecentEventsJson,       // JSON string med events
+    string? NewsItemsJson,          // JSON string med news
+    string? SocialActivityJson,     // JSON string med social media
+    string? SourcesJson,            // JSON string med källor
+    DateTime ResearchedAt,
+    DateTime CreatedUtc,
+    DateTime? UpdatedUtc
+)
+{
+    public static SoftCompanyDataDto FromEntity(SoftCompanyData entity) => new(
+        Id: entity.Id,
+        ProspectId: entity.ProspectId,
+        HooksJson: entity.HooksJson,
+        RecentEventsJson: entity.RecentEventsJson,
+        NewsItemsJson: entity.NewsItemsJson,
+        SocialActivityJson: entity.SocialActivityJson,
+        SourcesJson: entity.SourcesJson,
+        ResearchedAt: entity.ResearchedAt,
+        CreatedUtc: entity.CreatedUtc,
+        UpdatedUtc: entity.UpdatedUtc
+    );
 }

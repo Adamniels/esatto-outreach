@@ -123,15 +123,27 @@ public class Prospect : Entity
         Touch();
     }
 
-    public void SetHardCompanyData(Guid? hardCompanyDataId)
+    public void LinkHardCompanyData(Guid? hardCompanyDataId)
     {
         HardCompanyDataId = hardCompanyDataId;
         Touch();
     }
 
-    public void SetSoftCompanyData(Guid? softCompanyDataId)
+    public void UnlinkHardCompanyData()
+    {
+        HardCompanyDataId = null;
+        Touch();
+    }
+
+    public void LinkSoftCompanyData(Guid? softCompanyDataId)
     {
         SoftCompanyDataId = softCompanyDataId;
+        Touch();
+    }
+
+    public void UnlinkSoftCompanyData()
+    {
+        SoftCompanyDataId = null;
         Touch();
     }
 }

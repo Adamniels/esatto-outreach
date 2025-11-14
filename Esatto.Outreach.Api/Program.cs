@@ -22,6 +22,7 @@ builder.Services.AddScoped<ListProspects>();
 builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<SendEmailViaN8n>();
 builder.Services.AddScoped<ChatWithProspect>();
+builder.Services.AddScoped<GenerateSoftCompanyData>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -148,6 +149,32 @@ app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, IProspectReposito
     prospect.SetLastOpenAIResponseId(null);
     await repo.UpdateAsync(prospect, ct);
     return Results.NoContent();
+});
+
+app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
+    Guid id,
+    GenerateSoftCompanyData useCase,
+    CancellationToken ct) =>
+{
+    try
+    {
+        var softData = await useCase.Handle(id, ct);
+        return Results.Ok(softData);
+    }
+    catch (KeyNotFoundException ex)
+    {
+        return Results.NotFound(new { error = ex.Message });
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500);
+    }
 });
 
 
