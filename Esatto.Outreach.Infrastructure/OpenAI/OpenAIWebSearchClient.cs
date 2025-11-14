@@ -217,6 +217,12 @@ VIKTIGT:
         {
             cleanText = cleanText.Substring(jsonStart, jsonEnd - jsonStart + 1);
         }
+        else if (jsonStart < 0)
+        {
+            // Ingen JSON hittades, kasta fel med mer info
+            throw new InvalidOperationException(
+                $"Kunde inte hitta JSON i OpenAI-svar för {companyName}. Text: {cleanText.Substring(0, Math.Min(500, cleanText.Length))}");
+        }
 
         try
         {
@@ -224,7 +230,9 @@ VIKTIGT:
             var researchData = JsonSerializer.Deserialize<ResearchResponseData>(cleanText, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
             });
 
             if (researchData == null)
@@ -232,15 +240,19 @@ VIKTIGT:
                 throw new JsonException("Deserialisering returnerade null");
             }
 
+            // Normalisera null-strängar till faktiskt null
+            string? NormalizeJson(string? json) => 
+                string.IsNullOrWhiteSpace(json) || json == "null" ? null : json;
+
             // Skapa DTO (Id och timestamps sätts senare av use case)
             return new SoftCompanyDataDto(
                 Id: Guid.Empty, // Sätts av use case
                 ProspectId: Guid.Empty, // Sätts av use case
-                HooksJson: researchData.HooksJson,
-                RecentEventsJson: researchData.RecentEventsJson,
-                NewsItemsJson: researchData.NewsItemsJson,
-                SocialActivityJson: researchData.SocialActivityJson,
-                SourcesJson: researchData.SourcesJson,
+                HooksJson: NormalizeJson(researchData.HooksJson),
+                RecentEventsJson: NormalizeJson(researchData.RecentEventsJson),
+                NewsItemsJson: NormalizeJson(researchData.NewsItemsJson),
+                SocialActivityJson: NormalizeJson(researchData.SocialActivityJson),
+                SourcesJson: NormalizeJson(researchData.SourcesJson),
                 ResearchedAt: DateTime.UtcNow,
                 CreatedUtc: DateTime.UtcNow, // Sätts om av use case
                 UpdatedUtc: null
@@ -249,7 +261,7 @@ VIKTIGT:
         catch (JsonException ex)
         {
             throw new InvalidOperationException(
-                $"Kunde inte parsa OpenAI-svar som JSON för {companyName}. Rå text: {cleanText.Substring(0, Math.Min(200, cleanText.Length))}...",
+                $"Kunde inte parsa OpenAI-svar som JSON för {companyName}. Rå text: {cleanText.Substring(0, Math.Min(500, cleanText.Length))}",
                 ex);
         }
     }
