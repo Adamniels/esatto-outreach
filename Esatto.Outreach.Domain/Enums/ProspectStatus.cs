@@ -4,7 +4,8 @@ public enum ProspectStatus
 {
     New = 0,
     Researched = 1,
-    Emailed = 2,
-    Responded = 3,
-    Archived = 4
+    Drafted = 2,
+    Emailed = 3,
+    Responded = 4,
+    Archived = 5
 }

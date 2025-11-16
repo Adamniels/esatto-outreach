@@ -2,6 +2,7 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
 using Microsoft.Extensions.Options;
 
 namespace Esatto.Outreach.Application.UseCases;
@@ -34,18 +35,18 @@ public sealed class GenerateSoftCompanyData
         var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct)
             ?? throw new KeyNotFoundException($"Prospect with ID {prospectId} not found.");
 
-        _logger.LogInformation("Generating soft company data for prospect {ProspectId} ({CompanyName})", 
+        _logger.LogInformation("Generating soft company data for prospect {ProspectId} ({CompanyName})",
             prospectId, prospect.CompanyName);
 
         // 2. Anropa OpenAI för att generera research
         var researchResult = await _researchAgent.GenerateCompanyResearchAsync(
-            prospect.CompanyName, 
-            prospect.Domain, 
+            prospect.CompanyName,
+            prospect.Domain,
             ct);
 
         // 3. Skapa eller uppdatera SoftCompanyData entity
         SoftCompanyData softDataEntity;
-        
+
         if (prospect.SoftCompanyDataId.HasValue)
         {
             // Uppdatera befintlig data
@@ -58,11 +59,11 @@ public sealed class GenerateSoftCompanyData
                     newsItemsJson: researchResult.NewsItemsJson,
                     socialActivityJson: researchResult.SocialActivityJson,
                     sourcesJson: researchResult.SourcesJson);
-                
+
                 await _dataRepo.UpdateAsync(existingData, ct);
                 softDataEntity = existingData;
-                
-                _logger.LogInformation("Updated existing soft data {SoftDataId} for prospect {ProspectId}", 
+
+                _logger.LogInformation("Updated existing soft data {SoftDataId} for prospect {ProspectId}",
                     existingData.Id, prospectId);
             }
             else
@@ -75,8 +76,12 @@ public sealed class GenerateSoftCompanyData
                     newsItemsJson: researchResult.NewsItemsJson,
                     socialActivityJson: researchResult.SocialActivityJson,
                     sourcesJson: researchResult.SourcesJson);
-                
+
                 await _dataRepo.AddAsync(softDataEntity, ct);
+                if (prospect.Status == ProspectStatus.New)
+                {
+                    prospect.SetStatus(ProspectStatus.Researched);
+                }
                 prospect.LinkSoftCompanyData(softDataEntity.Id);
                 await _prospectRepo.UpdateAsync(prospect, ct);
             }
@@ -93,10 +98,14 @@ public sealed class GenerateSoftCompanyData
                 sourcesJson: researchResult.SourcesJson);
 
             await _dataRepo.AddAsync(softDataEntity, ct);
+            if (prospect.Status == ProspectStatus.New)
+            {
+                prospect.SetStatus(ProspectStatus.Researched);
+            }
             prospect.LinkSoftCompanyData(softDataEntity.Id);
             await _prospectRepo.UpdateAsync(prospect, ct);
-            
-            _logger.LogInformation("Created new soft data {SoftDataId} for prospect {ProspectId}", 
+
+            _logger.LogInformation("Created new soft data {SoftDataId} for prospect {ProspectId}",
                 softDataEntity.Id, prospectId);
         }
 

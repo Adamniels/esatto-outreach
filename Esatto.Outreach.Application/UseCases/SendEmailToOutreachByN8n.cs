@@ -1,5 +1,6 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.UseCases;
 
@@ -48,6 +49,7 @@ public class SendEmailViaN8n
         if (result.Success)
         {
             // Du kan lägga till en metod på Prospect för att markera som skickad
+            prospect.SetStatus(ProspectStatus.Drafted);
             await _repo.UpdateAsync(prospect, ct);
         }
 
