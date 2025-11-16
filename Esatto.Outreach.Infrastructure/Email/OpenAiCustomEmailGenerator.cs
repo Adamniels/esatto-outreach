@@ -11,15 +11,18 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
 {
     private readonly IOpenAIResponseClientFactory _factory;
     private readonly OpenAiOptions _options;
+    private readonly IGenerateEmailPromptRepository _promptRepo;
     private static string? _esattoCompanyInfo;
     private static readonly object _lock = new();
 
     public OpenAICustomEmailGenerator(
         IOpenAIResponseClientFactory factory,
-        IOptions<OpenAiOptions> options)
+        IOptions<OpenAiOptions> options,
+        IGenerateEmailPromptRepository promptRepo)
     {
         _factory = factory;
         _options = options.Value;
+        _promptRepo = promptRepo;
         LoadEsattoCompanyInfo();
     }
 
@@ -56,8 +59,13 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
     {
         var client = _factory.GetClient();
 
-        // 1. Bygg upp själva prompten
-        var prompt = BuildPrompt(request) + @"
+        // 1. Hämta aktiv prompt från databasen
+        var activePrompt = await _promptRepo.GetActiveAsync(cancellationToken);
+        if (activePrompt == null)
+            throw new InvalidOperationException("No active email prompt template found in database");
+
+        // 2. Bygg upp själva prompten
+        var prompt = BuildPrompt(request, activePrompt.Instructions) + @"
 
 Return ONLY a valid JSON object with the following structure, nothing else:
 {
@@ -111,11 +119,10 @@ Do not include code fences, explanations, or any extra text.
         return dto;
     }
 
-    // TODO: ändra och fixa prompten jobba på tonen
-    private static string BuildPrompt(CustomEmailRequestDto req)
+    private static string BuildPrompt(CustomEmailRequestDto req, string instructions)
     {
-        // Huvudprompten (på svenska) för att generera mejlet
-        return @$"
+        // Statisk systemkontext (hårdkodad)
+        var systemContext = @$"
             Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).
             
             === INFORMATION OM ESATTO AB ===
@@ -125,20 +132,26 @@ Do not include code fences, explanations, or any extra text.
             Företag: {req.CompanyName}
             Domän: {req.Domain}
             Kontakt: {req.ContactName} ({req.ContactEmail})
-            Anteckningar: {req.Notes}
+            Anteckningar: {req.Notes}";
+
+        // Dynamiska instruktioner från databasen
+        return systemContext + @$"
 
             === INSTRUKTIONER ===
-            Fokusera på hur vi (Esatto AB) kan hjälpa {req.CompanyName}. 
-            Använd informationen ovan om Esatto för att:
-            - Hitta relevanta cases som liknar kundens bransch eller utmaningar
-            - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
-            - Matcha rätt tjänster och metoder till kundens situation
-            - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
-
-            Krav:
-            - Hook i första meningen.
-            - 1–2 konkreta värdeförslag anpassade till företaget.
-            - Referera gärna till ett eller två relevant Esatto-case som exempel
-            - Avsluta med en enkel call-to-action (t.ex. 'Vill du att jag skickar ett konkret förslag?').";
+            {instructions}";
     }
 }
+// TIDIGARE VERSION AV PROMPTEN:
+// === INSTRUKTIONER ===
+//             Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget. 
+//             Använd informationen ovan om Esatto för att:
+//             - Hitta relevanta cases som liknar kundens bransch eller utmaningar
+//             - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
+//             - Matcha rätt tjänster och metoder till kundens situation
+//             - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
+
+//             Krav:
+//             - Hook i första meningen.
+//             - 1–2 konkreta värdeförslag anpassade till företaget.
+//             - Referera gärna till ett eller två relevant Esatto-case som exempel
+//             - Avsluta med en enkel call-to-action (t.ex. 'Vill du att jag skickar ett konkret förslag?').";

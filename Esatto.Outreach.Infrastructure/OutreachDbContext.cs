@@ -14,6 +14,8 @@ public class OutreachDbContext : DbContext
     public DbSet<HardCompanyData> HardCompanyData => Set<HardCompanyData>();
     
     public DbSet<SoftCompanyData> SoftCompanyData => Set<SoftCompanyData>();
+    
+    public DbSet<GenerateEmailPrompt> GenerateEmailPrompts => Set<GenerateEmailPrompt>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

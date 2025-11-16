@@ -23,6 +23,12 @@ builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<SendEmailViaN8n>();
 builder.Services.AddScoped<ChatWithProspect>();
 builder.Services.AddScoped<GenerateSoftCompanyData>();
+builder.Services.AddScoped<ListEmailPrompts>();
+builder.Services.AddScoped<GetActiveEmailPrompt>();
+builder.Services.AddScoped<CreateEmailPrompt>();
+builder.Services.AddScoped<UpdateEmailPrompt>();
+builder.Services.AddScoped<ActivateEmailPrompt>();
+builder.Services.AddScoped<DeleteEmailPrompt>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -174,6 +180,99 @@ app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
         return Results.Problem(
             detail: ex.Message,
             statusCode: 500);
+    }
+});
+
+
+// --- Email Prompt Settings endpoints ---
+
+// Get active prompt
+app.MapGet("/settings/email-prompt", async (GetActiveEmailPrompt useCase, CancellationToken ct) =>
+{
+    var prompt = await useCase.Handle(ct);
+    return prompt == null ? Results.NotFound(new { error = "No active email prompt found" }) : Results.Ok(prompt);
+});
+
+// List all prompts
+app.MapGet("/settings/email-prompts", async (ListEmailPrompts useCase, CancellationToken ct) =>
+{
+    var prompts = await useCase.Handle(ct);
+    return Results.Ok(prompts);
+});
+
+// Create new prompt
+app.MapPost("/settings/email-prompts", async (CreateEmailPromptDto dto, CreateEmailPrompt useCase, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Instructions))
+        return Results.BadRequest(new { error = "Instructions are required" });
+
+    try
+    {
+        var created = await useCase.Handle(dto, ct);
+        return Results.Created($"/settings/email-prompts/{created.Id}", created);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Update existing prompt
+app.MapPut("/settings/email-prompts/{id:guid}", async (Guid id, UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Instructions))
+        return Results.BadRequest(new { error = "Instructions are required" });
+
+    try
+    {
+        var updated = await useCase.Handle(id, dto, ct);
+        return updated == null ? Results.NotFound() : Results.Ok(updated);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Activate specific prompt (deactivates all others)
+app.MapPost("/settings/email-prompts/{id:guid}/activate", async (Guid id, ActivateEmailPrompt useCase, CancellationToken ct) =>
+{
+    var activated = await useCase.Handle(id, ct);
+    return activated == null ? Results.NotFound() : Results.Ok(activated);
+});
+
+// Delete prompt
+app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPrompt useCase, CancellationToken ct) =>
+{
+    try
+    {
+        var deleted = await useCase.Handle(id, ct);
+        return deleted ? Results.NoContent() : Results.NotFound();
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+// Legacy endpoint - kept for backwards compatibility
+app.MapPut("/settings/email-prompt", async (UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, IGenerateEmailPromptRepository repo, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Instructions))
+        return Results.BadRequest(new { error = "Instructions are required" });
+
+    var activePrompt = await repo.GetActiveAsync(ct);
+    if (activePrompt == null)
+        return Results.NotFound(new { error = "No active email prompt found" });
+
+    try
+    {
+        var updated = await useCase.Handle(activePrompt.Id, dto, ct);
+        return updated == null ? Results.NotFound() : Results.Ok(updated);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
     }
 });
 
