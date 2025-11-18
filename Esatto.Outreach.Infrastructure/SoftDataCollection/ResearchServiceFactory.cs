@@ -33,6 +33,27 @@ public sealed class ResearchServiceFactory : IResearchServiceFactory
         };
     }
 
+    public IResearchService GetResearchService(string providerName)
+    {
+        if (string.IsNullOrWhiteSpace(providerName))
+            return GetResearchService();
+
+        if (!Enum.TryParse<AiProviderType>(providerName, ignoreCase: true, out var providerType))
+        {
+            throw new ArgumentException(
+                $"Invalid provider name: '{providerName}'. Valid values are: OpenAI, Claude, Hybrid",
+                nameof(providerName));
+        }
+
+        return providerType switch
+        {
+            AiProviderType.OpenAI => _serviceProvider.GetRequiredService<OpenAIResearchService>(),
+            AiProviderType.Claude => _serviceProvider.GetRequiredService<ClaudeResearchService>(),
+            AiProviderType.Hybrid => CreateHybridService(),
+            _ => throw new InvalidOperationException($"Unknown provider type: {providerType}")
+        };
+    }
+
     private HybridResearchService CreateHybridService()
     {
         var openAIService = _serviceProvider.GetRequiredService<OpenAIResearchService>();

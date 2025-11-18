@@ -7,6 +7,7 @@ using Esatto.Outreach.Application.UseCases.EmailDelivery;
 using Esatto.Outreach.Application.UseCases.SoftDataCollection;
 using Esatto.Outreach.Application.UseCases.Chat;
 using Esatto.Outreach.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
 
@@ -164,17 +165,22 @@ app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, IProspectReposito
 
 app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
     Guid id,
+    [FromQuery] string? provider,
     GenerateSoftCompanyData useCase,
     CancellationToken ct) =>
 {
     try
     {
-        var softData = await useCase.Handle(id, ct);
+        var softData = await useCase.Handle(id, provider, ct);
         return Results.Ok(softData);
     }
     catch (KeyNotFoundException ex)
     {
         return Results.NotFound(new { error = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
     }
     catch (InvalidOperationException ex)
     {

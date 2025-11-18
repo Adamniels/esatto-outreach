@@ -29,17 +29,21 @@ public sealed class GenerateSoftCompanyData
 
     public async Task<SoftCompanyDataDto> Handle(
         Guid prospectId,
+        string? provider = null,
         CancellationToken ct = default)
     {
         // 1. Hämta prospect från databas
         var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct)
             ?? throw new KeyNotFoundException($"Prospect with ID {prospectId} not found.");
 
-        _logger.LogInformation("Generating soft company data for prospect {ProspectId} ({CompanyName})",
-            prospectId, prospect.CompanyName);
+        _logger.LogInformation("Generating soft company data for prospect {ProspectId} ({CompanyName}) using provider: {Provider}",
+            prospectId, prospect.CompanyName, provider ?? "configured");
 
-        // 2. Anropa configured research service (OpenAI/Claude/Hybrid) för att generera research
-        var researchService = _researchFactory.GetResearchService();
+        // 2. Anropa research service (OpenAI/Claude/Hybrid) för att generera research
+        var researchService = string.IsNullOrWhiteSpace(provider)
+            ? _researchFactory.GetResearchService()
+            : _researchFactory.GetResearchService(provider);
+            
         var researchResult = await researchService.GenerateCompanyResearchAsync(
             prospect.CompanyName,
             prospect.Domain,
