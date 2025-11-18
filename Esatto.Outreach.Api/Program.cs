@@ -1,6 +1,11 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.UseCases;
+using Esatto.Outreach.Application.UseCases.Prospects;
+using Esatto.Outreach.Application.UseCases.EmailPrompts;
+using Esatto.Outreach.Application.UseCases.EmailGeneration;
+using Esatto.Outreach.Application.UseCases.EmailDelivery;
+using Esatto.Outreach.Application.UseCases.SoftDataCollection;
+using Esatto.Outreach.Application.UseCases.Chat;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;

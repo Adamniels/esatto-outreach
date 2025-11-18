@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Http;
 using System.Net.Http;
-using Esatto.Outreach.Infrastructure.Email;
-using Esatto.Outreach.Infrastructure.OpenAI;
+using Esatto.Outreach.Infrastructure.Common;
+using Esatto.Outreach.Infrastructure.SoftDataCollection;
+using Esatto.Outreach.Infrastructure.EmailGeneration;
+using Esatto.Outreach.Infrastructure.EmailDelivery;
+using Esatto.Outreach.Infrastructure.Chat;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -37,11 +40,14 @@ public static class DependencyInjection
         services.AddScoped<ISoftCompanyDataRepository, SoftCompanyDataRepository>();
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
 
+        // OpenAI options (shared across features)
         services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
-        // OpenAI client factory + generator
-        services.AddSingleton<IOpenAIResponseClientFactory, OpenAIResponseClientFactory>();
-        services.AddScoped<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
+        services.Configure<ClaudeOptions>(configuration.GetSection("Claude"));
 
+        // Email Generation
+        services.AddHttpClient<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
+
+        // Email Delivery (N8n)
         services.Configure<N8nOptions>(configuration.GetSection("N8n"));
         services.AddHttpClient<IN8nEmailService, N8nEmailService>((sp, client) =>
         {
@@ -49,9 +55,16 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
         });
 
-        services.AddHttpClient<IOpenAIChatClient, OpenAiChatClient>();
-        services.AddHttpClient<IOpenAIWebSearchClient, OpenAIWebSearchClient>();
+        // Chat
+        services.AddHttpClient<IOpenAIChatClient, OpenAIChatService>();
+
+        // Soft Data Collection (multi-provider)
+        services.Configure<SoftDataCollectionOptions>(configuration.GetSection("SoftDataCollection"));
+        services.AddHttpClient<OpenAIResearchService>();
+        services.AddHttpClient<ClaudeResearchService>();
+        services.AddScoped<IResearchServiceFactory, ResearchServiceFactory>();
         
         return services;
     }
 }
+
