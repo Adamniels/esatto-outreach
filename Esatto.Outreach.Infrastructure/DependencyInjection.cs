@@ -41,14 +41,14 @@ public static class DependencyInjection
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
 
         // OpenAI options (shared across features)
-        services.Configure<OpenAiOptions>(configuration.GetSection("OpenAI"));
-        services.Configure<ClaudeOptions>(configuration.GetSection("Claude"));
+        services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
+        services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
         // Email Generation
         services.AddHttpClient<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
 
         // Email Delivery (N8n)
-        services.Configure<N8nOptions>(configuration.GetSection("N8n"));
+        services.Configure<N8nOptions>(configuration.GetSection(N8nOptions.SectionName));
         services.AddHttpClient<IN8nEmailService, N8nEmailService>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<N8nOptions>>().Value;
@@ -59,9 +59,10 @@ public static class DependencyInjection
         services.AddHttpClient<IOpenAIChatClient, OpenAIChatService>();
 
         // Soft Data Collection (multi-provider)
-        services.Configure<SoftDataCollectionOptions>(configuration.GetSection("SoftDataCollection"));
+        services.Configure<SoftDataCollectionOptions>(configuration.GetSection(SoftDataCollectionOptions.SectionName));
         services.AddHttpClient<OpenAIResearchService>();
         services.AddHttpClient<ClaudeResearchService>();
+        services.AddScoped<HybridResearchService>();
         services.AddScoped<IResearchServiceFactory, ResearchServiceFactory>();
         
         return services;
