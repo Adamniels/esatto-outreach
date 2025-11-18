@@ -54,47 +54,55 @@ public sealed class ClaudeResearchService : IResearchService
 
     private static string BuildResearchSystemPrompt()
     {
-        return @"Du är en AI-assistent specialiserad på företagsresearch för säljoutreach.
+        return @"Du är en AI-assistent specialiserad på B2B-företagsresearch för säljoutreach.
 
-Din uppgift är att hitta aktuell, relevant information om företag genom att söka på webben.
+Din uppgift är att hitta aktuella, relevanta insikter (""mjuk data"") om företag som kan användas som personaliserings-hooks i outreach-mejl.
 
 Fokusera på:
-1. **Personalization Hooks** - Aktuella händelser, milstolpar, projekt som kan användas som mejl-öppnare
-2. **Recent Events** - Webinars, konferenser, event företaget hållit eller deltagit i (senaste 3 månaderna)
-3. **News Items** - Pressmeddelanden, nyhetsartiklar, produktlanseringar (senaste 6 månaderna)
-4. **Social Activity** - Intressanta LinkedIn/Twitter-inlägg från företaget (senaste månaden)
-5. **Sources** - URL:er till alla källor där du hittade informationen
+- Nya nyheter, pressmeddelanden, produktlanseringar (senaste 6 månaderna)
+- Event, webbinarier, konferenser (senaste 3 månaderna)
+- Utmärkelser, certifieringar, milstolpar
+- Hållbarhetsinitiativ, digital transformation, innovation
+- Viktiga partnerskap, expansioner, nyanställningar
+- Aktivitet på sociala medier (LinkedIn, Twitter)
 
-Returnera ALLTID ett JSON-objekt med följande struktur (använd null för tomma fält):
+VIKTIGT:
+- Använd web_search och web_fetch tools för att samla information
+- FABRICERA ALDRIG information – inkludera endast verifierade fakta från riktiga källor
+- Prioritera information från de senaste 12 månaderna
+- Inkludera käll-URL:er för all information
+- All text i JSON-utdata MÅSTE vara på svenska
+
+Returnera dina fynd som ett JSON-objekt med EXAKT denna struktur (med svensk text):
 
 {
-  ""hooksJson"": ""[{\""text\"":\""...\"",\""source\"":\""...\"",\""date\"":\""...\"",\""relevance\"":\""high/medium/low\""}]"",
-  ""recentEventsJson"": ""[{\""title\"":\""...\"",\""date\"":\""...\"",\""type\"":\""...\"",\""url\"":\""...\""}]"",
-  ""newsItemsJson"": ""[{\""headline\"":\""...\"",\""date\"":\""...\"",\""source\"":\""...\"",\""url\"":\""...\""}]"",
-  ""socialActivityJson"": ""[{\""platform\"":\""...\"",\""text\"":\""...\"",\""date\"":\""...\"",\""url\"":\""...\""}]"",
-  ""sourcesJson"": ""[\""url1\"",\""url2\"",\""url3\""]""
+  ""hooksJson"": ""[{\""text\"":\""Beskrivning av hook (på svenska)\"",\""source\"":\""https://...\"",\""date\"":\""YYYY-MM-DD\"",\""relevance\"":\""high/medium/low\""}]"",
+  ""recentEventsJson"": ""[{\""title\"":\""Eventnamn (på svenska)\"",\""date\"":\""YYYY-MM-DD\"",\""type\"":\""webinar/konferens/...\"",\""url\"":\""https://...\""}]"",
+  ""newsItemsJson"": ""[{\""headline\"":\""Nyhetsrubrik (på svenska)\"",\""date\"":\""YYYY-MM-DD\"",\""source\"":\""Källans namn\"",\""url\"":\""https://...\""}]"",
+  ""socialActivityJson"": ""[{\""platform\"":\""LinkedIn/Twitter\"",\""text\"":\""Inläggstext (på svenska)\"",\""date\"":\""YYYY-MM-DD\"",\""url\"":\""https://...\""}]"",
+  ""sourcesJson"": ""[\""https://url1\"",\""https://url2\""]""
 }
 
-VIKTIGT: 
-- Alla fält måste vara JSON-strängar (escaped quotes)
-- Använd null om ingen information hittas
-- Inkludera bara aktuell, verifierbar information
-- Prioritera kvalitet över kvantitet";
+Notera: Alla JSON-fält måste vara JSON-escapade strängar. Använd null om ingen data hittas. All beskrivande text ska vara på svenska.";
     }
 
     private static string BuildResearchUserPrompt(string companyName, string? domain)
     {
         var prompt = new StringBuilder();
         prompt.AppendLine($"Researcha företaget: {companyName}");
-        
+
         if (!string.IsNullOrWhiteSpace(domain))
         {
             prompt.AppendLine($"Domän: {domain}");
         }
 
         prompt.AppendLine();
-        prompt.AppendLine("Använd web search för att hitta aktuell information. Fokusera på nyligen publicerat innehåll.");
-        prompt.AppendLine("Returnera resultatet som JSON enligt formatet ovan.");
+        prompt.AppendLine("Använd web_search för att hitta aktuell information om företaget.");
+        prompt.AppendLine("Använd sedan web_fetch för att hämta detaljerat innehåll från relevanta källor.");
+        prompt.AppendLine("Fokusera på information från de senaste 12 månaderna som kan användas som personaliserings-hooks i B2B-säljmejl.");
+        prompt.AppendLine();
+        prompt.AppendLine("Returnera resultatet som JSON enligt det angivna formatet.");
+        prompt.AppendLine("VIKTIGT: All text i JSON-objektet ska vara på svenska.");
 
         return prompt.ToString();
     }
@@ -117,6 +125,25 @@ VIKTIGT:
                     ["role"] = "user",
                     ["content"] = userPrompt
                 }
+            },
+            ["tools"] = new object[]
+            {
+                new Dictionary<string, object>
+                {
+                    ["type"] = "web_search_20250305",
+                    ["name"] = "web_search",
+                    ["max_uses"] = 10
+                },
+                new Dictionary<string, object>
+                {
+                    ["type"] = "web_fetch_20250910",
+                    ["name"] = "web_fetch",
+                    ["max_uses"] = 10,
+                    ["citations"] = new Dictionary<string, object>
+                    {
+                        ["enabled"] = true
+                    }
+                }
             }
         };
     }
@@ -126,6 +153,7 @@ VIKTIGT:
         using var req = new HttpRequestMessage(HttpMethod.Post, "v1/messages");
         req.Headers.Add("x-api-key", apiKey);
         req.Headers.Add("anthropic-version", "2023-06-01");
+        req.Headers.Add("anthropic-beta", "web-fetch-2025-09-10");
         req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         var reqBody = JsonSerializer.Serialize(payload, JsonOpts);
@@ -151,7 +179,7 @@ VIKTIGT:
         {
             foreach (var block in contentArr.EnumerateArray())
             {
-                if (block.TryGetProperty("type", out var typeElem) && 
+                if (block.TryGetProperty("type", out var typeElem) &&
                     typeElem.GetString() == "text" &&
                     block.TryGetProperty("text", out var textElem))
                 {
@@ -175,7 +203,7 @@ VIKTIGT:
         }
 
         var cleanText = outputText.Trim();
-        
+
         // Ta bort markdown code fences
         if (cleanText.StartsWith("```json"))
         {
@@ -194,7 +222,7 @@ VIKTIGT:
         // Hitta JSON-objektet i texten
         var jsonStart = cleanText.IndexOf('{');
         var jsonEnd = cleanText.LastIndexOf('}');
-        
+
         if (jsonStart >= 0 && jsonEnd > jsonStart)
         {
             cleanText = cleanText.Substring(jsonStart, jsonEnd - jsonStart + 1);
@@ -220,7 +248,7 @@ VIKTIGT:
                 throw new JsonException("Deserialisering returnerade null");
             }
 
-            string? NormalizeJson(string? json) => 
+            string? NormalizeJson(string? json) =>
                 string.IsNullOrWhiteSpace(json) || json == "null" ? null : json;
 
             return new SoftCompanyDataDto(

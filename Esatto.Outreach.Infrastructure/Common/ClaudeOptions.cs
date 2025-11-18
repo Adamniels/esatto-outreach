@@ -13,9 +13,9 @@ public sealed class ClaudeOptions
     public string ApiKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Claude model to use. Default: claude-3-5-sonnet-20241022
+    /// Claude model to use. Default: claude-sonnet-4-5
     /// </summary>
-    public string Model { get; set; } = "claude-3-5-sonnet-20241022";
+    public string Model { get; set; } = "claude-sonnet-4-5";
 
     /// <summary>
     /// Maximum tokens for Claude responses. Default: 4096
