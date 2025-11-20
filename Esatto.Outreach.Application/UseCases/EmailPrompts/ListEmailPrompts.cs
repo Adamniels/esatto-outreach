@@ -9,9 +9,9 @@ public sealed class ListEmailPrompts
 
     public ListEmailPrompts(IGenerateEmailPromptRepository repo) => _repo = repo;
 
-    public async Task<IReadOnlyList<EmailPromptDto>> Handle(CancellationToken ct = default)
+    public async Task<IReadOnlyList<EmailPromptDto>> Handle(string userId, CancellationToken ct = default)
     {
-        var prompts = await _repo.ListAllAsync(ct);
+        var prompts = await _repo.ListByUserIdAsync(userId, ct);
         return prompts.Select(p => new EmailPromptDto(
             p.Id,
             p.Instructions,

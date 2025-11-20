@@ -15,14 +15,14 @@ public class GenerateMailOpenAIResponeAPI
     }
 
     // Alternativ A: returnera utkastet, spara även på entiteten
-    public async Task<ProspectViewDto> Handle(Guid id, CancellationToken ct = default)
+    public async Task<ProspectViewDto> Handle(Guid id, string userId, CancellationToken ct = default)
     {
         var entity = await _repo.GetByIdAsync(id, ct)
             ?? throw new InvalidOperationException($"Prospect with id {id} not found");
 
         var request = BuildRequestFromEntity(entity);
 
-        var draft = await _client.GenerateAsync(request, ct);
+        var draft = await _client.GenerateAsync(userId, request, ct);
 
         // Spara utkastet på entiteten (valfritt men rekommenderat)
         entity.UpdateBasics(

@@ -3,6 +3,7 @@ using System;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
-    partial class OutreachDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120172902_AddIdentityAndProspectOwnership")]
+    partial class AddIdentityAndProspectOwnership
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -108,16 +111,9 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedUtc")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "IsActive");
+                    b.HasIndex("IsActive");
 
                     b.ToTable("generate_email_prompts", (string)null);
                 });
@@ -453,17 +449,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.GenerateEmailPrompt", b =>
-                {
-                    b.HasOne("Esatto.Outreach.Domain.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.Prospect", b =>

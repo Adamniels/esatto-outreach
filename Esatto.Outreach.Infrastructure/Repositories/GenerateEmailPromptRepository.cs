@@ -10,16 +10,17 @@ public sealed class GenerateEmailPromptRepository : IGenerateEmailPromptReposito
 
     public GenerateEmailPromptRepository(OutreachDbContext db) => _db = db;
 
-    public async Task<GenerateEmailPrompt?> GetActiveAsync(CancellationToken ct = default)
+    public async Task<GenerateEmailPrompt?> GetActiveByUserIdAsync(string userId, CancellationToken ct = default)
         => await _db.GenerateEmailPrompts
-            .FirstOrDefaultAsync(p => p.IsActive, ct);
+            .FirstOrDefaultAsync(p => p.UserId == userId && p.IsActive, ct);
 
-    public async Task<GenerateEmailPrompt?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<GenerateEmailPrompt?> GetByIdAsync(Guid id, string userId, CancellationToken ct = default)
         => await _db.GenerateEmailPrompts
-            .FirstOrDefaultAsync(p => p.Id == id, ct);
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId, ct);
 
-    public async Task<IReadOnlyList<GenerateEmailPrompt>> ListAllAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<GenerateEmailPrompt>> ListByUserIdAsync(string userId, CancellationToken ct = default)
         => await _db.GenerateEmailPrompts
+            .Where(p => p.UserId == userId)
             .OrderByDescending(p => p.IsActive)
             .ThenByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);
@@ -37,22 +38,27 @@ public sealed class GenerateEmailPromptRepository : IGenerateEmailPromptReposito
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task DeleteAsync(Guid id, string userId, CancellationToken ct = default)
     {
-        var entity = await _db.GenerateEmailPrompts.FirstOrDefaultAsync(p => p.Id == id, ct);
+        var entity = await _db.GenerateEmailPrompts
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId, ct);
         if (entity is null) return;
 
         _db.GenerateEmailPrompts.Remove(entity);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task DeactivateAllAsync(CancellationToken ct = default)
+    public async Task DeactivateAllForUserAsync(string userId, CancellationToken ct = default)
     {
-        await _db.GenerateEmailPrompts
-            .Where(p => p.IsActive)
-            .ExecuteUpdateAsync(setters => 
-                setters.SetProperty(p => p.IsActive, false)
-                       .SetProperty(p => p.UpdatedUtc, DateTime.UtcNow), 
-                ct);
+        var activePrompts = await _db.GenerateEmailPrompts
+            .Where(p => p.UserId == userId && p.IsActive)
+            .ToListAsync(ct);
+
+        foreach (var prompt in activePrompts)
+        {
+            prompt.Deactivate();
+        }
+
+        await _db.SaveChangesAsync(ct);
     }
 }

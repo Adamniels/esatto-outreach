@@ -10,9 +10,9 @@ public sealed class CreateEmailPrompt
 
     public CreateEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
 
-    public async Task<EmailPromptDto> Handle(CreateEmailPromptDto dto, CancellationToken ct = default)
+    public async Task<EmailPromptDto> Handle(string userId, CreateEmailPromptDto dto, CancellationToken ct = default)
     {
-        var prompt = GenerateEmailPrompt.Create(dto.Instructions, dto.IsActive);
+        var prompt = GenerateEmailPrompt.Create(userId, dto.Instructions, dto.IsActive);
         
         var created = await _repo.AddAsync(prompt, ct);
 

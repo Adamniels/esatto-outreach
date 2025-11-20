@@ -9,9 +9,9 @@ public sealed class GetActiveEmailPrompt
 
     public GetActiveEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
 
-    public async Task<EmailPromptDto?> Handle(CancellationToken ct = default)
+    public async Task<EmailPromptDto?> Handle(string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetActiveAsync(ct);
+        var prompt = await _repo.GetActiveByUserIdAsync(userId, ct);
         
         if (prompt == null)
             return null;

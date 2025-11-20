@@ -22,13 +22,24 @@ public sealed class GenerateEmailPromptConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.IsActive)
             .IsRequired();
         
+        builder.Property(x => x.UserId)
+            .IsRequired()
+            .HasMaxLength(450);
+        
         builder.Property(x => x.CreatedUtc)
             .IsRequired();
         
         builder.Property(x => x.UpdatedUtc)
             .IsRequired();
         
-        // Index för snabb lookup av aktiv prompt
-        builder.HasIndex(x => x.IsActive);
+        // Foreign key to AspNetUsers
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        // Index för snabb lookup av aktiv prompt per user
+        builder.HasIndex(x => new { x.UserId, x.IsActive });
+        builder.HasIndex(x => x.UserId);
     }
 }

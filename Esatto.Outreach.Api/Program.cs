@@ -1,5 +1,7 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Application.DTOs.Auth;
+using Esatto.Outreach.Application.UseCases.Auth;
 using Esatto.Outreach.Application.UseCases.Prospects;
 using Esatto.Outreach.Application.UseCases.EmailPrompts;
 using Esatto.Outreach.Application.UseCases.EmailGeneration;
@@ -10,6 +12,7 @@ using Esatto.Outreach.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
+using System.Security.Claims;
 
 // Läs .env filen från root-mappen
 Env.Load("../.env");
@@ -21,6 +24,12 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 // Use-cases (enkelt att börja så här)
 // en handling som systemet kan utföra
+// Auth use cases
+builder.Services.AddScoped<Register>();
+builder.Services.AddScoped<Login>();
+builder.Services.AddScoped<RefreshAccessToken>();
+
+// Prospect use cases
 builder.Services.AddScoped<CreateProspect>();
 builder.Services.AddScoped<UpdateProspect>();
 builder.Services.AddScoped<GetProspectById>();
@@ -55,6 +64,11 @@ var app = builder.Build();
 
 app.UseCors("ui");
 
+// ============ AUTHENTICATION & AUTHORIZATION MIDDLEWARE ============
+app.UseAuthentication();  // MUST be before UseAuthorization
+app.UseAuthorization();
+// ===================================================================
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -63,51 +77,122 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
-// --- Prospects endpoints (via use-cases) ---
+// ============ AUTH ENDPOINTS ============
+var auth = app.MapGroup("/auth").WithTags("Authentication");
+
+auth.MapPost("/register", async (
+    RegisterRequestDto dto,
+    Register useCase,
+    CancellationToken ct) =>
+{
+    var (success, data, error) = await useCase.Handle(dto, ct);
+    return success
+        ? Results.Ok(data)
+        : Results.BadRequest(new { error });
+});
+
+auth.MapPost("/login", async (
+    LoginRequestDto dto,
+    Login useCase,
+    CancellationToken ct) =>
+{
+    var (success, data, error) = await useCase.Handle(dto, ct);
+    return success
+        ? Results.Ok(data)
+        : Results.BadRequest(new { error });
+});
+
+auth.MapPost("/refresh", async (
+    RefreshTokenRequestDto dto,
+    RefreshAccessToken useCase,
+    CancellationToken ct) =>
+{
+    var (success, data, error) = await useCase.Handle(dto, ct);
+    return success
+        ? Results.Ok(data)
+        : Results.Unauthorized();
+});
+
+// ============ PROTECTED PROSPECTS ENDPOINTS ============
 
 // Här injiceras usecaset från ovan
-app.MapGet("/prospects", async (ListProspects useCase, CancellationToken ct) =>
+app.MapGet("/prospects", async (ListProspects useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
-    var list = await useCase.Handle(ct);
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    
+    var list = await useCase.Handle(userId, ct);
     return Results.Ok(list);
-});
+})
+.RequireAuthorization();
 
 app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectById useCase, CancellationToken ct) =>
 {
     var dto = await useCase.Handle(id, ct);
     return dto is null ? Results.NotFound() : Results.Ok(dto);
-});
+})
+.RequireAuthorization();
 
-app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspect useCase, CancellationToken ct) =>
+app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    
     if (string.IsNullOrWhiteSpace(dto.CompanyName))
         return Results.BadRequest(new { error = "CompanyName is required" });
 
-    var created = await useCase.Handle(dto, ct);
+    var created = await useCase.Handle(dto, userId, ct);
     return Results.Created($"/prospects/{created.Id}", created);
-});
+})
+.RequireAuthorization();
 
-app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, UpdateProspect useCase, CancellationToken ct) =>
+app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, UpdateProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
-    var updated = await useCase.Handle(id, dto, ct);
-    return updated is null ? Results.NotFound() : Results.Ok(updated);
-});
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    
+    try
+    {
+        var updated = await useCase.Handle(id, dto, userId, ct);
+        return updated is null ? Results.NotFound() : Results.Ok(updated);
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return Results.StatusCode(403); // Forbidden
+    }
+})
+.RequireAuthorization();
 
-app.MapDelete("/prospects/{id:guid}", async (Guid id, IProspectRepository repo, CancellationToken ct) =>
+app.MapDelete("/prospects/{id:guid}", async (Guid id, IProspectRepository repo, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    
+    var prospect = await repo.GetByIdAsync(id, ct);
+    if (prospect is null) return Results.NotFound();
+    if (prospect.OwnerId != userId) return Results.StatusCode(403); // Forbidden
+    
     await repo.DeleteAsync(id, ct);
     return Results.NoContent();
-});
+})
+.RequireAuthorization();
+
+// --- Prospects endpoints (via use-cases) ---
 
 
 app.MapPost("/prospects/{id:guid}/email/draft", async (
    Guid id,
    GenerateMailOpenAIResponeAPI useCase,
+   ClaimsPrincipal user,
    CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
     try
     {
-        var draft = await useCase.Handle(id, ct);
+        var draft = await useCase.Handle(id, userId, ct);
         return Results.Ok(draft);
     }
     catch (InvalidOperationException ex)
@@ -115,7 +200,7 @@ app.MapPost("/prospects/{id:guid}/email/draft", async (
         // e.g. prospect not found
         return Results.NotFound(new { error = ex.Message });
     }
-});
+}).RequireAuthorization();
 
 app.MapPost("/prospects/{id:guid}/email/send", async (
     Guid id,
@@ -198,94 +283,122 @@ app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
 // --- Email Prompt Settings endpoints ---
 
 // Get active prompt
-app.MapGet("/settings/email-prompt", async (GetActiveEmailPrompt useCase, CancellationToken ct) =>
+app.MapGet("/settings/email-prompt", async (GetActiveEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
-    var prompt = await useCase.Handle(ct);
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    var prompt = await useCase.Handle(userId, ct);
     return prompt == null ? Results.NotFound(new { error = "No active email prompt found" }) : Results.Ok(prompt);
-});
+}).RequireAuthorization();
 
 // List all prompts
-app.MapGet("/settings/email-prompts", async (ListEmailPrompts useCase, CancellationToken ct) =>
+app.MapGet("/settings/email-prompts", async (ListEmailPrompts useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
-    var prompts = await useCase.Handle(ct);
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    var prompts = await useCase.Handle(userId, ct);
     return Results.Ok(prompts);
-});
+}).RequireAuthorization();
 
 // Create new prompt
-app.MapPost("/settings/email-prompts", async (CreateEmailPromptDto dto, CreateEmailPrompt useCase, CancellationToken ct) =>
+app.MapPost("/settings/email-prompts", async (CreateEmailPromptDto dto, CreateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
     if (string.IsNullOrWhiteSpace(dto.Instructions))
         return Results.BadRequest(new { error = "Instructions are required" });
 
     try
     {
-        var created = await useCase.Handle(dto, ct);
+        var created = await useCase.Handle(userId, dto, ct);
         return Results.Created($"/settings/email-prompts/{created.Id}", created);
     }
     catch (ArgumentException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
-});
+}).RequireAuthorization();
 
 // Update existing prompt
-app.MapPut("/settings/email-prompts/{id:guid}", async (Guid id, UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, CancellationToken ct) =>
+app.MapPut("/settings/email-prompts/{id:guid}", async (Guid id, UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
     if (string.IsNullOrWhiteSpace(dto.Instructions))
         return Results.BadRequest(new { error = "Instructions are required" });
 
     try
     {
-        var updated = await useCase.Handle(id, dto, ct);
+        var updated = await useCase.Handle(id, userId, dto, ct);
         return updated == null ? Results.NotFound() : Results.Ok(updated);
     }
     catch (ArgumentException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
-});
+}).RequireAuthorization();
 
 // Activate specific prompt (deactivates all others)
-app.MapPost("/settings/email-prompts/{id:guid}/activate", async (Guid id, ActivateEmailPrompt useCase, CancellationToken ct) =>
+app.MapPost("/settings/email-prompts/{id:guid}/activate", async (Guid id, ActivateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
-    var activated = await useCase.Handle(id, ct);
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    var activated = await useCase.Handle(id, userId, ct);
     return activated == null ? Results.NotFound() : Results.Ok(activated);
-});
+}).RequireAuthorization();
 
 // Delete prompt
-app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPrompt useCase, CancellationToken ct) =>
+app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
     try
     {
-        var deleted = await useCase.Handle(id, ct);
+        var deleted = await useCase.Handle(id, userId, ct);
         return deleted ? Results.NoContent() : Results.NotFound();
     }
     catch (InvalidOperationException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
-});
+}).RequireAuthorization();
 
 // Legacy endpoint - kept for backwards compatibility
-app.MapPut("/settings/email-prompt", async (UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, IGenerateEmailPromptRepository repo, CancellationToken ct) =>
+app.MapPut("/settings/email-prompt", async (UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, IGenerateEmailPromptRepository repo, ClaimsPrincipal user, CancellationToken ct) =>
 {
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
     if (string.IsNullOrWhiteSpace(dto.Instructions))
         return Results.BadRequest(new { error = "Instructions are required" });
 
-    var activePrompt = await repo.GetActiveAsync(ct);
+    var activePrompt = await repo.GetActiveByUserIdAsync(userId, ct);
     if (activePrompt == null)
         return Results.NotFound(new { error = "No active email prompt found" });
 
     try
     {
-        var updated = await useCase.Handle(activePrompt.Id, dto, ct);
+        var updated = await useCase.Handle(activePrompt.Id, userId, dto, ct);
         return updated == null ? Results.NotFound() : Results.Ok(updated);
     }
     catch (ArgumentException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
-});
+}).RequireAuthorization();
 
 
 app.Run();

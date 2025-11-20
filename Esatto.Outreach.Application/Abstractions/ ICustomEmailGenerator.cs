@@ -7,6 +7,7 @@ namespace Esatto.Outreach.Application.Abstractions;
 public interface ICustomEmailGenerator
 {
     Task<CustomEmailDraftDto> GenerateAsync(
+              string userId,
               CustomEmailRequestDto request,
               CancellationToken cancellationToken = default);
 }

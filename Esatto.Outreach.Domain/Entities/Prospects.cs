@@ -34,11 +34,24 @@ public class Prospect : Entity
 
     public ProspectStatus Status { get; private set; } = ProspectStatus.New;
 
+    // ========== OWNERSHIP ==========
+    /// <summary>
+    /// User who owns this prospect.
+    /// </summary>
+    public string OwnerId { get; private set; } = string.Empty;
+    
+    /// <summary>
+    /// Navigation property to owner.
+    /// </summary>
+    public ApplicationUser Owner { get; private set; } = null!;
+    // ===============================
+
     // EF Core kräver parameterlös ctor (protected för att undvika felanvändning)
     protected Prospect() { }
 
     // Fabriksmetod för att säkerställa invarianten "CompanyName krävs"
     public static Prospect Create(string companyName,
+                                  string ownerId,
                                   string? domain = null,
                                   string? contactName = null,
                                   string? contactEmail = null,
@@ -51,9 +64,13 @@ public class Prospect : Entity
         if (string.IsNullOrWhiteSpace(companyName))
             throw new ArgumentException("CompanyName is required", nameof(companyName));
 
+        if (string.IsNullOrWhiteSpace(ownerId))
+            throw new ArgumentException("OwnerId is required", nameof(ownerId));
+
         var p = new Prospect
         {
             CompanyName = companyName.Trim(),
+            OwnerId = ownerId,
             Domain = domain?.Trim(),
             ContactName = contactName?.Trim(),
             ContactEmail = contactEmail?.Trim(),

@@ -8,9 +8,9 @@ public sealed class DeleteEmailPrompt
 
     public DeleteEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
 
-    public async Task<bool> Handle(Guid id, CancellationToken ct = default)
+    public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetByIdAsync(id, ct);
+        var prompt = await _repo.GetByIdAsync(id, userId, ct);
         if (prompt == null)
             return false;
 
@@ -18,7 +18,7 @@ public sealed class DeleteEmailPrompt
         if (prompt.IsActive)
             throw new InvalidOperationException("Cannot delete the active prompt. Activate another prompt first.");
 
-        await _repo.DeleteAsync(id, ct);
+        await _repo.DeleteAsync(id, userId, ct);
         return true;
     }
 }

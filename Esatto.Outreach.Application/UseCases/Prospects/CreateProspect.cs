@@ -9,13 +9,17 @@ public class CreateProspect
     private readonly IProspectRepository _repo;
     public CreateProspect(IProspectRepository repo) => _repo = repo;
 
-    public async Task<ProspectViewDto> Handle(ProspectCreateDto dto, CancellationToken ct = default)
+    public async Task<ProspectViewDto> Handle(ProspectCreateDto dto, string userId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(dto.CompanyName))
             throw new ArgumentException("CompanyName is required");
 
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required");
+
         var entity = Prospect.Create(
             companyName: dto.CompanyName,
+            ownerId: userId,
             domain: dto.Domain,
             contactName: dto.ContactName,
             contactEmail: dto.ContactEmail,

@@ -13,10 +13,19 @@ public class ProspectRepository : IProspectRepository
     public async Task<Prospect?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => await _db.Prospects
             .Include(p => p.SoftCompanyData)
+            .Include(p => p.Owner)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
     public async Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default)
         => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .OrderByDescending(p => p.CreatedUtc)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Prospect>> ListByOwnerAsync(string ownerId, CancellationToken ct = default)
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Where(p => p.OwnerId == ownerId)
             .OrderByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);
 

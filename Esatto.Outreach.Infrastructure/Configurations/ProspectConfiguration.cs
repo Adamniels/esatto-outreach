@@ -72,6 +72,19 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .HasForeignKey<SoftCompanyData>(s => s.ProspectId)
             .OnDelete(DeleteBehavior.Cascade); // Om Prospect raderas, radera soft data också
 
+        // ========== OWNERSHIP CONFIGURATION ==========
+        b.Property(x => x.OwnerId)
+            .IsRequired()
+            .HasMaxLength(450); // Same as AspNetUsers.Id
+
+        b.HasOne(x => x.Owner)
+            .WithMany() // User kan ha många prospects
+            .HasForeignKey(x => x.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict); // Kan inte ta bort user om den har prospects
+
+        b.HasIndex(x => x.OwnerId); // För snabbare queries på owner
+        // =============================================
+
         b.HasIndex(x => x.CompanyName);
         b.HasIndex(x => x.Domain);
         b.HasIndex(x => new { x.Status, x.CreatedUtc });

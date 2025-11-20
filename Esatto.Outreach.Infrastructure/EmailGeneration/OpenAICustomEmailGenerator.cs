@@ -62,13 +62,14 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
     }
 
     public async Task<CustomEmailDraftDto> GenerateAsync(
+        string userId,
         CustomEmailRequestDto request,
         CancellationToken cancellationToken = default)
     {
-        // 1. Hämta aktiv prompt från databasen
-        var activePrompt = await _promptRepo.GetActiveAsync(cancellationToken);
+        // 1. Hämta aktiv prompt från databasen för denna user
+        var activePrompt = await _promptRepo.GetActiveByUserIdAsync(userId, cancellationToken);
         if (activePrompt == null)
-            throw new InvalidOperationException("No active email prompt template found in database");
+            throw new InvalidOperationException("No active email prompt template found for this user");
 
         // 2. Bygg upp själva prompten
         var userPrompt = BuildPrompt(request, activePrompt.Instructions) + @"

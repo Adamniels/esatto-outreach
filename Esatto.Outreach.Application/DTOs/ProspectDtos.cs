@@ -37,6 +37,7 @@ public record ProspectViewDto(
     string? MailTitle,
     string? MailBodyPlain,
     string? MailBodyHTML,
+    string OwnerId,  // Owner of this prospect
     SoftCompanyDataDto? SoftCompanyData)
 
 {
@@ -55,6 +56,7 @@ public record ProspectViewDto(
             p.MailTitle,
             p.MailBodyPlain,
             p.MailBodyHTML,
+            p.OwnerId,
             p.SoftCompanyData != null ? SoftCompanyDataDto.FromEntity(p.SoftCompanyData) : null);
 }
 

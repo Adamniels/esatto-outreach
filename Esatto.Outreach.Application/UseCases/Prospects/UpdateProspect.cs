@@ -9,10 +9,15 @@ public class UpdateProspect
     private readonly IProspectRepository _repo;
     public UpdateProspect(IProspectRepository repo) => _repo = repo;
 
-    public async Task<ProspectViewDto?> Handle(Guid id, ProspectUpdateDto dto, CancellationToken ct = default)
+    public async Task<ProspectViewDto?> Handle(Guid id, ProspectUpdateDto dto, string userId, CancellationToken ct = default)
     {
         var entity = await _repo.GetByIdAsync(id, ct);
         if (entity is null) return null;
+
+        // ========== OWNERSHIP CHECK ==========
+        if (entity.OwnerId != userId)
+            throw new UnauthorizedAccessException("You don't have permission to update this prospect");
+        // =====================================
 
         // Only pass non-null values to UpdateBasics
         entity.UpdateBasics(

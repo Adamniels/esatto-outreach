@@ -9,14 +9,14 @@ public sealed class ActivateEmailPrompt
 
     public ActivateEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
 
-    public async Task<EmailPromptDto?> Handle(Guid id, CancellationToken ct = default)
+    public async Task<EmailPromptDto?> Handle(Guid id, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetByIdAsync(id, ct);
+        var prompt = await _repo.GetByIdAsync(id, userId, ct);
         if (prompt == null)
             return null;
 
-        // Deactivate all other prompts first
-        await _repo.DeactivateAllAsync(ct);
+        // Deactivate all other prompts for this user first
+        await _repo.DeactivateAllForUserAsync(userId, ct);
 
         // Activate this one
         prompt.Activate();
