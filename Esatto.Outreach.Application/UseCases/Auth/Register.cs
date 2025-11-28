@@ -21,6 +21,7 @@ Använd informationen ovan om Esatto för att:
 - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
 - Matcha rätt tjänster och metoder till kundens situation
 - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
+- Använd inga '-', inga bindestreck
 
 Krav:
 - Hook i första meningen.
