@@ -8,6 +8,7 @@ using Esatto.Outreach.Application.UseCases.EmailGeneration;
 using Esatto.Outreach.Application.UseCases.EmailDelivery;
 using Esatto.Outreach.Application.UseCases.SoftDataCollection;
 using Esatto.Outreach.Application.UseCases.Chat;
+using Esatto.Outreach.Application.UseCases.CompanyInfo;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -47,6 +48,9 @@ builder.Services.AddScoped<CreateEmailPrompt>();
 builder.Services.AddScoped<UpdateEmailPrompt>();
 builder.Services.AddScoped<ActivateEmailPrompt>();
 builder.Services.AddScoped<DeleteEmailPrompt>();
+
+// Company Info use cases
+builder.Services.AddScoped<GetCompanyInfo>();
 
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
@@ -409,6 +413,27 @@ app.MapPut("/settings/email-prompt", async (
     catch (ArgumentException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
+    }
+}).RequireAuthorization();
+
+// ============ COMPANY INFO ENDPOINTS ============
+var companyInfo = app.MapGroup("/settings/company-info").WithTags("Company Info");
+
+// Get company info (read-only)
+companyInfo.MapGet("/", async (GetCompanyInfo useCase, CancellationToken ct) =>
+{
+    try
+    {
+        var info = await useCase.Handle(ct);
+        return Results.Ok(info);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500,
+            title: "Failed to load company info"
+        );
     }
 }).RequireAuthorization();
 

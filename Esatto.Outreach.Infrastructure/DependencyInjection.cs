@@ -8,6 +8,7 @@ using Esatto.Outreach.Infrastructure.EmailGeneration;
 using Esatto.Outreach.Infrastructure.EmailDelivery;
 using Esatto.Outreach.Infrastructure.Chat;
 using Esatto.Outreach.Infrastructure.Auth;
+using Esatto.Outreach.Infrastructure.CompanyInfo;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -105,6 +106,9 @@ public static class DependencyInjection
         services.AddScoped<ISoftCompanyDataRepository, SoftCompanyDataRepository>();
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        // Company Info
+        services.AddSingleton<ICompanyInfoFileService, CompanyInfoFileService>();
 
         // OpenAI options (shared across features)
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
