@@ -33,10 +33,13 @@ builder.Services.AddScoped<RefreshAccessToken>();
 builder.Services.AddScoped<CreateProspect>();
 builder.Services.AddScoped<UpdateProspect>();
 builder.Services.AddScoped<GetProspectById>();
+builder.Services.AddScoped<GetAllProspects>();
 builder.Services.AddScoped<ListProspects>();
+builder.Services.AddScoped<DeleteProspect>();
 builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<SendEmailViaN8n>();
 builder.Services.AddScoped<ChatWithProspect>();
+builder.Services.AddScoped<ResetProspectChat>();
 builder.Services.AddScoped<GenerateSoftCompanyData>();
 builder.Services.AddScoped<ListEmailPrompts>();
 builder.Services.AddScoped<GetActiveEmailPrompt>();
@@ -120,7 +123,6 @@ app.MapGet("/prospects", async (ListProspects useCase, ClaimsPrincipal user, Can
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    
     var list = await useCase.Handle(userId, ct);
     return Results.Ok(list);
 })
@@ -137,7 +139,6 @@ app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspect useCase, 
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    
     if (string.IsNullOrWhiteSpace(dto.CompanyName))
         return Results.BadRequest(new { error = "CompanyName is required" });
 
@@ -150,7 +151,6 @@ app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, Update
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    
     try
     {
         var updated = await useCase.Handle(id, dto, userId, ct);
@@ -163,17 +163,20 @@ app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, Update
 })
 .RequireAuthorization();
 
-app.MapDelete("/prospects/{id:guid}", async (Guid id, IProspectRepository repo, ClaimsPrincipal user, CancellationToken ct) =>
+app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
     
-    var prospect = await repo.GetByIdAsync(id, ct);
-    if (prospect is null) return Results.NotFound();
-    if (prospect.OwnerId != userId) return Results.StatusCode(403); // Forbidden
-    
-    await repo.DeleteAsync(id, ct);
-    return Results.NoContent();
+    try
+    {
+        var deleted = await useCase.ExecuteAsync(id, userId, ct);
+        return deleted ? Results.NoContent() : Results.NotFound();
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return Results.StatusCode(403); // Forbidden
+    }
 })
 .RequireAuthorization();
 
@@ -184,6 +187,7 @@ app.MapPost("/prospects/{id:guid}/email/draft", async (
    Guid id,
    GenerateMailOpenAIResponeAPI useCase,
    ClaimsPrincipal user,
+   string? type,
    CancellationToken ct) =>
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -192,13 +196,18 @@ app.MapPost("/prospects/{id:guid}/email/draft", async (
 
     try
     {
-        var draft = await useCase.Handle(id, userId, ct);
-        return Results.Ok(draft);
+        var prospect = await useCase.Handle(id, userId, type, ct);
+        return Results.Ok(prospect);
     }
     catch (InvalidOperationException ex)
     {
-        // e.g. prospect not found
+        // e.g. prospect not found, no collected data
         return Results.NotFound(new { error = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        // e.g. invalid type parameter
+        return Results.BadRequest(new { error = ex.Message });
     }
 }).RequireAuthorization();
 
@@ -239,14 +248,12 @@ app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, Cha
     }
 });
 
-app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, IProspectRepository repo, CancellationToken ct) =>
+app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat useCase, CancellationToken ct) =>
 {
-    var prospect = await repo.GetByIdAsync(id, ct);
-    if (prospect is null) return Results.NotFound();
-    prospect.SetLastOpenAIResponseId(null);
-    await repo.UpdateAsync(prospect, ct);
-    return Results.NoContent();
-});
+    var success = await useCase.ExecuteAsync(id, ct);
+    return success ? Results.NoContent() : Results.NotFound();
+})
+.RequireAuthorization();
 
 app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
     Guid id,
@@ -376,7 +383,12 @@ app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPr
 }).RequireAuthorization();
 
 // Legacy endpoint - kept for backwards compatibility
-app.MapPut("/settings/email-prompt", async (UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, IGenerateEmailPromptRepository repo, ClaimsPrincipal user, CancellationToken ct) =>
+app.MapPut("/settings/email-prompt", async (
+    UpdateEmailPromptDto dto, 
+    UpdateEmailPrompt updateUseCase,
+    GetActiveEmailPrompt getActiveUseCase, 
+    ClaimsPrincipal user, 
+    CancellationToken ct) =>
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId))
@@ -385,13 +397,13 @@ app.MapPut("/settings/email-prompt", async (UpdateEmailPromptDto dto, UpdateEmai
     if (string.IsNullOrWhiteSpace(dto.Instructions))
         return Results.BadRequest(new { error = "Instructions are required" });
 
-    var activePrompt = await repo.GetActiveByUserIdAsync(userId, ct);
+    var activePrompt = await getActiveUseCase.Handle(userId, ct);
     if (activePrompt == null)
         return Results.NotFound(new { error = "No active email prompt found" });
 
     try
     {
-        var updated = await useCase.Handle(activePrompt.Id, userId, dto, ct);
+        var updated = await updateUseCase.Handle(activePrompt.Id, userId, dto, ct);
         return updated == null ? Results.NotFound() : Results.Ok(updated);
     }
     catch (ArgumentException ex)

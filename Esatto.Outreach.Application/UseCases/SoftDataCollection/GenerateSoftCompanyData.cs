@@ -43,7 +43,7 @@ public sealed class GenerateSoftCompanyData
         var researchService = string.IsNullOrWhiteSpace(provider)
             ? _researchFactory.GetResearchService()
             : _researchFactory.GetResearchService(provider);
-            
+
         var researchResult = await researchService.GenerateCompanyResearchAsync(
             prospect.CompanyName,
             prospect.Domain,
@@ -73,6 +73,7 @@ public sealed class GenerateSoftCompanyData
             }
             else
             {
+                // TODO: vad menas? när kan detta hända
                 // Gammal referens finns men entity saknas, skapa ny
                 softDataEntity = SoftCompanyData.Create(
                     prospectId: prospectId,

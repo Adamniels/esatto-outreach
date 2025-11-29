@@ -110,8 +110,12 @@ public static class DependencyInjection
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
-        // Email Generation
-        services.AddHttpClient<ICustomEmailGenerator, OpenAICustomEmailGenerator>();
+        // Email Generation (multi-method)
+        services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
+        services.AddHttpClient<OpenAICustomEmailGenerator>();
+        services.AddHttpClient<CollectedDataEmailGenerator>();
+        services.AddScoped<IEmailContextBuilder, EmailContextBuilder>();
+        services.AddScoped<IEmailGeneratorFactory, EmailGeneratorFactory>();
 
         // Email Delivery (N8n)
         services.Configure<N8nOptions>(configuration.GetSection(N8nOptions.SectionName));

@@ -5,11 +5,10 @@ using Microsoft.Extensions.Options;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Infrastructure.Common;
-using Esatto.Outreach.Domain.Entities;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
-public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
+public sealed class CollectedDataEmailGenerator : ICustomEmailGenerator
 {
     private readonly HttpClient _http;
     private readonly OpenAiOptions _options;
@@ -20,7 +19,7 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
         WriteIndented = false
     };
 
-    public OpenAICustomEmailGenerator(
+    public CollectedDataEmailGenerator(
         HttpClient http,
         IOptions<OpenAiOptions> options)
     {
@@ -33,8 +32,12 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
         EmailGenerationContext context,
         CancellationToken cancellationToken = default)
     {
-        // 1. Bygg upp själva prompten från context
-        var userPrompt = BuildPrompt(context) + @"
+        // 1. Validera att soft data finns i context
+        if (context.SoftData == null)
+            throw new InvalidOperationException("No collected soft data available in context. This generator requires soft data.");
+
+        // 2. Bygg upp prompten med samlad data
+        var userPrompt = BuildPromptWithCollectedData(context) + @"
 
 Return ONLY a valid JSON object with the following structure, nothing else:
 {
@@ -45,13 +48,13 @@ Return ONLY a valid JSON object with the following structure, nothing else:
 Do not include code fences, explanations, or any extra text.
 ";
 
-        // 3. Bygg payload för OpenAI Responses API
+        // 5. Bygg payload för OpenAI Responses API (UTAN web_search verktyg)
         var payload = BuildResponsesPayload(userPrompt);
 
-        // 4. Kör request mot OpenAI Responses API
+        // 6. Kör request mot OpenAI Responses API
         var jsonText = await CallOpenAIAsync(payload, cancellationToken);
 
-        // 5. Försök deserialisera till din DTO
+        // 7. Försök deserialisera till din DTO
         CustomEmailDraftDto? dto = null;
         try
         {
@@ -68,7 +71,7 @@ Do not include code fences, explanations, or any extra text.
         if (dto == null)
             throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
 
-        // 6. Säkerställ titel om den saknas
+        // 8. Säkerställ titel om den saknas
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
             dto = dto with { Title = $"Introduktion till {context.Request.CompanyName}".Trim() };
@@ -79,22 +82,13 @@ Do not include code fences, explanations, or any extra text.
 
     private object BuildResponsesPayload(string userPrompt)
     {
-        var payload = new Dictionary<string, object>
+        // Viktig skillnad: Vi använder INTE web_search verktyget här
+        // eftersom vi redan har samlad data
+        return new Dictionary<string, object>
         {
             ["model"] = _options.Model,
             ["input"] = userPrompt
         };
-
-        // Lägg till web search om aktiverat
-        if (_options.UseWebSearch)
-        {
-            payload["tools"] = new object[]
-            {
-                new { type = "web_search_preview" }
-            };
-        }
-
-        return payload;
     }
 
     private async Task<string> CallOpenAIAsync(object payload, CancellationToken cancellationToken)
@@ -136,41 +130,65 @@ Do not include code fences, explanations, or any extra text.
         throw new InvalidOperationException("Could not extract content from OpenAI Responses API response");
     }
 
-    private static string BuildPrompt(EmailGenerationContext context)
+    private static string BuildPromptWithCollectedData(EmailGenerationContext context)
     {
         var req = context.Request;
+        var softData = context.SoftData!; // Safe to use ! because we validated it's not null
         
-        // Statisk systemkontext (hårdkodad)
+        // Bygg upp collected data-sektionen
+        var collectedDataSection = new StringBuilder();
+        collectedDataSection.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET ===");
+        
+        if (!string.IsNullOrWhiteSpace(softData.HooksJson))
+        {
+            collectedDataSection.AppendLine("\nPersonaliseringshoooks:");
+            collectedDataSection.AppendLine(softData.HooksJson);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(softData.RecentEventsJson))
+        {
+            collectedDataSection.AppendLine("\nSenaste händelser:");
+            collectedDataSection.AppendLine(softData.RecentEventsJson);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(softData.NewsItemsJson))
+        {
+            collectedDataSection.AppendLine("\nNyheter:");
+            collectedDataSection.AppendLine(softData.NewsItemsJson);
+        }
+        
+        if (!string.IsNullOrWhiteSpace(softData.SocialActivityJson))
+        {
+            collectedDataSection.AppendLine("\nSocial aktivitet:");
+            collectedDataSection.AppendLine(softData.SocialActivityJson);
+        }
+
+        // Lägg till när datan samlades in
+        collectedDataSection.AppendLine($"\n(Data insamlad: {softData.ResearchedAt:yyyy-MM-dd})");
+
+        // Statisk systemkontext
         var systemContext = @$"
-            Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).
-            
-            === INFORMATION OM ESATTO AB ===
-            {context.CompanyInfo}
-            
-            === MÅLFÖRETAG ===
-            Företag: {req.CompanyName}
-            Domän: {req.Domain}
-            Kontakt: {req.ContactName} ({req.ContactEmail})
-            Anteckningar: {req.Notes}";
+Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).
+
+=== INFORMATION OM ESATTO AB ===
+{context.CompanyInfo}
+
+=== MÅLFÖRETAG ===
+Företag: {req.CompanyName}
+Domän: {req.Domain}
+Kontakt: {req.ContactName} ({req.ContactEmail})
+LinkedIn: {req.LinkedinUrl}
+Anteckningar: {req.Notes}
+
+{collectedDataSection}";
 
         // Dynamiska instruktioner från databasen
         return systemContext + @$"
 
-            === INSTRUKTIONER ===
-            {context.Instructions}";
+=== INSTRUKTIONER ===
+{context.Instructions}
+
+VIKTIGT: Använd den insamlade datan ovan för att skapa ett personligt och relevant mejl. 
+Referera till specifika händelser, nyheter eller aktiviteter som är aktuella för företaget.";
     }
 }
-// TIDIGARE VERSION AV PROMPTEN:
-// === INSTRUKTIONER ===
-//             Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget. 
-//             Använd informationen ovan om Esatto för att:
-//             - Hitta relevanta cases som liknar kundens bransch eller utmaningar
-//             - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
-//             - Matcha rätt tjänster och metoder till kundens situation
-//             - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
-
-//             Krav:
-//             - Hook i första meningen.
-//             - 1–2 konkreta värdeförslag anpassade till företaget.
-//             - Referera gärna till ett eller två relevant Esatto-case som exempel
-//             - Avsluta med en enkel call-to-action (t.ex. 'Vill du att jag skickar ett konkret förslag?').";
