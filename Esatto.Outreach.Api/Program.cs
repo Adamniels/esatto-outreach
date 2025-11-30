@@ -9,6 +9,7 @@ using Esatto.Outreach.Application.UseCases.EmailDelivery;
 using Esatto.Outreach.Application.UseCases.SoftDataCollection;
 using Esatto.Outreach.Application.UseCases.Chat;
 using Esatto.Outreach.Application.UseCases.CompanyInfo;
+using Esatto.Outreach.Application.UseCases.Batch;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -48,6 +49,10 @@ builder.Services.AddScoped<CreateEmailPrompt>();
 builder.Services.AddScoped<UpdateEmailPrompt>();
 builder.Services.AddScoped<ActivateEmailPrompt>();
 builder.Services.AddScoped<DeleteEmailPrompt>();
+
+// Batch use cases
+builder.Services.AddScoped<GenerateSoftDataBatch>();
+builder.Services.AddScoped<GenerateEmailBatch>();
 
 // Company Info use cases
 builder.Services.AddScoped<GetCompanyInfo>();
@@ -289,6 +294,70 @@ app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
             statusCode: 500);
     }
 });
+
+// ============ BATCH ENDPOINTS ============
+
+app.MapPost("/prospects/batch/soft-data/generate", async (
+    BatchSoftDataRequest request,
+    GenerateSoftDataBatch useCase,
+    ClaimsPrincipal user,
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    try
+    {
+        var results = await useCase.Handle(request.ProspectIds, userId, request.Provider, ct);
+        return Results.Ok(results);
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return Results.StatusCode(403); // Forbidden
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500);
+    }
+})
+.RequireAuthorization();
+
+app.MapPost("/prospects/batch/email/generate", async (
+    BatchEmailRequest request,
+    GenerateEmailBatch useCase,
+    ClaimsPrincipal user,
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    try
+    {
+        var results = await useCase.Handle(
+            request.ProspectIds,
+            userId,
+            request.Type,
+            request.AutoGenerateSoftData,
+            request.SoftDataProvider,
+            ct);
+        return Results.Ok(results);
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return Results.StatusCode(403); // Forbidden
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500);
+    }
+})
+.RequireAuthorization();
 
 
 // --- Email Prompt Settings endpoints ---

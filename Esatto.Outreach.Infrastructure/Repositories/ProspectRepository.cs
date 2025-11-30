@@ -16,6 +16,13 @@ public class ProspectRepository : IProspectRepository
             .Include(p => p.Owner)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
+    public async Task<IReadOnlyList<Prospect>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default)
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Include(p => p.Owner)
+            .Where(p => ids.Contains(p.Id))
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default)
         => await _db.Prospects
             .Include(p => p.SoftCompanyData)
