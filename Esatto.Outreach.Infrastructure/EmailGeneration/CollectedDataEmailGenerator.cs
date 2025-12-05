@@ -72,9 +72,11 @@ Do not include code fences, explanations, or any extra text.
             throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
 
         // 8. Säkerställ titel om den saknas
+        // TODO: inte säker på att jag vill göra detta, om titel inte finns så vill jag nog få error?
+        // samtidigt kan man bara ändra det
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
-            dto = dto with { Title = $"Introduktion till {context.Request.CompanyName}".Trim() };
+            dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
         }
 
         return dto;
@@ -110,7 +112,7 @@ Do not include code fences, explanations, or any extra text.
         var root = doc.RootElement;
 
         // Extrahera text från Responses API format
-        if (root.TryGetProperty("output", out var output) && 
+        if (root.TryGetProperty("output", out var output) &&
             output.ValueKind == JsonValueKind.Array &&
             output.GetArrayLength() > 0)
         {
@@ -134,29 +136,29 @@ Do not include code fences, explanations, or any extra text.
     {
         var req = context.Request;
         var softData = context.SoftData!; // Safe to use ! because we validated it's not null
-        
+
         // Bygg upp collected data-sektionen
         var collectedDataSection = new StringBuilder();
         collectedDataSection.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET ===");
-        
+
         if (!string.IsNullOrWhiteSpace(softData.HooksJson))
         {
             collectedDataSection.AppendLine("\nPersonaliseringshoooks:");
             collectedDataSection.AppendLine(softData.HooksJson);
         }
-        
+
         if (!string.IsNullOrWhiteSpace(softData.RecentEventsJson))
         {
             collectedDataSection.AppendLine("\nSenaste händelser:");
             collectedDataSection.AppendLine(softData.RecentEventsJson);
         }
-        
+
         if (!string.IsNullOrWhiteSpace(softData.NewsItemsJson))
         {
             collectedDataSection.AppendLine("\nNyheter:");
             collectedDataSection.AppendLine(softData.NewsItemsJson);
         }
-        
+
         if (!string.IsNullOrWhiteSpace(softData.SocialActivityJson))
         {
             collectedDataSection.AppendLine("\nSocial aktivitet:");
@@ -174,10 +176,10 @@ Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl p
 {context.CompanyInfo}
 
 === MÅLFÖRETAG ===
-Företag: {req.CompanyName}
-Domän: {req.Domain}
-Kontakt: {req.ContactName} ({req.ContactEmail})
-LinkedIn: {req.LinkedinUrl}
+Företag: {req.Name}
+Webbplats: {req.Website}
+E-post: {req.Email}
+LinkedIn: {req.LinkedInUrl}
 Anteckningar: {req.Notes}
 
 {collectedDataSection}";

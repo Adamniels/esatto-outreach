@@ -11,19 +11,18 @@ public class CreateProspect
 
     public async Task<ProspectViewDto> Handle(ProspectCreateDto dto, string userId, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(dto.CompanyName))
-            throw new ArgumentException("CompanyName is required");
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new ArgumentException("Name is required");
 
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("UserId is required");
 
-        var entity = Prospect.Create(
-            companyName: dto.CompanyName,
+        var entity = Prospect.CreateManual(
+            name: dto.Name,
             ownerId: userId,
-            domain: dto.Domain,
-            contactName: dto.ContactName,
-            contactEmail: dto.ContactEmail,
-            linkedinUrl: dto.LinkedinUrl,
+            websiteUrls: dto.Websites,
+            emailAddresses: dto.EmailAddresses,
+            phoneNumbers: dto.PhoneNumbers,
             notes: dto.Notes
         );
 

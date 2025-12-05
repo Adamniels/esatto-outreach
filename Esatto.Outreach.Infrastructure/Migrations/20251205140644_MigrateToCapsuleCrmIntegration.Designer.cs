@@ -3,6 +3,7 @@ using System;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
-    partial class OutreachDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251205140644_MigrateToCapsuleCrmIntegration")]
+    partial class MigrateToCapsuleCrmIntegration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -185,10 +188,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CustomFields")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<string>("EmailAddresses")
                         .IsRequired()
                         .HasColumnType("jsonb");
@@ -245,10 +244,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime?>("UpdatedUtc")
                         .HasColumnType("TEXT");

@@ -1,7 +1,9 @@
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
+using Esatto.Outreach.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Text.Json;
 
 namespace Esatto.Outreach.Infrastructure.Configurations;
 
@@ -16,23 +18,69 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.Id)
             .ValueGeneratedNever();
 
-        b.Property(x => x.CompanyName)
+        // ========== CAPSULE CRM DATA ==========
+        b.Property(x => x.CapsuleId);
+
+        b.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
 
-        b.Property(x => x.Domain)
-            .HasMaxLength(200);
+        b.Property(x => x.About)
+            .HasColumnType("text");
 
-        b.Property(x => x.ContactName)
-            .HasMaxLength(200);
+        b.Property(x => x.CapsuleCreatedAt);
 
-        b.Property(x => x.ContactEmail)
-            .HasMaxLength(320); // RFC-ish
+        b.Property(x => x.CapsuleUpdatedAt);
 
-        b.Property(x => x.LinkedinUrl)
+        b.Property(x => x.LastContactedAt);
+
+        b.Property(x => x.PictureURL)
             .HasMaxLength(500);
 
-        b.Property(x => x.Notes);
+        // Nested collections som JSONB
+        b.Property(x => x.Websites)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsuleWebsite>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleWebsite>());
+
+        b.Property(x => x.EmailAddresses)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsuleEmailAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleEmailAddress>());
+
+        b.Property(x => x.PhoneNumbers)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsulePhoneNumber>>(v, (JsonSerializerOptions?)null) ?? new List<CapsulePhoneNumber>());
+
+        b.Property(x => x.Addresses)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsuleAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleAddress>());
+
+        b.Property(x => x.Tags)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsuleTag>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleTag>());
+
+        b.Property(x => x.CustomFields)
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<CapsuleCustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleCustomField>());
+
+        // ========== ESATTO WORKFLOW ==========
+        b.Property(x => x.IsPending)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        b.Property(x => x.Notes)
+            .HasColumnType("text");
 
         // Enum → string i databasen (läsbart och stabilt)
         b.Property(x => x.Status)
@@ -50,19 +98,25 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.MailTitle)
          .HasMaxLength(200);
 
-        b.Property(x => x.MailBodyPlain)
-        .HasColumnType("text"); // långtext
-
         b.Property(x => x.MailBodyHTML)
-        .HasColumnType("text"); // långtext
+            .HasColumnType("text");
 
+        b.Property(x => x.LastOpenAIResponseId)
+            .HasMaxLength(200);
+
+        b.Property(x => x.CreatedUtc)
+            .IsRequired();
+
+        b.Property(x => x.UpdatedUtc);
+
+        // ========== RELATIONER ==========
         // Foreign Key till HardCompanyData (nullable, One-to-One)
         b.Property(x => x.HardCompanyDataId);
 
         b.HasOne(x => x.HardCompanyData)
             .WithMany()
             .HasForeignKey(x => x.HardCompanyDataId)
-            .OnDelete(DeleteBehavior.SetNull); // Om HardCompanyData raderas, sätt FK till null
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Foreign Key till SoftCompanyData (nullable, One-to-One)
         b.Property(x => x.SoftCompanyDataId);
@@ -70,25 +124,43 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.HasOne(x => x.SoftCompanyData)
             .WithOne(s => s.Prospect)
             .HasForeignKey<SoftCompanyData>(s => s.ProspectId)
-            .OnDelete(DeleteBehavior.Cascade); // Om Prospect raderas, radera soft data också
+            .OnDelete(DeleteBehavior.Cascade);
 
-        // ========== OWNERSHIP CONFIGURATION ==========
+        // ========== OWNERSHIP ==========
+        // OwnerId är nullable för pending Capsule prospects
         b.Property(x => x.OwnerId)
-            .IsRequired()
-            .HasMaxLength(450); // Same as AspNetUsers.Id
+            .HasMaxLength(450);
 
         b.HasOne(x => x.Owner)
-            .WithMany() // User kan ha många prospects
+            .WithMany()
             .HasForeignKey(x => x.OwnerId)
-            .OnDelete(DeleteBehavior.Restrict); // Kan inte ta bort user om den har prospects
+            .OnDelete(DeleteBehavior.Restrict);
 
-        b.HasIndex(x => x.OwnerId); // För snabbare queries på owner
-        // =============================================
+        // ========== INDEX ==========
+        // CapsuleId (unique för Capsule prospects)
+        b.HasIndex(x => x.CapsuleId)
+            .IsUnique()
+            .HasFilter("\"CapsuleId\" IS NOT NULL");  // Partial unique index
 
-        b.HasIndex(x => x.CompanyName);
-        b.HasIndex(x => x.Domain);
+        // Pending prospects (viktigt för snabb hämtning)
+        b.HasIndex(x => x.IsPending);
+
+        // Composite för pending + created (sortering)
+        b.HasIndex(x => new { x.IsPending, x.CreatedUtc });
+
+        // Owner queries
+        b.HasIndex(x => x.OwnerId);
+
+        // Owner + status
+        b.HasIndex(x => new { x.OwnerId, x.Status });
+
+        // Name (för sökningar)
+        b.HasIndex(x => x.Name);
+
+        // Status + created (för filtrering)
         b.HasIndex(x => new { x.Status, x.CreatedUtc });
-        b.HasIndex(x => x.MailTitle);
+
+        // Relationer
         b.HasIndex(x => x.HardCompanyDataId);
         b.HasIndex(x => x.SoftCompanyDataId);
     }

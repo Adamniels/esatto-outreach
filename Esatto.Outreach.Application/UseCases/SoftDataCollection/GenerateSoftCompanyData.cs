@@ -37,7 +37,7 @@ public sealed class GenerateSoftCompanyData
             ?? throw new KeyNotFoundException($"Prospect with ID {prospectId} not found.");
 
         _logger.LogInformation("Generating soft company data for prospect {ProspectId} ({CompanyName}) using provider: {Provider}",
-            prospectId, prospect.CompanyName, provider ?? "configured");
+            prospectId, prospect.Name, provider ?? "configured");
 
         // 2. Anropa research service (OpenAI/Claude/Hybrid) för att generera research
         var researchService = string.IsNullOrWhiteSpace(provider)
@@ -45,8 +45,8 @@ public sealed class GenerateSoftCompanyData
             : _researchFactory.GetResearchService(provider);
 
         var researchResult = await researchService.GenerateCompanyResearchAsync(
-            prospect.CompanyName,
-            prospect.Domain,
+            prospect.Name,
+            prospect.GetPrimaryWebsite(),
             ct);
 
         // 3. Skapa eller uppdatera SoftCompanyData entity

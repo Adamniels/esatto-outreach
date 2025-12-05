@@ -10,6 +10,7 @@ using Esatto.Outreach.Application.UseCases.SoftDataCollection;
 using Esatto.Outreach.Application.UseCases.Chat;
 using Esatto.Outreach.Application.UseCases.CompanyInfo;
 using Esatto.Outreach.Application.UseCases.Batch;
+using Esatto.Outreach.Application.UseCases.CapsuleDataSource;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -20,6 +21,12 @@ using System.Security.Claims;
 Env.Load("../.env");
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure JSON options for case-insensitive property matching
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNameCaseInsensitive = true;
+});
 
 // Infrastructure (DbContext + repo via vår helper)
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -57,6 +64,13 @@ builder.Services.AddScoped<GenerateEmailBatch>();
 // Company Info use cases
 builder.Services.AddScoped<GetCompanyInfo>();
 
+// Capsule DataSource use cases
+builder.Services.AddScoped<CreateOrUpdateProspectFromCapsule>();
+builder.Services.AddScoped<ClaimPendingProspect>();
+builder.Services.AddScoped<RejectPendingProspect>();
+builder.Services.AddScoped<ListPendingProspects>();
+builder.Services.AddScoped<HandleCapsuleWebhook>();
+
 // CORS – tillåt n8n/valfritt UI
 builder.Services.AddCors(opt =>
 {
@@ -73,6 +87,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Konfigurera att köra på port 3000
+app.Urls.Add("http://localhost:3000");
 
 app.UseCors("ui");
 
@@ -148,8 +165,8 @@ app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspect useCase, 
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    if (string.IsNullOrWhiteSpace(dto.CompanyName))
-        return Results.BadRequest(new { error = "CompanyName is required" });
+    if (string.IsNullOrWhiteSpace(dto.Name))
+        return Results.BadRequest(new { error = "Name is required" });
 
     var created = await useCase.Handle(dto, userId, ct);
     return Results.Created($"/prospects/{created.Id}", created);
@@ -355,6 +372,126 @@ app.MapPost("/prospects/batch/email/generate", async (
         return Results.Problem(
             detail: ex.Message,
             statusCode: 500);
+    }
+})
+.RequireAuthorization();
+
+
+// ============ CAPSULE CRM INTEGRATION ENDPOINTS ============
+
+// Webhook endpoint for Capsule CRM (public, no auth)
+app.MapPost("/webhooks/capsule", async (
+    HttpContext httpContext,
+    HandleCapsuleWebhook useCase,
+    ILogger<Program> logger,
+    CancellationToken ct) =>
+{
+    try
+    {
+        // Läs RAW body för debugging
+        httpContext.Request.EnableBuffering();
+        using var reader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
+        var rawBody = await reader.ReadToEndAsync(ct);
+        httpContext.Request.Body.Position = 0;
+        
+        logger.LogInformation("=== CAPSULE WEBHOOK RECEIVED ===");
+        logger.LogInformation("Raw Body: {RawBody}", rawBody);
+        logger.LogInformation("Content-Type: {ContentType}", httpContext.Request.ContentType);
+        
+        // Försök deserialisera
+        CapsuleWebhookEventDto? payload;
+        try
+        {
+            payload = await httpContext.Request.ReadFromJsonAsync<CapsuleWebhookEventDto>(ct);
+            logger.LogInformation("Successfully deserialized payload. Event: {Event}, Payload count: {Count}", 
+                payload?.Type, payload?.Payload?.Count);
+        }
+        catch (Exception deserEx)
+        {
+            logger.LogError(deserEx, "Failed to deserialize webhook payload");
+            return Results.BadRequest(new { error = "Invalid JSON format", details = deserEx.Message });
+        }
+        
+        if (payload == null)
+        {
+            logger.LogWarning("Payload is null after deserialization");
+            return Results.BadRequest(new { error = "Payload is required" });
+        }
+        
+        var result = await useCase.Handle(payload, ct);
+        logger.LogInformation("Webhook processed. Success: {Success}, Message: {Message}", 
+            result.Success, result.Message);
+        
+        return result.Success 
+            ? Results.Ok(result) 
+            : Results.BadRequest(result);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Unhandled exception in Capsule webhook endpoint");
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500,
+            title: "Failed to process Capsule webhook");
+    }
+});
+
+// List pending prospects (from Capsule, not yet claimed)
+app.MapGet("/prospects/pending", async (
+    ListPendingProspects useCase,
+    CancellationToken ct) =>
+{
+    try
+    {
+        var pending = await useCase.Handle(ct);
+        return Results.Ok(pending);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: 500);
+    }
+})
+.RequireAuthorization();
+
+// Claim a pending prospect
+app.MapPost("/prospects/{id:guid}/claim", async (
+    Guid id,
+    ClaimPendingProspect useCase,
+    ClaimsPrincipal user,
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId))
+        return Results.Unauthorized();
+
+    try
+    {
+        var claimed = await useCase.Handle(id, userId, ct);
+        return claimed == null ? Results.NotFound() : Results.Ok(claimed);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+})
+.RequireAuthorization();
+
+// Reject a pending prospect (delete it)
+app.MapPost("/prospects/{id:guid}/pending/reject", async (
+    Guid id,
+    RejectPendingProspect useCase,
+    CancellationToken ct) =>
+{
+    try
+    {
+        var deleted = await useCase.Handle(id, ct);
+        return deleted ? Results.NoContent() : Results.NotFound();
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
     }
 })
 .RequireAuthorization();

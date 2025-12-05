@@ -21,11 +21,10 @@ public class UpdateProspect
 
         // Only pass non-null values to UpdateBasics
         entity.UpdateBasics(
-            companyName: dto.CompanyName,
-            domain: dto.Domain,
-            contactName: dto.ContactName,
-            contactEmail: dto.ContactEmail,
-            linkedinUrl: dto.LinkedinUrl,
+            name: dto.Name,
+            websiteUrls: dto.Websites,
+            emailAddresses: dto.EmailAddresses,
+            phoneNumbers: dto.PhoneNumbers,
             notes: dto.Notes,
             mailTitle: dto.MailTitle,
             mailBodyPlain: dto.MailBodyPlain,

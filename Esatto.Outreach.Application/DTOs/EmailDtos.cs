@@ -5,11 +5,10 @@ namespace Esatto.Outreach.Application.DTOs;
 
 public record CustomEmailRequestDto(
     Guid ProspectId,
-    string CompanyName,
-    string? Domain,
-    string? ContactName,
-    string? ContactEmail,
-    string? LinkedinUrl,
+    string Name,
+    string? Website,
+    string? Email,
+    string? LinkedInUrl,
     string? Notes
 );
 

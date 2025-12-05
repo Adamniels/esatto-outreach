@@ -161,11 +161,11 @@ public sealed class GenerateEmailBatch
         try
         {
             _logger.LogDebug("Auto-generating soft data for prospect {ProspectId} ({CompanyName})",
-                prospect.Id, prospect.CompanyName);
+                prospect.Id, prospect.Name);
 
             var researchResult = await researchService.GenerateCompanyResearchAsync(
-                prospect.CompanyName,
-                prospect.Domain,
+                prospect.Name,
+                prospect.GetPrimaryWebsite(),
                 ct);
 
             var softDataEntity = SoftCompanyData.Create(
@@ -210,7 +210,7 @@ public sealed class GenerateEmailBatch
         try
         {
             _logger.LogDebug("Generating email for prospect {ProspectId} ({CompanyName})",
-                prospect.Id, prospect.CompanyName);
+                prospect.Id, prospect.Name);
 
             // Build context with all required data
             var context = await _contextBuilder.BuildContextAsync(prospect.Id, userId, includeSoftData, ct);
@@ -244,7 +244,7 @@ public sealed class GenerateEmailBatch
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate email for prospect {ProspectId} ({CompanyName})",
-                prospect.Id, prospect.CompanyName);
+                prospect.Id, prospect.Name);
 
             return new ProcessResult
             {

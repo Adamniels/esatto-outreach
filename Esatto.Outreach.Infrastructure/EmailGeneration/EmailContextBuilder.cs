@@ -59,11 +59,10 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
         // 4. Bygg request DTO från prospect
         var request = new CustomEmailRequestDto(
             ProspectId: prospect.Id,
-            CompanyName: prospect.CompanyName,
-            Domain: prospect.Domain,
-            ContactName: prospect.ContactName,
-            ContactEmail: prospect.ContactEmail,
-            LinkedinUrl: prospect.LinkedinUrl,
+            Name: prospect.Name,
+            Website: prospect.GetPrimaryWebsite(),
+            Email: prospect.GetWorkEmail(),
+            LinkedInUrl: prospect.GetLinkedInUrl(),
             Notes: prospect.Notes
         );
 

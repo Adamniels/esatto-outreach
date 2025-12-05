@@ -109,12 +109,12 @@ public sealed class GenerateSoftDataBatch
         try
         {
             _logger.LogDebug("Processing prospect {ProspectId} ({CompanyName})",
-                prospect.Id, prospect.CompanyName);
+                prospect.Id, prospect.Name);
 
             // Generate research data
             var researchResult = await researchService.GenerateCompanyResearchAsync(
-                prospect.CompanyName,
-                prospect.Domain,
+                prospect.Name,
+                prospect.GetPrimaryWebsite(),
                 ct);
 
             // Create or update SoftCompanyData entity
@@ -192,7 +192,7 @@ public sealed class GenerateSoftDataBatch
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to generate soft data for prospect {ProspectId} ({CompanyName})",
-                prospect.Id, prospect.CompanyName);
+                prospect.Id, prospect.Name);
 
             return new ProcessResult
             {

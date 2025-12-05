@@ -71,7 +71,7 @@ Do not include code fences, explanations, or any extra text.
         // 6. Säkerställ titel om den saknas
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
-            dto = dto with { Title = $"Introduktion till {context.Request.CompanyName}".Trim() };
+            dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
         }
 
         return dto;
@@ -148,9 +148,9 @@ Do not include code fences, explanations, or any extra text.
             {context.CompanyInfo}
             
             === MÅLFÖRETAG ===
-            Företag: {req.CompanyName}
-            Domän: {req.Domain}
-            Kontakt: {req.ContactName} ({req.ContactEmail})
+            Företag: {req.Name}
+            Webbplats: {req.Website}
+            E-post: {req.Email}
             Anteckningar: {req.Notes}";
 
         // Dynamiska instruktioner från databasen

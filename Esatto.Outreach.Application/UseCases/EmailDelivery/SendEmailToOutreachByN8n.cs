@@ -27,7 +27,8 @@ public class SendEmailViaN8n
                 $"Prospect with id {prospectId} not found");
 
         // Validera att vi har email-data
-        if (string.IsNullOrWhiteSpace(prospect.ContactEmail))
+        var recipientEmail = prospect.GetWorkEmail();
+        if (string.IsNullOrWhiteSpace(recipientEmail))
             throw new InvalidOperationException("Contact email is missing");
 
         if (string.IsNullOrWhiteSpace(prospect.MailTitle) ||
@@ -37,7 +38,7 @@ public class SendEmailViaN8n
 
         // Skapa request
         var request = new SendOutreachToN8nDTO(
-            To: prospect.ContactEmail,
+            To: recipientEmail,
             Subject: prospect.MailTitle,
             Body: prospect.MailBodyHTML ?? prospect.MailBodyPlain
         );
