@@ -177,11 +177,7 @@ Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl p
 
 === MÅLFÖRETAG ===
 Företag: {req.Name}
-Webbplats: {req.Website}
-E-post: {req.Email}
-LinkedIn: {req.LinkedInUrl}
-Anteckningar: {req.Notes}
-
+{(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.EmailAddresses?.Any() == true ? $"E-postadresser: {string.Join(", ", req.EmailAddresses)}\n" : "")}{(req.PhoneNumbers?.Any() == true ? $"Telefonnummer: {string.Join(", ", req.PhoneNumbers)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
 {collectedDataSection}";
 
         // Dynamiska instruktioner från databasen
