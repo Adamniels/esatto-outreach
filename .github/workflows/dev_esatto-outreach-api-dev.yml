@@ -62,3 +62,4 @@ jobs:
           app-name: 'esatto-outreach-api-dev'
           slot-name: 'Production'
           package: ./publish
+          clean: true
