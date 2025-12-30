@@ -22,6 +22,21 @@ Env.Load("../.env");
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Inject database password from environment variable into connection string
+var dbPasswordEnvVar = builder.Configuration.GetSection("Database")["PasswordEnvVar"];
+if (!string.IsNullOrWhiteSpace(dbPasswordEnvVar))
+{
+    var dbPassword = Environment.GetEnvironmentVariable(dbPasswordEnvVar);
+    if (!string.IsNullOrWhiteSpace(dbPassword))
+    {
+        var connectionString = builder.Configuration.GetConnectionString("Default");
+        if (!string.IsNullOrWhiteSpace(connectionString) && connectionString.Contains("{0}"))
+        {
+            builder.Configuration["ConnectionStrings:Default"] = string.Format(connectionString, dbPassword);
+        }
+    }
+}
+
 // Configure JSON options for case-insensitive property matching
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

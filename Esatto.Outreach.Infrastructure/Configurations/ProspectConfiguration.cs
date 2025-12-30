@@ -42,37 +42,61 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleWebsite>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleWebsite>());
+                v => JsonSerializer.Deserialize<List<CapsuleWebsite>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleWebsite>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleWebsite>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         b.Property(x => x.EmailAddresses)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleEmailAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleEmailAddress>());
+                v => JsonSerializer.Deserialize<List<CapsuleEmailAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleEmailAddress>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleEmailAddress>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         b.Property(x => x.PhoneNumbers)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsulePhoneNumber>>(v, (JsonSerializerOptions?)null) ?? new List<CapsulePhoneNumber>());
+                v => JsonSerializer.Deserialize<List<CapsulePhoneNumber>>(v, (JsonSerializerOptions?)null) ?? new List<CapsulePhoneNumber>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsulePhoneNumber>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         b.Property(x => x.Addresses)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleAddress>());
+                v => JsonSerializer.Deserialize<List<CapsuleAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleAddress>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleAddress>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         b.Property(x => x.Tags)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleTag>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleTag>());
+                v => JsonSerializer.Deserialize<List<CapsuleTag>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleTag>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleTag>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         b.Property(x => x.CustomFields)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleCustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleCustomField>());
+                v => JsonSerializer.Deserialize<List<CapsuleCustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleCustomField>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleCustomField>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
 
         // ========== ESATTO WORKFLOW ==========
         b.Property(x => x.IsPending)

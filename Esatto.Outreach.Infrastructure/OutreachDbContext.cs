@@ -28,4 +28,13 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
         // gör så jag använder det konifiguration som jag gjort i: ProspectConfiguration
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OutreachDbContext).Assembly);
     }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        
+        // Ignorera pending model changes warning - value comparers påverkar inte databasschemat
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
 }
