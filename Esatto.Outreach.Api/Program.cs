@@ -17,8 +17,13 @@ using Microsoft.OpenApi.Models;
 using DotNetEnv;
 using System.Security.Claims;
 
-// Läs .env filen från root-mappen
-Env.Load("../.env");
+// Läs .env filen endast om den finns (lokalt)
+// På Azure används Application Settings istället
+var envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", ".env");
+if (File.Exists(envPath))
+{
+    Env.Load(envPath);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
