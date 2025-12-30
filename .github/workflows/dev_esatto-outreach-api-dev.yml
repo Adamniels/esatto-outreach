@@ -23,10 +23,10 @@ jobs:
           dotnet-version: '9.x'
 
       - name: Build with dotnet
-        run: dotnet build esatto-outreach/Esatto.Outreach.sln --configuration Release
+        run: dotnet build Esatto.Outreach.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish esatto-outreach/Esatto.Outreach.Api/Esatto.Outreach.Api.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish Esatto.Outreach.Api/Esatto.Outreach.Api.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
