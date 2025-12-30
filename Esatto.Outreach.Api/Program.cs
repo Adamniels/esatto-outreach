@@ -27,6 +27,10 @@ if (File.Exists(envPath))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Lägg till miljövariabler explicit i konfigurationen
+// Detta säkerställer att Azure App Service environment variables läses in
+builder.Configuration.AddEnvironmentVariables();
+
 // Inject database password from environment variable into connection string
 var dbPasswordEnvVar = builder.Configuration.GetSection("Database")["PasswordEnvVar"];
 if (!string.IsNullOrWhiteSpace(dbPasswordEnvVar))
