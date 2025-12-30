@@ -112,8 +112,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Konfigurera att köra på port 3000
-app.Urls.Add("http://localhost:3000");
+// Konfigurera port - använd Azure's PORT environment variable om den finns, annars 3000 lokalt
+var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.UseCors("ui");
 
