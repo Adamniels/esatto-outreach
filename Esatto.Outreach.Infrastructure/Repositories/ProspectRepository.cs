@@ -11,10 +11,40 @@ public class ProspectRepository : IProspectRepository
     public ProspectRepository(OutreachDbContext db) => _db = db;
 
     public async Task<Prospect?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => await _db.Prospects.FirstOrDefaultAsync(p => p.Id == id, ct);
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Include(p => p.Owner)
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+
+    public async Task<Prospect?> GetByCapsuleIdAsync(long capsuleId, CancellationToken ct = default)
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Include(p => p.Owner)
+            .FirstOrDefaultAsync(p => p.CapsuleId == capsuleId, ct);
+
+    public async Task<IReadOnlyList<Prospect>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default)
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Include(p => p.Owner)
+            .Where(p => ids.Contains(p.Id))
+            .ToListAsync(ct);
 
     public async Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default)
         => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .OrderByDescending(p => p.CreatedUtc)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Prospect>> ListByOwnerAsync(string ownerId, CancellationToken ct = default)
+        => await _db.Prospects
+            .Include(p => p.SoftCompanyData)
+            .Where(p => p.OwnerId == ownerId)
+            .OrderByDescending(p => p.CreatedUtc)
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Prospect>> ListPendingAsync(CancellationToken ct = default)
+        => await _db.Prospects
+            .Where(p => p.IsPending)
             .OrderByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);
 

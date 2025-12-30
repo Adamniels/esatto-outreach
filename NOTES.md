@@ -37,3 +37,18 @@ r2 = client.responses.create(
 print("\\nResponse 2:\\n", r2.output_text)
 
 ```
+# Capsule CRM Webhook Setup (Development)
+
+## Problem med ngrok
+⚠️ **Varje gång du startar ngrok får du en NY slumpmässig URL** (t.ex. `https://abc123.ngrok.io`)
+
+Detta betyder att du måste:
+1. Uppdatera webhook URL:en i Capsule CRM vid varje omstart
+2. Eller betala för ngrok Pro (~$8/månad) för en fast subdomain
+
+## Steg-för-steg guide för development
+
+### 1. Starta Backend API
+```bash
+cd /Users/adamniels/Projects/Esatto_outreach/esatto-outreach/Esatto.Outreach.Api
+dotnet run
