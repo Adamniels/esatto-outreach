@@ -223,7 +223,6 @@ app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspect useCase, Cl
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
     if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-    
     try
     {
         var deleted = await useCase.ExecuteAsync(id, userId, ct);
@@ -238,7 +237,8 @@ app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspect useCase, Cl
 
 // --- Prospects endpoints (via use-cases) ---
 
-
+// User choice how they want the email to be generated.
+// For now we have "WebSearch", "UseCollectedData", SOON: my own rag + fine-tune api
 app.MapPost("/prospects/{id:guid}/email/draft", async (
    Guid id,
    GenerateMailOpenAIResponeAPI useCase,
@@ -423,17 +423,16 @@ app.MapPost("/webhooks/capsule", async (
         using var reader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
         var rawBody = await reader.ReadToEndAsync(ct);
         httpContext.Request.Body.Position = 0;
-        
         logger.LogInformation("=== CAPSULE WEBHOOK RECEIVED ===");
         logger.LogInformation("Raw Body: {RawBody}", rawBody);
         logger.LogInformation("Content-Type: {ContentType}", httpContext.Request.ContentType);
-        
+
         // Försök deserialisera
         CapsuleWebhookEventDto? payload;
         try
         {
             payload = await httpContext.Request.ReadFromJsonAsync<CapsuleWebhookEventDto>(ct);
-            logger.LogInformation("Successfully deserialized payload. Event: {Event}, Payload count: {Count}", 
+            logger.LogInformation("Successfully deserialized payload. Event: {Event}, Payload count: {Count}",
                 payload?.Type, payload?.Payload?.Count);
         }
         catch (Exception deserEx)
@@ -441,19 +440,16 @@ app.MapPost("/webhooks/capsule", async (
             logger.LogError(deserEx, "Failed to deserialize webhook payload");
             return Results.BadRequest(new { error = "Invalid JSON format", details = deserEx.Message });
         }
-        
         if (payload == null)
         {
             logger.LogWarning("Payload is null after deserialization");
             return Results.BadRequest(new { error = "Payload is required" });
         }
-        
         var result = await useCase.Handle(payload, ct);
-        logger.LogInformation("Webhook processed. Success: {Success}, Message: {Message}", 
+        logger.LogInformation("Webhook processed. Success: {Success}, Message: {Message}",
             result.Success, result.Message);
-        
-        return result.Success 
-            ? Results.Ok(result) 
+        return result.Success
+            ? Results.Ok(result)
             : Results.BadRequest(result);
     }
     catch (Exception ex)
@@ -624,10 +620,10 @@ app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPr
 
 // Legacy endpoint - kept for backwards compatibility
 app.MapPut("/settings/email-prompt", async (
-    UpdateEmailPromptDto dto, 
+    UpdateEmailPromptDto dto,
     UpdateEmailPrompt updateUseCase,
-    GetActiveEmailPrompt getActiveUseCase, 
-    ClaimsPrincipal user, 
+    GetActiveEmailPrompt getActiveUseCase,
+    ClaimsPrincipal user,
     CancellationToken ct) =>
 {
     var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);

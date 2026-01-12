@@ -9,7 +9,7 @@ public class GenerateMailOpenAIResponeAPI
     private readonly IProspectRepository _prospectRepository;
 
     public GenerateMailOpenAIResponeAPI(
-        IEmailContextBuilder contextBuilder, 
+        IEmailContextBuilder contextBuilder,
         IEmailGeneratorFactory generatorFactory,
         IProspectRepository prospectRepository)
     {
@@ -21,15 +21,16 @@ public class GenerateMailOpenAIResponeAPI
     public async Task<ProspectViewDto> Handle(Guid id, string userId, string? type = null, CancellationToken ct = default)
     {
         // 1. Determine if we need soft data based on generator type
-        bool includeSoftData = !string.IsNullOrWhiteSpace(type) && 
-            type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase);
+        bool includeSoftData = !string.IsNullOrWhiteSpace(type) &&
+            (type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase) ||
+             type.Equals("EsattoRag", StringComparison.OrdinalIgnoreCase));
 
         // 2. Build context with all required data
         var context = await _contextBuilder.BuildContextAsync(id, userId, includeSoftData, ct);
 
         // 3. Get the appropriate generator
-        var generator = string.IsNullOrWhiteSpace(type) 
-            ? _generatorFactory.GetGenerator() 
+        var generator = string.IsNullOrWhiteSpace(type)
+            ? _generatorFactory.GetGenerator()
             : _generatorFactory.GetGenerator(type);
 
         // 4. Generate email draft using context

@@ -6,6 +6,7 @@ using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Infrastructure.Common;
 using Esatto.Outreach.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
@@ -13,6 +14,7 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
 {
     private readonly HttpClient _http;
     private readonly OpenAiOptions _options;
+    private readonly ILogger<OpenAICustomEmailGenerator> _logger;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -22,11 +24,13 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
 
     public OpenAICustomEmailGenerator(
         HttpClient http,
-        IOptions<OpenAiOptions> options)
+        IOptions<OpenAiOptions> options,
+        ILogger<OpenAICustomEmailGenerator> logger)
     {
         _http = http;
         _http.BaseAddress = new Uri("https://api.openai.com/");
         _options = options.Value;
+        _logger = logger;
     }
 
     public async Task<CustomEmailDraftDto> GenerateAsync(
@@ -116,7 +120,7 @@ Do not include code fences, explanations, or any extra text.
         var root = doc.RootElement;
 
         // Extrahera text från Responses API format
-        if (root.TryGetProperty("output", out var output) && 
+        if (root.TryGetProperty("output", out var output) &&
             output.ValueKind == JsonValueKind.Array &&
             output.GetArrayLength() > 0)
         {
@@ -139,7 +143,7 @@ Do not include code fences, explanations, or any extra text.
     private static string BuildPrompt(EmailGenerationContext context)
     {
         var req = context.Request;
-        
+
         // Statisk systemkontext (hårdkodad)
         var systemContext = @$"
             Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).

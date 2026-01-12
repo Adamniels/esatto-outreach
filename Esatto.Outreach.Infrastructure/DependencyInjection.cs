@@ -51,11 +51,11 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = true;
             options.Password.RequireLowercase = true;
-            
+
             // Lockout settings
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             options.Lockout.MaxFailedAccessAttempts = 5;
-            
+
             // User settings
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = false; // Change to true when email service is added
@@ -127,8 +127,10 @@ public static class DependencyInjection
 
         // Email Generation (multi-method)
         services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
+        services.Configure<EsattoRagOptions>(configuration.GetSection(EsattoRagOptions.SectionName));
         services.AddHttpClient<OpenAICustomEmailGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
+        services.AddHttpClient<EsattoRagEmailGenerator>();
         services.AddScoped<IEmailContextBuilder, EmailContextBuilder>();
         services.AddScoped<IEmailGeneratorFactory, EmailGeneratorFactory>();
 
@@ -149,7 +151,7 @@ public static class DependencyInjection
         services.AddHttpClient<ClaudeResearchService>();
         services.AddScoped<HybridResearchService>();
         services.AddScoped<IResearchServiceFactory, ResearchServiceFactory>();
-        
+
         return services;
     }
 }

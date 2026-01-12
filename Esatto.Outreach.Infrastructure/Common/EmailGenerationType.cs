@@ -6,12 +6,17 @@ namespace Esatto.Outreach.Infrastructure.Common;
 public enum EmailGenerationType
 {
     /// <summary>
-    /// Use web search to find real-time information about the prospect
+    /// Use web search to find real-time information about the prospect, with openAI
     /// </summary>
     WebSearch,
 
     /// <summary>
-    /// Use previously collected data (soft data, hard data) to generate the email
+    /// Use previously collected data (soft data, hard data) to generate the email, with openAI
     /// </summary>
-    UseCollectedData
+    UseCollectedData,
+
+    /// <summary>
+    /// Use previously collected data (soft data, hard data) to generate the email, on our own RAG + fine-tuned modell
+    /// </summary>
+    EsattoRag
 }
