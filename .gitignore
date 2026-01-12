@@ -43,8 +43,6 @@ Thumbs.db
 
 # --- Environment / secrets ---
 **/Properties/launchSettings.json
-appsettings.Development.json
-appsettings.Local.json
 secrets.json
 *.env
 .env.*

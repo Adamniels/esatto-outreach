@@ -51,11 +51,11 @@ public static class DependencyInjection
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = true;
             options.Password.RequireLowercase = true;
-            
+
             // Lockout settings
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             options.Lockout.MaxFailedAccessAttempts = 5;
-            
+
             // User settings
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = false; // Change to true when email service is added
@@ -68,8 +68,19 @@ public static class DependencyInjection
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JWT configuration missing");
 
+        // If secret is empty or placeholder, try to read from environment variable directly
         if (string.IsNullOrWhiteSpace(jwtOptions.Secret) || jwtOptions.Secret == "PLACEHOLDER_CHANGE_IN_USER_SECRETS")
-            throw new InvalidOperationException("JWT:Secret must be set in user-secrets or environment");
+        {
+            var envSecret = Environment.GetEnvironmentVariable("Jwt__Secret");
+            if (!string.IsNullOrWhiteSpace(envSecret))
+            {
+                jwtOptions.Secret = envSecret;
+            }
+            else
+            {
+                throw new InvalidOperationException("JWT:Secret must be set in user-secrets or environment");
+            }
+        }
 
         var key = Encoding.UTF8.GetBytes(jwtOptions.Secret);
 
@@ -116,8 +127,10 @@ public static class DependencyInjection
 
         // Email Generation (multi-method)
         services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
+        services.Configure<EsattoRagOptions>(configuration.GetSection(EsattoRagOptions.SectionName));
         services.AddHttpClient<OpenAICustomEmailGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
+        services.AddHttpClient<EsattoRagEmailGenerator>();
         services.AddScoped<IEmailContextBuilder, EmailContextBuilder>();
         services.AddScoped<IEmailGeneratorFactory, EmailGeneratorFactory>();
 
@@ -138,7 +151,7 @@ public static class DependencyInjection
         services.AddHttpClient<ClaudeResearchService>();
         services.AddScoped<HybridResearchService>();
         services.AddScoped<IResearchServiceFactory, ResearchServiceFactory>();
-        
+
         return services;
     }
 }

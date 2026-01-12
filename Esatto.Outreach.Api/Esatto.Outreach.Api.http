@@ -1,6 +1,50 @@
-@Esatto.Outreach.Api_HostAddress = http://localhost:5273
+@Esatto.Outreach.Api_HostAddress = http://localhost:3000
+@Azure_HostAddress = https://esatto-outreach-api-dev-gcbkdhgad3huh2fk.swedencentral-01.azurewebsites.net
 
-GET {{Esatto.Outreach.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+# Välj vilken miljö du vill testa (byt ut nedan)
+@baseUrl = {{Azure_HostAddress}}
+
+### Health Check
+GET {{baseUrl}}/healthz
+
+### Register User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@esatto.se",
+  "password": "TestPassword123!",
+  "username": "testuser"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@esatto.se",
+  "password": "TestPassword123!"
+}
+
+### Get token from login response
+@accessToken = {{login.response.body.accessToken}}
+
+### Create Prospect (requires auth)
+POST {{baseUrl}}/prospects
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "Test Company AB",
+  "orgNr": "556677-8899",
+  "websites": ["https://testcompany.se"],
+  "emailAddresses": ["info@testcompany.se"],
+  "phoneNumbers": ["+46701234567"]
+}
+
+### List Prospects (requires auth)
+GET {{baseUrl}}/prospects
+Authorization: Bearer {{accessToken}}
 
 ###
