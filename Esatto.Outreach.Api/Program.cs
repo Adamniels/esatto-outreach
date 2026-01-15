@@ -69,11 +69,15 @@ builder.Services.AddScoped<GetProspectById>();
 builder.Services.AddScoped<GetAllProspects>();
 builder.Services.AddScoped<ListProspects>();
 builder.Services.AddScoped<DeleteProspect>();
+builder.Services.AddScoped<AddContactPerson>();
+builder.Services.AddScoped<UpdateContactPerson>();
+builder.Services.AddScoped<DeleteContactPerson>();
 builder.Services.AddScoped<GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<SendEmailViaN8n>();
 builder.Services.AddScoped<ChatWithProspect>();
 builder.Services.AddScoped<ResetProspectChat>();
-builder.Services.AddScoped<GenerateSoftCompanyData>();
+builder.Services.AddScoped<GenerateEntityIntelligence>();
+builder.Services.AddScoped<EnrichContactPerson>();
 builder.Services.AddScoped<ListEmailPrompts>();
 builder.Services.AddScoped<GetActiveEmailPrompt>();
 builder.Services.AddScoped<CreateEmailPrompt>();
@@ -82,7 +86,7 @@ builder.Services.AddScoped<ActivateEmailPrompt>();
 builder.Services.AddScoped<DeleteEmailPrompt>();
 
 // Batch use cases
-builder.Services.AddScoped<GenerateSoftDataBatch>();
+builder.Services.AddScoped<GenerateEntityIntelligenceBatch>();
 builder.Services.AddScoped<GenerateEmailBatch>();
 
 // Company Info use cases
@@ -235,6 +239,74 @@ app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspect useCase, Cl
 })
 .RequireAuthorization();
 
+// Add Contact Person
+app.MapPost("/prospects/{id:guid}/contacts", async (
+    Guid id, 
+    CreateContactPersonDto dto, 
+    AddContactPerson useCase, 
+    ClaimsPrincipal user, 
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+    
+    if (string.IsNullOrWhiteSpace(dto.Name))
+        return Results.BadRequest(new { error = "Name is required" });
+
+    var created = await useCase.Handle(id, dto, ct);
+    return created is null ? Results.NotFound() : Results.Ok(created);
+})
+.RequireAuthorization();
+
+// Update Contact Person
+app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
+    Guid prospectId, 
+    Guid contactId, 
+    UpdateContactPersonDto dto, 
+    UpdateContactPerson useCase, 
+    ClaimsPrincipal user, 
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+    var updated = await useCase.Handle(prospectId, contactId, dto, ct);
+    return updated is null ? Results.NotFound() : Results.Ok(updated);
+})
+.RequireAuthorization();
+
+// Delete Contact Person
+app.MapDelete("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
+    Guid prospectId, 
+    Guid contactId, 
+    DeleteContactPerson useCase, 
+    ClaimsPrincipal user, 
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+    var success = await useCase.Handle(prospectId, contactId, ct);
+    return success ? Results.Ok() : Results.NotFound();
+})
+.RequireAuthorization();
+
+// Enrich Contact Person
+app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/enrich", async (
+    Guid prospectId,
+    Guid contactId,
+    EnrichContactPerson useCase,
+    ClaimsPrincipal user,
+    CancellationToken ct) =>
+{
+    var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+    var enriched = await useCase.Handle(contactId, userId, ct);
+    return enriched is null ? Results.NotFound() : Results.Ok(enriched);
+})
+.RequireAuthorization();
+
 // --- Prospects endpoints (via use-cases) ---
 
 // User choice how they want the email to be generated.
@@ -313,32 +385,34 @@ app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat
 
 app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
     Guid id,
-    [FromQuery] string? provider,
-    GenerateSoftCompanyData useCase,
+    GenerateEntityIntelligence useCase,
+    ILogger<Program> logger,
     CancellationToken ct) =>
 {
     try
     {
-        var softData = await useCase.Handle(id, provider, ct);
+        var softData = await useCase.Handle(id, ct);
         return Results.Ok(softData);
     }
     catch (KeyNotFoundException ex)
     {
+        logger.LogWarning(ex, "Prospect {Id} not found during enrichment", id);
         return Results.NotFound(new { error = ex.Message });
     }
     catch (ArgumentException ex)
     {
+        logger.LogWarning(ex, "Invalid argument during enrichment for {Id}", id);
         return Results.BadRequest(new { error = ex.Message });
     }
     catch (InvalidOperationException ex)
     {
+        logger.LogWarning(ex, "Invalid operation during enrichment for {Id}", id);
         return Results.BadRequest(new { error = ex.Message });
     }
     catch (Exception ex)
     {
-        return Results.Problem(
-            detail: ex.Message,
-            statusCode: 500);
+        logger.LogError(ex, "Failed to enrich prospect {Id}", id);
+        return Results.Json(new { error = ex.Message }, statusCode: 500);
     }
 });
 
@@ -346,7 +420,7 @@ app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
 
 app.MapPost("/prospects/batch/soft-data/generate", async (
     BatchSoftDataRequest request,
-    GenerateSoftDataBatch useCase,
+    GenerateEntityIntelligenceBatch useCase,
     ClaimsPrincipal user,
     CancellationToken ct) =>
 {
@@ -356,7 +430,7 @@ app.MapPost("/prospects/batch/soft-data/generate", async (
 
     try
     {
-        var results = await useCase.Handle(request.ProspectIds, userId, request.Provider, ct);
+        var results = await useCase.Handle(request.ProspectIds, userId, ct);
         return Results.Ok(results);
     }
     catch (UnauthorizedAccessException)
@@ -389,7 +463,6 @@ app.MapPost("/prospects/batch/email/generate", async (
             userId,
             request.Type,
             request.AutoGenerateSoftData,
-            request.SoftDataProvider,
             ct);
         return Results.Ok(results);
     }
