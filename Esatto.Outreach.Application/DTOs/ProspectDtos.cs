@@ -1,4 +1,5 @@
 using Esatto.Outreach.Domain.Entities;
+using System.Text.Json;
 using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Domain.ValueObjects;
 
@@ -50,7 +51,8 @@ public record ProspectViewDto(
     string? MailBodyPlain,
     string? MailBodyHTML,
     string? OwnerId,
-    SoftCompanyDataDto? SoftCompanyData)
+    EntityIntelligenceDto? EntityIntelligence,
+    List<ContactPersonDto> ContactPersons)
 {
     public static ProspectViewDto FromEntity(Prospect p) =>
         new(
@@ -78,7 +80,8 @@ public record ProspectViewDto(
             p.MailBodyPlain,
             p.MailBodyHTML,
             p.OwnerId,
-            p.SoftCompanyData != null ? SoftCompanyDataDto.FromEntity(p.SoftCompanyData) : null);
+            p.EntityIntelligence != null ? EntityIntelligenceDto.FromEntity(p.EntityIntelligence) : null,
+            p.ContactPersons?.Select(ContactPersonDto.FromEntity).ToList() ?? new());
 }
 
 // DTO för pending prospects lista
@@ -119,29 +122,68 @@ public record CustomFieldDto(long Id, string? FieldName, long? FieldDefinitionId
 
 // ...existing code...
 
-public record SoftCompanyDataDto(
+public record EntityIntelligenceDto(
     Guid Id,
     Guid ProspectId,
-    string? HooksJson,              // JSON string med hooks
-    string? RecentEventsJson,       // JSON string med events
-    string? NewsItemsJson,          // JSON string med news
-    string? SocialActivityJson,     // JSON string med social media
-    string? SourcesJson,            // JSON string med källor
+    List<string> CompanyHooks,
+    List<string> PersonalHooks,
+    string? SummarizedContext,
+    string? SourcesJson,
+    EnrichedCompanyDataDto? RichData,
     DateTime ResearchedAt,
     DateTime CreatedUtc,
     DateTime? UpdatedUtc
 )
 {
-    public static SoftCompanyDataDto FromEntity(SoftCompanyData entity) => new(
-        Id: entity.Id,
-        ProspectId: entity.ProspectId,
-        HooksJson: entity.HooksJson,
-        RecentEventsJson: entity.RecentEventsJson,
-        NewsItemsJson: entity.NewsItemsJson,
-        SocialActivityJson: entity.SocialActivityJson,
-        SourcesJson: entity.SourcesJson,
-        ResearchedAt: entity.ResearchedAt,
-        CreatedUtc: entity.CreatedUtc,
-        UpdatedUtc: entity.UpdatedUtc
-    );
+    public static EntityIntelligenceDto FromEntity(EntityIntelligence entity) 
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        
+        List<string> DeserializeList(string? json) 
+        {
+            if (string.IsNullOrWhiteSpace(json)) return new();
+            try { return JsonSerializer.Deserialize<List<string>>(json, options) ?? new(); }
+            catch { return new(); }
+        }
+
+        EnrichedCompanyDataDto? DeserializeRichData(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return null;
+            try 
+            { 
+                 // If it starts with [, it's a list (legacy), so it's NOT rich data
+                 if (json.TrimStart().StartsWith("[")) return null;
+                 
+                 return JsonSerializer.Deserialize<EnrichedCompanyDataDto>(json, options); 
+            }
+            catch { return null; }
+        }
+
+        return new(
+            Id: entity.Id,
+            ProspectId: entity.ProspectId,
+            CompanyHooks: DeserializeList(entity.CompanyHooksJson), // Legacy/Fallback
+            PersonalHooks: DeserializeList(entity.PersonalHooksJson),
+            SummarizedContext: entity.SummarizedContext,
+            SourcesJson: entity.SourcesJson,
+            RichData: DeserializeRichData(entity.CompanyHooksJson), // Try new format
+            ResearchedAt: entity.ResearchedAt,
+            CreatedUtc: entity.CreatedUtc,
+            UpdatedUtc: entity.UpdatedUtc
+        );
+    }
 }
+
+// Rich Data Structures
+public record EnrichedCompanyDataDto(
+    string Summary,
+    List<string>? KeyValueProps,
+    List<string>? TechStack,
+    List<CaseStudyDto>? CaseStudies,
+    List<NewsEventDto>? News,
+    List<HiringSignalDto>? Hiring
+);
+
+public record CaseStudyDto(string Client, string Challenge, string Solution, string Outcome);
+public record NewsEventDto(string Date, string Description, string Source);
+public record HiringSignalDto(string Role, string Date, string Source);

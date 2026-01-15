@@ -48,16 +48,16 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
         CancellationToken cancellationToken = default)
     {
         // Validate that we have collected soft data
-        if (context.SoftData == null)
+        if (context.EntityIntelligence == null)
         {
             throw new InvalidOperationException(
-                "EsattoRagEmailGenerator requires collected company data (SoftData). " +
+                "EsattoRagEmailGenerator requires Entity Intelligence. " +
                 "Use EmailGenerationType.UseCollectedData or ensure data collection is completed first.");
         }
 
         _logger.LogInformation(
             "Generating email using Esatto RAG for prospect {ProspectId}",
-            context.SoftData.ProspectId);
+            context.EntityIntelligence.ProspectId);
 
         // Build RAG request from context
         var ragRequest = BuildRagRequest(context);
@@ -90,148 +90,77 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
     private static EsattoRagRequest BuildRagRequest(EmailGenerationContext context)
     {
         var documents = new List<RagDocument>();
-        var softData = context.SoftData!;
+        var intelligence = context.EntityIntelligence!;
 
         // Extract company name from prospect
         var companyName = context.Request.Name ?? "Unknown Company";
 
-        // Add personalization hooks as documents (high priority)
-        if (!string.IsNullOrWhiteSpace(softData.HooksJson))
+        // 1. Add Summarized Context
+        if (!string.IsNullOrWhiteSpace(intelligence.SummarizedContext))
+        {
+            documents.Add(new RagDocument
+            {
+                DocType = "summary",
+                Title = "Company Summary",
+                Text = intelligence.SummarizedContext,
+                SourceUrl = "AI Analysis",
+                Priority = 1.5
+            });
+        }
+
+        // 2. Add Company Hooks (List of strings)
+        if (!string.IsNullOrWhiteSpace(intelligence.CompanyHooksJson))
         {
             try
             {
-                var hooks = JsonSerializer.Deserialize<List<JsonElement>>(softData.HooksJson);
+                // Assuming simple list of strings for now as per GenerateEntityIntelligence implementation
+                var hooks = JsonSerializer.Deserialize<List<string>>(intelligence.CompanyHooksJson);
                 if (hooks != null)
                 {
                     foreach (var hook in hooks)
                     {
-                        var text = hook.TryGetProperty("text", out var textProp) ? textProp.GetString() : null;
-                        var source = hook.TryGetProperty("source", out var sourceProp) ? sourceProp.GetString() : "Unknown";
-                        
-                        if (!string.IsNullOrWhiteSpace(text))
+                        if (!string.IsNullOrWhiteSpace(hook))
                         {
                             documents.Add(new RagDocument
                             {
-                                DocType = "other",
-                                Title = $"Personalization Hook - {source}",
-                                Text = text,
-                                SourceUrl = source ?? "N/A",
+                                DocType = "hook",
+                                Title = "Company Hook",
+                                Text = hook,
+                                SourceUrl = "AI Analysis",
                                 Priority = 1.3
                             });
                         }
                     }
                 }
             }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
+            catch (JsonException) { /* Ignore parsing errors */ }
         }
 
-        // Add recent events (high priority - timely)
-        if (!string.IsNullOrWhiteSpace(softData.RecentEventsJson))
+        // 3. Add Personal Hooks (List of strings)
+        if (!string.IsNullOrWhiteSpace(intelligence.PersonalHooksJson))
         {
             try
             {
-                var events = JsonSerializer.Deserialize<List<JsonElement>>(softData.RecentEventsJson);
-                if (events != null)
+                var hooks = JsonSerializer.Deserialize<List<string>>(intelligence.PersonalHooksJson);
+                if (hooks != null)
                 {
-                    foreach (var evt in events)
+                    foreach (var hook in hooks)
                     {
-                        var title = evt.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : null;
-                        var date = evt.TryGetProperty("date", out var dateProp) ? dateProp.GetString() : null;
-                        var type = evt.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : "event";
-                        var url = evt.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(title))
+                        if (!string.IsNullOrWhiteSpace(hook))
                         {
-                            var text = date != null ? $"{title} ({date})" : title;
                             documents.Add(new RagDocument
                             {
-                                DocType = "other",
-                                Title = $"Event: {title}",
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.5
+                                DocType = "hook",
+                                Title = "Personal Hook",
+                                Text = hook,
+                                SourceUrl = "AI Analysis",
+                                Priority = 1.4
                             });
                         }
                     }
                 }
             }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
-        }
-
-        // Add news items (high priority - timely and relevant)
-        if (!string.IsNullOrWhiteSpace(softData.NewsItemsJson))
-        {
-            try
-            {
-                var news = JsonSerializer.Deserialize<List<JsonElement>>(softData.NewsItemsJson);
-                if (news != null)
-                {
-                    foreach (var item in news)
-                    {
-                        var headline = item.TryGetProperty("headline", out var headlineProp) ? headlineProp.GetString() : null;
-                        var date = item.TryGetProperty("date", out var dateProp) ? dateProp.GetString() : null;
-                        var source = item.TryGetProperty("source", out var sourceProp) ? sourceProp.GetString() : "Unknown";
-                        var url = item.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(headline))
-                        {
-                            var text = date != null ? $"{headline} ({date}, {source})" : $"{headline} ({source})";
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "press_release",
-                                Title = headline,
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.5
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
-        }
-
-        // Add social activity (standard priority)
-        if (!string.IsNullOrWhiteSpace(softData.SocialActivityJson))
-        {
-            try
-            {
-                var social = JsonSerializer.Deserialize<List<JsonElement>>(softData.SocialActivityJson);
-                if (social != null)
-                {
-                    foreach (var post in social)
-                    {
-                        var platform = post.TryGetProperty("platform", out var platformProp) ? platformProp.GetString() : "Social";
-                        var text = post.TryGetProperty("text", out var textProp) ? textProp.GetString() : null;
-                        var url = post.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "linkedin",
-                                Title = $"{platform} Post",
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.0
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
+            catch (JsonException) { /* Ignore parsing errors */ }
         }
 
         // Extract contact person name from request

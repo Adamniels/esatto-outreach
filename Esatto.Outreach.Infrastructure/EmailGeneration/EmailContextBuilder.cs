@@ -12,18 +12,18 @@ namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 public sealed class EmailContextBuilder : IEmailContextBuilder
 {
     private readonly IProspectRepository _prospectRepo;
-    private readonly ISoftCompanyDataRepository _softDataRepo;
+    private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IGenerateEmailPromptRepository _promptRepo;
     private static string? _esattoCompanyInfo;
     private static readonly object _lock = new();
 
     public EmailContextBuilder(
         IProspectRepository prospectRepo,
-        ISoftCompanyDataRepository softDataRepo,
+        IEntityIntelligenceRepository enrichmentRepo,
         IGenerateEmailPromptRepository promptRepo)
     {
         _prospectRepo = prospectRepo;
-        _softDataRepo = softDataRepo;
+        _enrichmentRepo = enrichmentRepo;
         _promptRepo = promptRepo;
         LoadEsattoCompanyInfo();
     }
@@ -45,15 +45,15 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
             throw new InvalidOperationException("No active email prompt template found for this user");
 
         // 3. Hämta soft data om det krävs
-        SoftCompanyData? softData = null;
+        EntityIntelligence? entityIntelligence = null;
         if (includeSoftData)
         {
-            if (!prospect.SoftCompanyDataId.HasValue)
-                throw new InvalidOperationException("No collected soft data available for this prospect. Generate soft data first.");
+            if (!prospect.EntityIntelligenceId.HasValue)
+                throw new InvalidOperationException("No Entity Intelligence available for this prospect. Generate it first.");
 
-            softData = await _softDataRepo.GetByIdAsync(prospect.SoftCompanyDataId.Value, cancellationToken);
-            if (softData == null)
-                throw new InvalidOperationException("No collected soft data available for this prospect. Generate soft data first.");
+            entityIntelligence = await _enrichmentRepo.GetByIdAsync(prospect.EntityIntelligenceId.Value, cancellationToken);
+            if (entityIntelligence == null)
+                throw new InvalidOperationException("Entity Intelligence record not found.");
         }
 
         // 4. Bygg request DTO från prospect
@@ -77,7 +77,7 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
             companyInfo: _esattoCompanyInfo ?? "{}",
             instructions: activePrompt.Instructions,
             request: request,
-            softData: softData
+            entityIntelligence: entityIntelligence
         );
     }
 

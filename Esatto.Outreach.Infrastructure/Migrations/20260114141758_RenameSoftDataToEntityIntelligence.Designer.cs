@@ -3,6 +3,7 @@ using System;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
-    partial class OutreachDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260114141758_RenameSoftDataToEntityIntelligence")]
+    partial class RenameSoftDataToEntityIntelligence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,57 +96,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.ContactPerson", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("LinkedInUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("PersonalHooksJson")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PersonalNewsJson")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ProspectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("ResearchedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Summary")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProspectId");
-
-                    b.ToTable("ContactPersons");
                 });
 
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.EntityIntelligence", b =>
@@ -550,17 +502,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.ContactPerson", b =>
-                {
-                    b.HasOne("Esatto.Outreach.Domain.Entities.Prospect", "Prospect")
-                        .WithMany("ContactPersons")
-                        .HasForeignKey("ProspectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Prospect");
-                });
-
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.EntityIntelligence", b =>
                 {
                     b.HasOne("Esatto.Outreach.Domain.Entities.Prospect", "Prospect")
@@ -664,8 +605,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.Prospect", b =>
                 {
-                    b.Navigation("ContactPersons");
-
                     b.Navigation("EntityIntelligence");
                 });
 #pragma warning restore 612, 618

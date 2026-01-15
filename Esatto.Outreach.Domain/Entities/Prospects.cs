@@ -23,6 +23,9 @@ public class Prospect : Entity
     public List<CapsuleTag> Tags { get; private set; } = new();
     public List<CapsuleCustomField> CustomFields { get; private set; } = new();
 
+    // === NEW CONTACT PERSONS ===
+    public List<ContactPerson> ContactPersons { get; private set; } = new();
+
     // === ESATTO WORKFLOW ===
     public bool IsPending { get; private set; } = false;  // Default false för manuella
     public string? Notes { get; private set; }
@@ -37,11 +40,11 @@ public class Prospect : Entity
     // Navigation property till HardCompanyData
     public HardCompanyData? HardCompanyData { get; private set; }
 
-    // Foreign Key till SoftCompanyData (One-to-One, nullable)
-    public Guid? SoftCompanyDataId { get; private set; }
+    // Foreign Key till EntityIntelligence (One-to-One, nullable)
+    public Guid? EntityIntelligenceId { get; private set; }
 
-    // Navigation property till SoftCompanyData
-    public SoftCompanyData? SoftCompanyData { get; private set; }
+    // Navigation property till EntityIntelligence
+    public EntityIntelligence? EntityIntelligence { get; private set; }
 
     public ProspectStatus Status { get; private set; } = ProspectStatus.New;
 
@@ -258,6 +261,36 @@ public class Prospect : Entity
     }
 
     // === HELPER METHODS ===
+
+    public void AddEmailAddress(string email, string type = "Work")
+    {
+        if (string.IsNullOrWhiteSpace(email)) return;
+        
+        EmailAddresses ??= new List<CapsuleEmailAddress>();
+        
+        // De-dupe
+        if (EmailAddresses.Any(e => e.Address.Equals(email, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        EmailAddresses.Add(new CapsuleEmailAddress(email, type));
+        Touch();
+    }
+
+    public void AddContactPerson(string name, string? title = null, string? email = null)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return;
+        
+        ContactPersons ??= new List<ContactPerson>();
+        
+        // Simple de-dupe by name for now, logic can be refined later
+        if (ContactPersons.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            return;
+
+        var person = ContactPerson.Create(Id, name, title, email);
+        ContactPersons.Add(person);
+        Touch();
+    }
+
     // NOTE: important that primary website is first
     // TODO: maybe i should change so we send all, becuase all it is used for now is as informtion sent to AI
     public string? GetPrimaryWebsite() => Websites?.FirstOrDefault()?.Url;
@@ -299,15 +332,15 @@ public class Prospect : Entity
         Touch();
     }
 
-    public void LinkSoftCompanyData(Guid? softCompanyDataId)
+    public void LinkEntityIntelligence(Guid? entityIntelligenceId)
     {
-        SoftCompanyDataId = softCompanyDataId;
+        EntityIntelligenceId = entityIntelligenceId;
         Touch();
     }
 
-    public void UnlinkSoftCompanyData()
+    public void UnlinkEntityIntelligence()
     {
-        SoftCompanyDataId = null;
+        EntityIntelligenceId = null;
         Touch();
     }
 }

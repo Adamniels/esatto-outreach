@@ -142,12 +142,12 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .HasForeignKey(x => x.HardCompanyDataId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Foreign Key till SoftCompanyData (nullable, One-to-One)
-        b.Property(x => x.SoftCompanyDataId);
+        // Foreign Key till EntityIntelligence (nullable, One-to-One)
+        b.Property(x => x.EntityIntelligenceId);
 
-        b.HasOne(x => x.SoftCompanyData)
+        b.HasOne(x => x.EntityIntelligence)
             .WithOne(s => s.Prospect)
-            .HasForeignKey<SoftCompanyData>(s => s.ProspectId)
+            .HasForeignKey<EntityIntelligence>(s => s.ProspectId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // ========== OWNERSHIP ==========
@@ -186,6 +186,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
 
         // Relationer
         b.HasIndex(x => x.HardCompanyDataId);
-        b.HasIndex(x => x.SoftCompanyDataId);
+        b.HasIndex(x => x.EntityIntelligenceId);
     }
 }
