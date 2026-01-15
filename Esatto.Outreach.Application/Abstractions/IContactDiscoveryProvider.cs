@@ -15,5 +15,7 @@ public record ProspectCandidate(
     string Title, 
     string? LinkedInUrl, 
     string Source, 
-    int ConfidenceScore
+    int ConfidenceScore,
+    string? Email = null,
+    string Rationale = ""
 );

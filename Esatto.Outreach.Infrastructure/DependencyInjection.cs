@@ -149,7 +149,8 @@ public static class DependencyInjection
 
         // Scraping & Enrichment
         services.AddHttpClient<IWebScraperService, WebScraperService>();
-        services.AddScoped<IContactDiscoveryProvider, MockContactDiscoveryProvider>();
+        services.AddHttpClient<DuckDuckGoSerpService>();
+        services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
         services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>(); // Register UseCase
 
         return services;
