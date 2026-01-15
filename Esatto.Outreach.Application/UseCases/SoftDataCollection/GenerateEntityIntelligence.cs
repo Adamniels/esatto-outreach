@@ -41,7 +41,7 @@ public sealed class GenerateEntityIntelligence
 
         // 2. Layer 1: Site Scraping & AI Analysis
         var siteData = await _scraper.ScrapeCompanySiteAsync(prospect.GetPrimaryWebsite() ?? prospect.Name + ".com", ct);
-        
+
         // AI Analysis of Company
         var companyAnalysisPrompt = $@"
 Analyze this B2B company based on their website text.
@@ -88,16 +88,16 @@ TEXT: {siteData.BodyText}";
         );
 
         EnrichedCompanyDataDto enrichedData = new(
-            Summary: "", 
-            KeyValueProps: new(), 
-            TechStack: new(), 
-            CaseStudies: new(), 
-            News: new(), 
+            Summary: "",
+            KeyValueProps: new(),
+            TechStack: new(),
+            CaseStudies: new(),
+            News: new(),
             Hiring: new()
         );
         string summary = "";
 
-        try 
+        try
         {
             var jsonText = aiResponse?.AiMessage; // Null check
             if (!string.IsNullOrWhiteSpace(jsonText))
@@ -115,7 +115,7 @@ TEXT: {siteData.BodyText}";
                 // Parse into Rich DTO
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var parsedData = JsonSerializer.Deserialize<EnrichedCompanyDataDto>(jsonText, options);
-                
+
                 if (parsedData != null)
                 {
                     enrichedData = parsedData;
@@ -133,7 +133,7 @@ TEXT: {siteData.BodyText}";
             _logger.LogError(ex, "Failed to parse AI analysis response. Using raw text as summary.");
             summary = aiResponse?.AiMessage ?? "Analysis failed.";
         }
-        
+
         // Serialize the RICH object into the CompanyHooksJson column (Upgrade)
         var companyHooksJson = JsonSerializer.Serialize(enrichedData);
 
@@ -167,35 +167,35 @@ Format as valid JSON matching:
 
         try
         {
-             var jsonText = searchResponse?.AiMessage;
-             if (!string.IsNullOrWhiteSpace(jsonText))
-             {
-                 if (jsonText.Contains("```json")) jsonText = jsonText.Split("```json")[1].Split("```")[0].Trim();
-                 else if (jsonText.Contains("```")) jsonText = jsonText.Split("```")[1].Split("```")[0].Trim();
+            var jsonText = searchResponse?.AiMessage;
+            if (!string.IsNullOrWhiteSpace(jsonText))
+            {
+                if (jsonText.Contains("```json")) jsonText = jsonText.Split("```json")[1].Split("```")[0].Trim();
+                else if (jsonText.Contains("```")) jsonText = jsonText.Split("```")[1].Split("```")[0].Trim();
 
-                 // Parse structured news
-                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                 // Quick DTO for search response
-                 var searchResult = JsonSerializer.Deserialize<EnrichedCompanyDataDto>(jsonText, options);
-                 
-                 if (searchResult?.News != null)
-                 {
-                     if (enrichedData.News == null) enrichedData = enrichedData with { News = new() };
-                     enrichedData.News.AddRange(searchResult.News);
-                 }
-             }
+                // Parse structured news
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                // Quick DTO for search response
+                var searchResult = JsonSerializer.Deserialize<EnrichedCompanyDataDto>(jsonText, options);
+
+                if (searchResult?.News != null)
+                {
+                    if (enrichedData.News == null) enrichedData = enrichedData with { News = new() };
+                    enrichedData.News.AddRange(searchResult.News);
+                }
+            }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to parse Web Search response.");
             if (searchResponse?.AiMessage != null)
             {
-               // Fallback: Add raw text as a 'News' item if parsing fails
-               if (enrichedData.News == null) enrichedData = enrichedData with { News = new() };
-               
-               var rawMsg = searchResponse.AiMessage;
-               var safeSnippet = rawMsg.Length > 200 ? rawMsg[..200] + "..." : rawMsg;
-               enrichedData.News.Add(new NewsEventDto("Unknown", $"Raw Search Result: {safeSnippet}", "Web Search"));
+                // Fallback: Add raw text as a 'News' item if parsing fails
+                if (enrichedData.News == null) enrichedData = enrichedData with { News = new() };
+
+                var rawMsg = searchResponse.AiMessage;
+                var safeSnippet = rawMsg.Length > 200 ? rawMsg[..200] + "..." : rawMsg;
+                enrichedData.News.Add(new NewsEventDto("Unknown", $"Raw Search Result: {safeSnippet}", "Web Search"));
             }
         }
 
@@ -210,17 +210,16 @@ Format as valid JSON matching:
         // Now that all external/slow operations are done, load the fresh entities for update.
         var trackedProspect = await _prospectRepo.GetByIdAsync(prospectId, ct)
              ?? throw new KeyNotFoundException($"Prospect {prospectId} not found.");
-             
+
         var existingIntelligence = await _enrichmentRepo.GetByProspectIdAsync(prospectId, ct);
 
         // 5. Apply Contact Updates
         if (contacts.Any())
         {
-            // notesBuilder logic removed as per request
             foreach (var c in contacts)
             {
                 _logger.LogInformation("Found detected contact: {Name} ({Title})", c.Name, c.Title);
-                
+
                 try
                 {
                     // Check if contact already exists
@@ -229,20 +228,13 @@ Format as valid JSON matching:
 
                     if (existingContact == null)
                     {
-                        // Create and Add explicitly
                         var newContact = ContactPerson.Create(prospectId, c.Name, c.Title, null, c.LinkedInUrl);
                         await _prospectRepo.AddContactPersonAsync(newContact, ct);
-                        
-                        // We also add it to the memory-collection if we want to reflect it immediately in this scope,
-                        // but re-fetching is safer if we needed it. For now, just firing and forgetting the persistence.
                         _logger.LogInformation("Added new contact person: {Name}", c.Name);
                     }
                     else
                     {
-                        // Update existing explicitly
-                        existingContact.UpdateDetails(null, c.Title, null, c.LinkedInUrl);
-                        await _prospectRepo.UpdateContactPersonAsync(existingContact, ct);
-                        _logger.LogInformation("Updated existing contact person: {Name}", c.Name);
+                        _logger.LogDebug("Contact person {Name} already exists, skipping", c.Name);
                     }
                 }
                 catch (Exception ex)
@@ -250,22 +242,20 @@ Format as valid JSON matching:
                     _logger.LogWarning(ex, "Failed to add contact {Name}, skipping", c.Name);
                 }
             }
-            
-            // Notes update removed
         }
-        
+
         // 6. Apply Entity Intelligence Updates
         if (existingIntelligence is null)
         {
-             existingIntelligence = EntityIntelligence.Create(
-                 prospectId, 
-                 companyHooksJson, 
-                 "[]", 
-                 summary,
-                 JsonSerializer.Serialize(new { url = siteData.Url, type = "website_and_search" })
-             );
-             // Ensure it's added to context
-             await _enrichmentRepo.AddAsync(existingIntelligence, ct);
+            existingIntelligence = EntityIntelligence.Create(
+                prospectId,
+                companyHooksJson,
+                "[]",
+                summary,
+                JsonSerializer.Serialize(new { url = siteData.Url, type = "website_and_search" })
+            );
+            // Ensure it's added to context
+            await _enrichmentRepo.AddAsync(existingIntelligence, ct);
         }
         else
         {
@@ -276,14 +266,14 @@ Format as valid JSON matching:
             // No need to call UpdateAsync explicitly if we save trackedProspect below, 
             // provided the context is shared. But for safety/clarity we rely on EF tracking.
         }
-        
+
         // 7. Link & Save (Single Transaction)
         // Linking by ID ensures the relationship is set
         if (trackedProspect.EntityIntelligenceId != existingIntelligence.Id)
         {
             trackedProspect.LinkEntityIntelligence(existingIntelligence.Id);
         }
-        
+
         // Save the aggregate root (Prospect). This commits all changes to Prospect, Contacts, and Intelligence.
         await _prospectRepo.UpdateAsync(trackedProspect, ct);
 
