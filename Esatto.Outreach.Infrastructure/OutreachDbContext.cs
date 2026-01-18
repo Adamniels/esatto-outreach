@@ -15,7 +15,9 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<HardCompanyData> HardCompanyData => Set<HardCompanyData>();
 
-    public DbSet<SoftCompanyData> SoftCompanyData => Set<SoftCompanyData>();
+    public DbSet<EntityIntelligence> EntityIntelligences => Set<EntityIntelligence>();
+    
+    public DbSet<ContactPerson> ContactPersons => Set<ContactPerson>();
 
     public DbSet<GenerateEmailPrompt> GenerateEmailPrompts => Set<GenerateEmailPrompt>();
 

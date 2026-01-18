@@ -155,8 +155,6 @@ Do not include code fences, explanations, or any extra text.
             Företag: {req.Name}
             {(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}")}
             {(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}" : "")}
-            {(req.EmailAddresses?.Any() == true ? $"E-postadresser: {string.Join(", ", req.EmailAddresses)}" : "")}
-            {(req.PhoneNumbers?.Any() == true ? $"Telefonnummer: {string.Join(", ", req.PhoneNumbers)}" : "")}
             {(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}" : "")}
             {(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}" : "")}
             {(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}")}";

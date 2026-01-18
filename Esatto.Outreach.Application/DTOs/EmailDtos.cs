@@ -9,8 +9,6 @@ public record CustomEmailRequestDto(
     string? About,
     string? PictureURL,
     List<string>? Websites,
-    List<string>? EmailAddresses,
-    List<string>? PhoneNumbers,
     List<string>? Addresses,
     List<string>? Tags,
     string? Notes
@@ -60,7 +58,7 @@ public sealed record EmailGenerationContext
     /// <summary>
     /// Collected soft data (only present when using UseCollectedData generation type)
     /// </summary>
-    public SoftCompanyData? SoftData { get; init; }
+    public EntityIntelligence? EntityIntelligence { get; init; }
 
     /// <summary>
     /// Factory method to create context with all required data
@@ -69,14 +67,14 @@ public sealed record EmailGenerationContext
         string companyInfo,
         string instructions,
         CustomEmailRequestDto request,
-        SoftCompanyData? softData = null)
+        EntityIntelligence? entityIntelligence = null)
     {
         return new EmailGenerationContext
         {
             CompanyInfo = companyInfo,
             Instructions = instructions,
             Request = request,
-            SoftData = softData
+            EntityIntelligence = entityIntelligence
         };
     }
 }

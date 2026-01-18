@@ -33,8 +33,8 @@ public sealed class CollectedDataEmailGenerator : ICustomEmailGenerator
         CancellationToken cancellationToken = default)
     {
         // 1. Validera att soft data finns i context
-        if (context.SoftData == null)
-            throw new InvalidOperationException("No collected soft data available in context. This generator requires soft data.");
+        if (context.EntityIntelligence == null)
+            throw new InvalidOperationException("No Entity Intelligence available in context. This generator requires it.");
 
         // 2. Bygg upp prompten med samlad data
         var userPrompt = BuildPromptWithCollectedData(context) + @"
@@ -53,6 +53,20 @@ Do not include code fences, explanations, or any extra text.
 
         // 6. Kör request mot OpenAI Responses API
         var jsonText = await CallOpenAIAsync(payload, cancellationToken);
+        
+        // Sanitize JSON (remove markdown code fences if present)
+        if (jsonText.StartsWith("```json"))
+        {
+            jsonText = jsonText.Substring(7);
+            if (jsonText.EndsWith("```")) jsonText = jsonText.Substring(0, jsonText.Length - 3);
+        }
+        else if (jsonText.StartsWith("```"))
+        {
+            jsonText = jsonText.Substring(3);
+            if (jsonText.EndsWith("```")) jsonText = jsonText.Substring(0, jsonText.Length - 3);
+        }
+        
+        jsonText = jsonText.Trim();
 
         // 7. Försök deserialisera till din DTO
         CustomEmailDraftDto? dto = null;
@@ -72,8 +86,6 @@ Do not include code fences, explanations, or any extra text.
             throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
 
         // 8. Säkerställ titel om den saknas
-        // TODO: inte säker på att jag vill göra detta, om titel inte finns så vill jag nog få error?
-        // samtidigt kan man bara ändra det
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
             dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
@@ -89,7 +101,8 @@ Do not include code fences, explanations, or any extra text.
         return new Dictionary<string, object>
         {
             ["model"] = _options.Model,
-            ["input"] = userPrompt
+            ["input"] = userPrompt,
+            ["max_output_tokens"] = _options.DefaultMaxOutputTokens > 0 ? _options.DefaultMaxOutputTokens : 2000
         };
     }
 
@@ -135,38 +148,59 @@ Do not include code fences, explanations, or any extra text.
     private static string BuildPromptWithCollectedData(EmailGenerationContext context)
     {
         var req = context.Request;
-        var softData = context.SoftData!; // Safe to use ! because we validated it's not null
+        var intelligence = context.EntityIntelligence!; 
 
-        // Bygg upp collected data-sektionen
-        var collectedDataSection = new StringBuilder();
-        collectedDataSection.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET ===");
+        string collectedDataSection;
 
-        if (!string.IsNullOrWhiteSpace(softData.HooksJson))
+        // Try to access rich data (New Structure)
+        if (intelligence.EnrichedData != null)
         {
-            collectedDataSection.AppendLine("\nPersonaliseringshoooks:");
-            collectedDataSection.AppendLine(softData.HooksJson);
-        }
+            var ed = intelligence.EnrichedData;
+            var sb = new StringBuilder();
+            sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET (RICH DATA) ===");
+            
+            sb.AppendLine($"\nSNAPSHOT: {ed.Snapshot.WhatTheyDo}. They operate by {ed.Snapshot.HowTheyOperate}. Target: {ed.Snapshot.TargetCustomer}.");
 
-        if (!string.IsNullOrWhiteSpace(softData.RecentEventsJson))
+            sb.AppendLine("\nPROFILE:");
+            sb.AppendLine($"- Business Model: {ed.Profile.BusinessModel}");
+            sb.AppendLine($"- Customer Type: {ed.Profile.CustomerType}");
+            sb.AppendLine($"- Tech Posture: {ed.Profile.TechnologyPosture}");
+            sb.AppendLine($"- Scaling Stage: {ed.Profile.ScalingStage}");
+
+            if (ed.Challenges.Confirmed.Any() || ed.Challenges.Inferred.Any())
+            {
+                sb.AppendLine("\nCHALLENGES (PAIN POINTS):");
+                foreach(var c in ed.Challenges.Confirmed)
+                    sb.AppendLine($"- [CONFIRMED] {c.ChallengeDescription}");
+                foreach(var c in ed.Challenges.Inferred)
+                    sb.AppendLine($"- [INFERRED] {c.ChallengeDescription}");
+            }
+            
+            if (ed.OutreachHooks.Any())
+            {
+                sb.AppendLine("\nRECENT EVENTS / HOOKS:");
+                foreach(var h in ed.OutreachHooks)
+                    sb.AppendLine($"- {h.Date}: {h.HookDescription} (Why: {h.WhyItMatters})");
+            }
+            
+            sb.AppendLine($"\n(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
+            collectedDataSection = sb.ToString();
+        }
+        else
         {
-            collectedDataSection.AppendLine("\nSenaste händelser:");
-            collectedDataSection.AppendLine(softData.RecentEventsJson);
-        }
+            // Legacy / Fallback
+            var sb = new StringBuilder();
+            sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET/PERSONEN ===");
+            
+            if (!string.IsNullOrWhiteSpace(intelligence.SummarizedContext))
+            {
+                sb.AppendLine("\nSammanfattning:");
+                sb.AppendLine(intelligence.SummarizedContext);
+            }
 
-        if (!string.IsNullOrWhiteSpace(softData.NewsItemsJson))
-        {
-            collectedDataSection.AppendLine("\nNyheter:");
-            collectedDataSection.AppendLine(softData.NewsItemsJson);
+            sb.AppendLine($"\n(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
+            collectedDataSection = sb.ToString();
         }
-
-        if (!string.IsNullOrWhiteSpace(softData.SocialActivityJson))
-        {
-            collectedDataSection.AppendLine("\nSocial aktivitet:");
-            collectedDataSection.AppendLine(softData.SocialActivityJson);
-        }
-
-        // Lägg till när datan samlades in
-        collectedDataSection.AppendLine($"\n(Data insamlad: {softData.ResearchedAt:yyyy-MM-dd})");
 
         // Statisk systemkontext
         var systemContext = @$"
@@ -177,7 +211,7 @@ Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl p
 
 === MÅLFÖRETAG ===
 Företag: {req.Name}
-{(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.EmailAddresses?.Any() == true ? $"E-postadresser: {string.Join(", ", req.EmailAddresses)}\n" : "")}{(req.PhoneNumbers?.Any() == true ? $"Telefonnummer: {string.Join(", ", req.PhoneNumbers)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
+{(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
 {collectedDataSection}";
 
         // Dynamiska instruktioner från databasen
@@ -186,7 +220,11 @@ Företag: {req.Name}
 === INSTRUKTIONER ===
 {context.Instructions}
 
-VIKTIGT: Använd den insamlade datan ovan för att skapa ett personligt och relevant mejl. 
-Referera till specifika händelser, nyheter eller aktiviteter som är aktuella för företaget.";
+VIKTIGT:
+1. Använd informationen under 'INSAMLAD DATA' för att hitta en konkret koppling till kunden.
+2. Matcha kundens utmaningar eller bransch (från Case Studies/Summary) med Esattos tjänster.
+3. Skriv personligt och engagerande.
+4. Referera gärna till liknande case om det finns i datan.";
     }
 }
+

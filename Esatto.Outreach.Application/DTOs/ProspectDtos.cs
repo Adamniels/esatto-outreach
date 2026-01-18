@@ -1,4 +1,5 @@
 using Esatto.Outreach.Domain.Entities;
+using System.Text.Json;
 using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Domain.ValueObjects;
 
@@ -8,16 +9,12 @@ namespace Esatto.Outreach.Application.DTOs;
 public record ProspectCreateDto(
     string Name,
     List<string>? Websites,
-    List<string>? EmailAddresses,
-    List<string>? PhoneNumbers,
     string? Notes);
 
 // DTO för att uppdatera prospect (både manuell och Capsule)
 public record ProspectUpdateDto(
     string? Name,
     List<string>? Websites,
-    List<string>? EmailAddresses,
-    List<string>? PhoneNumbers,
     string? Notes,
     ProspectStatus? Status,
     string? MailTitle,
@@ -33,8 +30,6 @@ public record ProspectViewDto(
     bool IsPending,
     string? About,
     List<WebsiteDto> Websites,
-    List<EmailAddressDto> EmailAddresses,
-    List<PhoneNumberDto> PhoneNumbers,
     List<AddressDto> Addresses,
     List<TagDto> Tags,
     List<CustomFieldDto> CustomFields,
@@ -50,7 +45,8 @@ public record ProspectViewDto(
     string? MailBodyPlain,
     string? MailBodyHTML,
     string? OwnerId,
-    SoftCompanyDataDto? SoftCompanyData)
+    EntityIntelligenceDto? EntityIntelligence,
+    List<ContactPersonDto> ContactPersons)
 {
     public static ProspectViewDto FromEntity(Prospect p) =>
         new(
@@ -61,8 +57,6 @@ public record ProspectViewDto(
             p.IsPending,
             p.About,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
-            p.EmailAddresses?.Select(e => new EmailAddressDto(e.Address, e.Type)).ToList() ?? new(),
-            p.PhoneNumbers?.Select(ph => new PhoneNumberDto(ph.Number, ph.Type)).ToList() ?? new(),
             p.Addresses?.Select(a => new AddressDto(a.Street, a.City, a.State, a.Zip, a.Country, a.Type)).ToList() ?? new(),
             p.Tags?.Select(t => new TagDto(t.Id, t.Name, t.DataTag)).ToList() ?? new(),
             p.CustomFields?.Select(f => new CustomFieldDto(f.Id, f.FieldName, f.FieldDefinitionId, f.Value, f.TagId)).ToList() ?? new(),
@@ -78,7 +72,8 @@ public record ProspectViewDto(
             p.MailBodyPlain,
             p.MailBodyHTML,
             p.OwnerId,
-            p.SoftCompanyData != null ? SoftCompanyDataDto.FromEntity(p.SoftCompanyData) : null);
+            p.EntityIntelligence != null ? EntityIntelligenceDto.FromEntity(p.EntityIntelligence) : null,
+            p.ContactPersons?.Select(ContactPersonDto.FromEntity).ToList() ?? new());
 }
 
 // DTO för pending prospects lista
@@ -89,7 +84,6 @@ public record PendingProspectDto(
     string? About,
     string? PictureURL,
     List<WebsiteDto> Websites,
-    List<EmailAddressDto> EmailAddresses,
     DateTime CreatedUtc)
 {
     public static PendingProspectDto FromEntity(Prospect p)
@@ -104,7 +98,6 @@ public record PendingProspectDto(
             p.About,
             p.PictureURL,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
-            p.EmailAddresses?.Select(e => new EmailAddressDto(e.Address, e.Type)).ToList() ?? new(),
             p.CreatedUtc);
     }
 }
@@ -119,29 +112,37 @@ public record CustomFieldDto(long Id, string? FieldName, long? FieldDefinitionId
 
 // ...existing code...
 
-public record SoftCompanyDataDto(
+public record EntityIntelligenceDto(
     Guid Id,
     Guid ProspectId,
-    string? HooksJson,              // JSON string med hooks
-    string? RecentEventsJson,       // JSON string med events
-    string? NewsItemsJson,          // JSON string med news
-    string? SocialActivityJson,     // JSON string med social media
-    string? SourcesJson,            // JSON string med källor
+    string? SummarizedContext,
+    string? EnrichmentVersion,
+    CompanyEnrichmentResult? EnrichedData,
     DateTime ResearchedAt,
     DateTime CreatedUtc,
-    DateTime? UpdatedUtc
+    DateTime? UpdatedUtc,
+    List<string> CompanyHooks
 )
 {
-    public static SoftCompanyDataDto FromEntity(SoftCompanyData entity) => new(
-        Id: entity.Id,
-        ProspectId: entity.ProspectId,
-        HooksJson: entity.HooksJson,
-        RecentEventsJson: entity.RecentEventsJson,
-        NewsItemsJson: entity.NewsItemsJson,
-        SocialActivityJson: entity.SocialActivityJson,
-        SourcesJson: entity.SourcesJson,
-        ResearchedAt: entity.ResearchedAt,
-        CreatedUtc: entity.CreatedUtc,
-        UpdatedUtc: entity.UpdatedUtc
-    );
+    public static EntityIntelligenceDto FromEntity(EntityIntelligence entity) 
+    {
+        return new(
+            Id: entity.Id,
+            ProspectId: entity.ProspectId,
+            SummarizedContext: entity.SummarizedContext,
+            EnrichmentVersion: entity.EnrichmentVersion,
+            EnrichedData: entity.EnrichedData,
+            ResearchedAt: entity.ResearchedAt,
+            CreatedUtc: entity.CreatedUtc,
+            UpdatedUtc: entity.UpdatedUtc,
+            CompanyHooks: entity.EnrichedData?.OutreachHooks?.Select(h => h.HookDescription).ToList() ?? new()
+        );
+    }
 }
+
+// Rich Data Structures
+// Legacy DTOs removed
+
+
+
+

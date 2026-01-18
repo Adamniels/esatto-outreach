@@ -3,7 +3,9 @@ using System.Net.Http;
 using System.Text;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Infrastructure.Common;
-using Esatto.Outreach.Infrastructure.SoftDataCollection;
+
+using Esatto.Outreach.Infrastructure.Services.Scraping;
+using Esatto.Outreach.Infrastructure.Services.Enrichment;
 using Esatto.Outreach.Infrastructure.EmailGeneration;
 using Esatto.Outreach.Infrastructure.EmailDelivery;
 using Esatto.Outreach.Infrastructure.Chat;
@@ -114,7 +116,7 @@ public static class DependencyInjection
 
         services.AddScoped<IProspectRepository, ProspectRepository>();
         services.AddScoped<IHardCompanyDataRepository, HardCompanyDataRepository>();
-        services.AddScoped<ISoftCompanyDataRepository, SoftCompanyDataRepository>();
+        services.AddScoped<IEntityIntelligenceRepository, EntityIntelligenceRepository>();
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
@@ -145,12 +147,18 @@ public static class DependencyInjection
         // Chat
         services.AddHttpClient<IOpenAIChatClient, OpenAIChatService>();
 
+        // Generative AI (General purpose)
+        services.AddHttpClient<IGenerativeAIClient, GenerativeAIClient>();
+
         // Soft Data Collection (multi-provider)
-        services.Configure<SoftDataCollectionOptions>(configuration.GetSection(SoftDataCollectionOptions.SectionName));
-        services.AddHttpClient<OpenAIResearchService>();
-        services.AddHttpClient<ClaudeResearchService>();
-        services.AddScoped<HybridResearchService>();
-        services.AddScoped<IResearchServiceFactory, ResearchServiceFactory>();
+
+        // Scraping & Enrichment
+        services.AddHttpClient<IWebScraperService, WebScraperService>();
+        services.AddHttpClient<DuckDuckGoSerpService>();
+        services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
+        services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
+        services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
+        services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>(); // Register UseCase
 
         return services;
     }

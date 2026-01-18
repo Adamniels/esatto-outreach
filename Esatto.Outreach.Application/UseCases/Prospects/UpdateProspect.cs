@@ -23,8 +23,6 @@ public class UpdateProspect
         entity.UpdateBasics(
             name: dto.Name,
             websiteUrls: dto.Websites,
-            emailAddresses: dto.EmailAddresses,
-            phoneNumbers: dto.PhoneNumbers,
             notes: dto.Notes,
             mailTitle: dto.MailTitle,
             mailBodyPlain: dto.MailBodyPlain,

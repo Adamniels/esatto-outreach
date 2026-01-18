@@ -21,8 +21,6 @@ public class CreateProspect
             name: dto.Name,
             ownerId: userId,
             websiteUrls: dto.Websites,
-            emailAddresses: dto.EmailAddresses,
-            phoneNumbers: dto.PhoneNumbers,
             notes: dto.Notes
         );
 

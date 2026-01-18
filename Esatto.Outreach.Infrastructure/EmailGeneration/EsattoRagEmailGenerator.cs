@@ -48,16 +48,16 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
         CancellationToken cancellationToken = default)
     {
         // Validate that we have collected soft data
-        if (context.SoftData == null)
+        if (context.EntityIntelligence == null)
         {
             throw new InvalidOperationException(
-                "EsattoRagEmailGenerator requires collected company data (SoftData). " +
+                "EsattoRagEmailGenerator requires Entity Intelligence. " +
                 "Use EmailGenerationType.UseCollectedData or ensure data collection is completed first.");
         }
 
         _logger.LogInformation(
             "Generating email using Esatto RAG for prospect {ProspectId}",
-            context.SoftData.ProspectId);
+            context.EntityIntelligence.ProspectId);
 
         // Build RAG request from context
         var ragRequest = BuildRagRequest(context);
@@ -90,147 +90,76 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
     private static EsattoRagRequest BuildRagRequest(EmailGenerationContext context)
     {
         var documents = new List<RagDocument>();
-        var softData = context.SoftData!;
+        var intelligence = context.EntityIntelligence!;
 
         // Extract company name from prospect
         var companyName = context.Request.Name ?? "Unknown Company";
 
-        // Add personalization hooks as documents (high priority)
-        if (!string.IsNullOrWhiteSpace(softData.HooksJson))
+        // 1. Add Summarized Context
+        if (!string.IsNullOrWhiteSpace(intelligence.SummarizedContext))
         {
-            try
+            documents.Add(new RagDocument
             {
-                var hooks = JsonSerializer.Deserialize<List<JsonElement>>(softData.HooksJson);
-                if (hooks != null)
-                {
-                    foreach (var hook in hooks)
-                    {
-                        var text = hook.TryGetProperty("text", out var textProp) ? textProp.GetString() : null;
-                        var source = hook.TryGetProperty("source", out var sourceProp) ? sourceProp.GetString() : "Unknown";
-                        
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "other",
-                                Title = $"Personalization Hook - {source}",
-                                Text = text,
-                                SourceUrl = source ?? "N/A",
-                                Priority = 1.3
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
+                DocType = "summary",
+                Title = "Company Summary",
+                Text = intelligence.SummarizedContext,
+                SourceUrl = "AI Analysis",
+                Priority = 1.5
+            });
         }
 
-        // Add recent events (high priority - timely)
-        if (!string.IsNullOrWhiteSpace(softData.RecentEventsJson))
+        // 2. Add Structured Enrichment Documents
+        if (intelligence.EnrichedData != null)
         {
-            try
-            {
-                var events = JsonSerializer.Deserialize<List<JsonElement>>(softData.RecentEventsJson);
-                if (events != null)
-                {
-                    foreach (var evt in events)
-                    {
-                        var title = evt.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : null;
-                        var date = evt.TryGetProperty("date", out var dateProp) ? dateProp.GetString() : null;
-                        var type = evt.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : "event";
-                        var url = evt.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(title))
-                        {
-                            var text = date != null ? $"{title} ({date})" : title;
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "other",
-                                Title = $"Event: {title}",
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.5
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
-        }
+            var ed = intelligence.EnrichedData;
 
-        // Add news items (high priority - timely and relevant)
-        if (!string.IsNullOrWhiteSpace(softData.NewsItemsJson))
-        {
-            try
+            // Snapshot (what/how/who)
+            documents.Add(new RagDocument
             {
-                var news = JsonSerializer.Deserialize<List<JsonElement>>(softData.NewsItemsJson);
-                if (news != null)
-                {
-                    foreach (var item in news)
-                    {
-                        var headline = item.TryGetProperty("headline", out var headlineProp) ? headlineProp.GetString() : null;
-                        var date = item.TryGetProperty("date", out var dateProp) ? dateProp.GetString() : null;
-                        var source = item.TryGetProperty("source", out var sourceProp) ? sourceProp.GetString() : "Unknown";
-                        var url = item.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(headline))
-                        {
-                            var text = date != null ? $"{headline} ({date}, {source})" : $"{headline} ({source})";
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "press_release",
-                                Title = headline,
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.5
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException)
-            {
-                // Skip if JSON is invalid
-            }
-        }
+                DocType = "snapshot",
+                Title = "Company Snapshot",
+                Text = $"{ed.Snapshot.WhatTheyDo}. Operates by: {ed.Snapshot.HowTheyOperate}. Targeting: {ed.Snapshot.TargetCustomer}",
+                SourceUrl = "AI Enrichment",
+                Priority = 1.8
+            });
 
-        // Add social activity (standard priority)
-        if (!string.IsNullOrWhiteSpace(softData.SocialActivityJson))
-        {
-            try
+            // Challenges (Confirmed)
+            foreach (var c in ed.Challenges.Confirmed)
             {
-                var social = JsonSerializer.Deserialize<List<JsonElement>>(softData.SocialActivityJson);
-                if (social != null)
+                documents.Add(new RagDocument
                 {
-                    foreach (var post in social)
-                    {
-                        var platform = post.TryGetProperty("platform", out var platformProp) ? platformProp.GetString() : "Social";
-                        var text = post.TryGetProperty("text", out var textProp) ? textProp.GetString() : null;
-                        var url = post.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : "N/A";
-                        
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "linkedin",
-                                Title = $"{platform} Post",
-                                Text = text,
-                                SourceUrl = url ?? "N/A",
-                                Priority = 1.0
-                            });
-                        }
-                    }
-                }
+                    DocType = "pain_point",
+                    Title = "Confirmed Challenge",
+                    Text = $"{c.ChallengeDescription} (Evidence: {c.EvidenceSnippet})",
+                    SourceUrl = c.SourceUrl,
+                    Priority = 1.9 // Higher priority for confirmed pain
+                });
             }
-            catch (JsonException)
+
+            // Challenges (Inferred)
+            foreach (var c in ed.Challenges.Inferred)
             {
-                // Skip if JSON is invalid
+                documents.Add(new RagDocument
+                {
+                    DocType = "pain_point",
+                    Title = "Inferred Challenge",
+                    Text = $"{c.ChallengeDescription} (Reasoning: {c.Reasoning})",
+                    SourceUrl = "AI Inference",
+                    Priority = 1.4
+                });
+            }
+
+            // Outreach Hooks
+            foreach (var h in ed.OutreachHooks)
+            {
+                documents.Add(new RagDocument
+                {
+                    DocType = "hook",
+                    Title = "Outreach Hook",
+                    Text = $"{h.HookDescription} (Date: {h.Date}). Why: {h.WhyItMatters}",
+                    SourceUrl = h.Source,
+                    Priority = 1.6
+                });
             }
         }
 

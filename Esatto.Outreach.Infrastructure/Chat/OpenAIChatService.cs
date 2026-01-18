@@ -104,6 +104,21 @@ public sealed class OpenAIChatService : IOpenAIChatClient
                 throw new JsonException("Deserialisering returnerade null");
             }
 
+            // FALLBACK: If the LLM returned JSON that does NOT match our DTO (e.g. customized JSON structure for a specific use case),
+            // the AiMessage might be null/empty. In that case, return the raw JSON as the message.
+            if (string.IsNullOrWhiteSpace(dto.AiMessage) && !string.IsNullOrWhiteSpace(cleanText))
+            {
+                // Check if it looks like we missed the schema entirely (e.g. no improved mail, just data)
+                // If the user wanted specific JSON (companyHooks etc), passing it as AiMessage allows the caller to parse it 
+                return new ChatResponseDto(
+                    AiMessage: cleanText,
+                    ImprovedMail: false,
+                    MailTitle: null,
+                    MailBodyPlain: null,
+                    MailBodyHTML: null
+                );
+            }
+
             // Validera: Om ImprovedMail är true måste mejlfälten finnas
             if (dto.ImprovedMail)
             {
@@ -128,7 +143,7 @@ public sealed class OpenAIChatService : IOpenAIChatClient
         {
             // Om JSON parsing misslyckas, returnera texten som ett vanligt meddelande
             return new ChatResponseDto(
-                AiMessage: $"[Kunde inte parsa JSON-svar. Rå text:]\n{cleanText}",
+                AiMessage: cleanText, // Return cleanText directly if it's not JSON or invalid JSON
                 ImprovedMail: false,
                 MailTitle: null,
                 MailBodyPlain: null,

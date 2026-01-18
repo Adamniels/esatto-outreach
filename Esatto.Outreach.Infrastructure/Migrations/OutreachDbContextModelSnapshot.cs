@@ -95,6 +95,98 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.ContactPerson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PersonalHooks")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("PersonalHooksJson");
+
+                    b.Property<string>("PersonalNews")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("PersonalNewsJson");
+
+                    b.Property<Guid>("ProspectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ResearchedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProspectId");
+
+                    b.ToTable("ContactPersons");
+                });
+
+            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.EntityIntelligence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EnrichedData")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("EnrichmentVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("ProspectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ResearchedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SummarizedContext")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProspectId")
+                        .IsUnique();
+
+                    b.HasIndex("ResearchedAt");
+
+                    b.ToTable("entity_intelligence", (string)null);
+                });
+
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.GenerateEmailPrompt", b =>
                 {
                     b.Property<Guid>("Id")
@@ -194,9 +286,8 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<string>("EmailAddresses")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
+                    b.Property<Guid?>("EntityIntelligenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("HardCompanyDataId")
                         .HasColumnType("uuid");
@@ -235,16 +326,9 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
 
-                    b.Property<string>("PhoneNumbers")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<string>("PictureURL")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<Guid?>("SoftCompanyDataId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -268,6 +352,8 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("\"CapsuleId\" IS NOT NULL");
 
+                    b.HasIndex("EntityIntelligenceId");
+
                     b.HasIndex("HardCompanyDataId");
 
                     b.HasIndex("IsPending");
@@ -275,8 +361,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("OwnerId");
-
-                    b.HasIndex("SoftCompanyDataId");
 
                     b.HasIndex("IsPending", "CreatedUtc");
 
@@ -326,48 +410,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("refresh_tokens", (string)null);
-                });
-
-            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.SoftCompanyData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("HooksJson")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NewsItemsJson")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ProspectId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RecentEventsJson")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ResearchedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SocialActivityJson")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourcesJson")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProspectId")
-                        .IsUnique();
-
-                    b.HasIndex("ResearchedAt");
-
-                    b.ToTable("soft_company_data", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -502,6 +544,28 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.ContactPerson", b =>
+                {
+                    b.HasOne("Esatto.Outreach.Domain.Entities.Prospect", "Prospect")
+                        .WithMany("ContactPersons")
+                        .HasForeignKey("ProspectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prospect");
+                });
+
+            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.EntityIntelligence", b =>
+                {
+                    b.HasOne("Esatto.Outreach.Domain.Entities.Prospect", "Prospect")
+                        .WithOne("EntityIntelligence")
+                        .HasForeignKey("Esatto.Outreach.Domain.Entities.EntityIntelligence", "ProspectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prospect");
+                });
+
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.GenerateEmailPrompt", b =>
                 {
                     b.HasOne("Esatto.Outreach.Domain.Entities.ApplicationUser", "User")
@@ -539,17 +603,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Esatto.Outreach.Domain.Entities.SoftCompanyData", b =>
-                {
-                    b.HasOne("Esatto.Outreach.Domain.Entities.Prospect", "Prospect")
-                        .WithOne("SoftCompanyData")
-                        .HasForeignKey("Esatto.Outreach.Domain.Entities.SoftCompanyData", "ProspectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Prospect");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -605,7 +658,9 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
             modelBuilder.Entity("Esatto.Outreach.Domain.Entities.Prospect", b =>
                 {
-                    b.Navigation("SoftCompanyData");
+                    b.Navigation("ContactPersons");
+
+                    b.Navigation("EntityIntelligence");
                 });
 #pragma warning restore 612, 618
         }

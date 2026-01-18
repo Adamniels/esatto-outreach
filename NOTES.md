@@ -1,26 +1,30 @@
-Jag funderar på om man i framtiden ska ha att man samlar och sparar information om ett företag i en databas som man sen kan använda för att skriva ett mejl, 
-eller om det helt enkelt bara är bättre att låta AI göra research och skriva mejlet i samma steg, den kankse får bättre context då.
+# Development Notes
 
-## Features som jag vill ha, som inte är mvp
-- [ ] kunna chatta med en ai som ändrar mejlet live
+## Future Considerations
+I'm considering whether in the future we should collect and save information about a company in a database that can then be used to write an email, or if it's simply better to let AI do research and write the email in the same step - it might get better context that way.
 
-# Det verkar behöva vara i development environment för att user-secrets ska funka
-så kör:
+## Features I want (not MVP)
+- [ ] Ability to chat with an AI that modifies the email live
+
+# User Secrets Configuration
+It appears you need to be in the development environment for user-secrets to work.
+Run:
 ```bash
 DOTNET_ENVIRONMENT=Development dotnet run --project Esatto.Outreach.Api
 ```
 
+## OpenAI Conversation API Example
 ```python
-# Ett fel är att man ska använda prev id inte bara det första varje gång
+# Note: You need to use the previous ID, not just the first one every time
 from openai import OpenAI
 
 client = OpenAI(api_key="OPENAIKEY")
 
-# 1) Tom konversation
+# 1) Empty conversation
 conversation = client.conversations.create()
 print("Conversation ID:", conversation.id)
 
-# 2) Första turen – MÅSTE skicka input i första responses.create
+# 2) First turn – MUST send input in the first responses.create
 r1 = client.responses.create(
     model="gpt-4.1",
     input=[{"role": "user", "content": "What are the 5 Ds of dodgeball?"}],
@@ -28,27 +32,28 @@ r1 = client.responses.create(
 )
 print("\\nResponse 1:\\n", r1.output_text)
 
-# 3) Fortsätt i samma konversation
+# 3) Continue in the same conversation
 r2 = client.responses.create(
     model="gpt-4.1",
     input=[{"role": "user", "content": "And who said that quote?"}],
     conversation=conversation.id,
 )
 print("\\nResponse 2:\\n", r2.output_text)
-
 ```
+
 # Capsule CRM Webhook Setup (Development)
 
-## Problem med ngrok
-⚠️ **Varje gång du startar ngrok får du en NY slumpmässig URL** (t.ex. `https://abc123.ngrok.io`)
+## ngrok Issue
+⚠️ **Every time you start ngrok you get a NEW random URL** (e.g., `https://abc123.ngrok.io`)
 
-Detta betyder att du måste:
-1. Uppdatera webhook URL:en i Capsule CRM vid varje omstart
-2. Eller betala för ngrok Pro (~$8/månad) för en fast subdomain
+This means you must:
+1. Update the webhook URL in Capsule CRM on every restart
+2. Or pay for ngrok Pro (~$8/month) for a fixed subdomain
 
-## Steg-för-steg guide för development
+## Step-by-step Guide for Development
 
-### 1. Starta Backend API
+### 1. Start Backend API
 ```bash
-cd /Users/adamniels/Projects/Esatto_outreach/esatto-outreach/Esatto.Outreach.Api
+cd /Users/adamnielsen/Projects/Esatto-project-outreach/esatto-outreach/Esatto.Outreach.Api
 dotnet run
+```
