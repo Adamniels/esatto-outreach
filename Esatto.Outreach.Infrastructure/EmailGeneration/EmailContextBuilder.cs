@@ -63,8 +63,6 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
             About: prospect.About,
             PictureURL: prospect.PictureURL,
             Websites: prospect.Websites?.Select(w => w.Url).ToList(),
-            EmailAddresses: prospect.EmailAddresses?.Select(e => e.Address).ToList(),
-            PhoneNumbers: prospect.PhoneNumbers?.Select(p => p.Number).ToList(),
             Addresses: prospect.Addresses?.Select(a => 
                 string.Join(", ", new[] { a.Street, a.City, a.State, a.Zip, a.Country }.Where(s => !string.IsNullOrWhiteSpace(s)))
             ).ToList(),

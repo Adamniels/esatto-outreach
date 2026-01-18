@@ -4,7 +4,7 @@ using Esatto.Outreach.Domain.Entities;
 
 namespace Esatto.Outreach.Application.UseCases.Prospects;
 
-public sealed class AddContactPerson
+public class AddContactPerson
 {
     private readonly IProspectRepository _repository;
 
@@ -24,7 +24,16 @@ public sealed class AddContactPerson
             throw new InvalidOperationException($"Contact person '{dto.Name}' already exists. Use the update endpoint instead.");
         }
 
-        var person = ContactPerson.Create(prospect.Id, dto.Name, dto.Title, dto.Email, dto.LinkedInUrl);
+        // Create the contact person manually
+        var person = ContactPerson.Create(
+            prospect.Id, 
+            dto.Name, 
+            dto.Title, 
+            dto.Email, 
+            dto.LinkedInUrl 
+        );
+        
+        // Add directly to the repository to avoid implicit updates to the Prospect
         await _repository.AddContactPersonAsync(person, ct);
 
         return ContactPersonDto.FromEntity(person);

@@ -108,59 +108,59 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
             });
         }
 
-        // 2. Add Company Hooks (List of strings)
-        if (!string.IsNullOrWhiteSpace(intelligence.CompanyHooksJson))
+        // 2. Add Structured Enrichment Documents
+        if (intelligence.EnrichedData != null)
         {
-            try
-            {
-                // Assuming simple list of strings for now as per GenerateEntityIntelligence implementation
-                var hooks = JsonSerializer.Deserialize<List<string>>(intelligence.CompanyHooksJson);
-                if (hooks != null)
-                {
-                    foreach (var hook in hooks)
-                    {
-                        if (!string.IsNullOrWhiteSpace(hook))
-                        {
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "hook",
-                                Title = "Company Hook",
-                                Text = hook,
-                                SourceUrl = "AI Analysis",
-                                Priority = 1.3
-                            });
-                        }
-                    }
-                }
-            }
-            catch (JsonException) { /* Ignore parsing errors */ }
-        }
+            var ed = intelligence.EnrichedData;
 
-        // 3. Add Personal Hooks (List of strings)
-        if (!string.IsNullOrWhiteSpace(intelligence.PersonalHooksJson))
-        {
-            try
+            // Snapshot (what/how/who)
+            documents.Add(new RagDocument
             {
-                var hooks = JsonSerializer.Deserialize<List<string>>(intelligence.PersonalHooksJson);
-                if (hooks != null)
+                DocType = "snapshot",
+                Title = "Company Snapshot",
+                Text = $"{ed.Snapshot.WhatTheyDo}. Operates by: {ed.Snapshot.HowTheyOperate}. Targeting: {ed.Snapshot.TargetCustomer}",
+                SourceUrl = "AI Enrichment",
+                Priority = 1.8
+            });
+
+            // Challenges (Confirmed)
+            foreach (var c in ed.Challenges.Confirmed)
+            {
+                documents.Add(new RagDocument
                 {
-                    foreach (var hook in hooks)
-                    {
-                        if (!string.IsNullOrWhiteSpace(hook))
-                        {
-                            documents.Add(new RagDocument
-                            {
-                                DocType = "hook",
-                                Title = "Personal Hook",
-                                Text = hook,
-                                SourceUrl = "AI Analysis",
-                                Priority = 1.4
-                            });
-                        }
-                    }
-                }
+                    DocType = "pain_point",
+                    Title = "Confirmed Challenge",
+                    Text = $"{c.ChallengeDescription} (Evidence: {c.EvidenceSnippet})",
+                    SourceUrl = c.SourceUrl,
+                    Priority = 1.9 // Higher priority for confirmed pain
+                });
             }
-            catch (JsonException) { /* Ignore parsing errors */ }
+
+            // Challenges (Inferred)
+            foreach (var c in ed.Challenges.Inferred)
+            {
+                documents.Add(new RagDocument
+                {
+                    DocType = "pain_point",
+                    Title = "Inferred Challenge",
+                    Text = $"{c.ChallengeDescription} (Reasoning: {c.Reasoning})",
+                    SourceUrl = "AI Inference",
+                    Priority = 1.4
+                });
+            }
+
+            // Outreach Hooks
+            foreach (var h in ed.OutreachHooks)
+            {
+                documents.Add(new RagDocument
+                {
+                    DocType = "hook",
+                    Title = "Outreach Hook",
+                    Text = $"{h.HookDescription} (Date: {h.Date}). Why: {h.WhyItMatters}",
+                    SourceUrl = h.Source,
+                    Priority = 1.6
+                });
+            }
         }
 
         // Extract contact person name from request

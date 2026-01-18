@@ -12,11 +12,10 @@ public class ContactPerson : Entity
     public string? Email { get; private set; }
     public string? LinkedInUrl { get; private set; }
     
-    // JSON: List<string> of personal-level hooks/news found for this person
-    public string? PersonalHooksJson { get; private set; }
+    public List<string> PersonalHooks { get; private set; } = new();
     
     // JSON: List<string> of personal news
-    public string? PersonalNewsJson { get; private set; }
+    public List<string> PersonalNews { get; private set; } = new();
     
     // A synthesized summary of this person's background/relevance
     public string? Summary { get; private set; }
@@ -62,10 +61,10 @@ public class ContactPerson : Entity
         Touch();
     }
 
-    public void UpdateEnrichment(string? personalHooksJson, string? personalNewsJson, string? summary)
+    public void UpdateEnrichment(List<string>? personalHooks, List<string>? personalNews, string? summary)
     {
-        if (personalHooksJson is not null) PersonalHooksJson = personalHooksJson;
-        if (personalNewsJson is not null) PersonalNewsJson = personalNewsJson;
+        if (personalHooks is not null) PersonalHooks = personalHooks;
+        if (personalNews is not null) PersonalNews = personalNews;
         if (summary is not null) Summary = summary;
         
         ResearchedAt = DateTime.UtcNow;

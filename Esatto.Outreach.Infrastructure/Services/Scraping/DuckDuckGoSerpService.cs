@@ -1,15 +1,18 @@
 using System.Text.RegularExpressions;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.Services.Scraping;
 
 public class DuckDuckGoSerpService
 {
     private readonly HttpClient _httpClient;
+    private readonly Microsoft.Extensions.Logging.ILogger<DuckDuckGoSerpService> _logger;
 
-    public DuckDuckGoSerpService(HttpClient httpClient)
+    public DuckDuckGoSerpService(HttpClient httpClient, Microsoft.Extensions.Logging.ILogger<DuckDuckGoSerpService> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
         // Mimic a real browser to avoid immediate blocking
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
     }
@@ -18,77 +21,84 @@ public class DuckDuckGoSerpService
     {
         try
         {
+            _logger.LogInformation("Performing DDG SERP Search for: {Query}", query);
             var encodedQuery = WebUtility.UrlEncode(query);
-            var url = $"https://html.duckduckgo.com/html/?q={encodedQuery}";
+            var url = $"https://lite.duckduckgo.com/lite/?q={encodedQuery}";
             
+            _httpClient.DefaultRequestHeaders.Remove("User-Agent");
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15");
+
             var html = await _httpClient.GetStringAsync(url);
+            _logger.LogDebug("DDG HTML fetched ({Length} chars)", html.Length);
             
-            return ParseDdgHtml(html).Take(maxResults).ToList();
+            var results = ParseDdgLiteHtml(html).Take(maxResults).ToList();
+            _logger.LogInformation("DDG SERP Result: Found {Count} results for '{Query}'", results.Count, query);
+            
+            if (results.Count == 0)
+            {
+                 _logger.LogWarning("DDG SERP returned 0 results. HTML Preview: {HtmlPreview}...", html.Substring(0, Math.Min(500, html.Length)).Replace("\n", " "));
+                 // Dump full HTML for debug
+                 await File.WriteAllTextAsync("debug_ddg_error.html", html);
+            }
+
+            return results;
         }
         catch (Exception ex)
         {
-            // Fail gracefully - SERP scraping is brittle
-            Console.WriteLine($"Error scraping DDG: {ex.Message}");
+            _logger.LogWarning("DuckDuckGo Search failed (Timeout/Blocked): {Message}. Returning 0 results.", ex.Message);
             return new List<SerpResult>();
         }
     }
 
-    private List<SerpResult> ParseDdgHtml(string html)
+    private List<SerpResult> ParseDdgLiteHtml(string html)
     {
         var results = new List<SerpResult>();
 
-        // Regex to find result blocks
-        // DuckDuckGo HTML structure (approximate):
-        // <div class="result ...">
-        //   <h2 ...><a class="result__a" href="...">Title</a></h2>
-        //   <a class="result__snippet" ...>Snippet</a>
-        // </div>
+        // DDG Lite Structure:
+        // <table ...>
+        //   <tr>
+        //     <td><a href="...">Title</a></td>
+        //   </tr>
+        //   <tr>
+        //     <td class="result-snippet">Snippet</td>
+        //   </tr>
+        // </table>
 
-        // We'll use a simplified regex approach to just find links and snippets
-        // Look for the "result__a" link which contains the title and URL
-        // Then looks for the snippet
-        // This is fragile but works for the "html" version usually
+        // We try a simplified regex that captures the Link/Title, then hopefully the next row's snippet.
+        // Or we just find all Links, and all Snippets, and zip them.
         
-        var matches = Regex.Matches(html, @"<div[^>]*class=""[^""]*result__body[^""]*""[^>]*>(.*?)</div>", RegexOptions.Singleline);
+        // Find Links: <a class="result-link" href="...">...</a>
+        // Note: DDG Lite uses class="result-link" usually.
         
-        // If the specific wrapper changes, try a broader search for result__a
-        if (matches.Count == 0)
-        {
-             matches = Regex.Matches(html, @"<a[^>]*class=""[^""]*result__a[^""]*""[^>]*href=""([^""]*)""[^>]*>(.*?)</a>", RegexOptions.Singleline);
-             foreach (Match match in matches)
-             {
-                 var link = WebUtility.HtmlDecode(match.Groups[1].Value);
-                 var title = WebUtility.HtmlDecode(Regex.Replace(match.Groups[2].Value, "<.*?>", "")); // Strip tags
-                 
-                 // Try to capture snippet which usually follows
-                 // This is hard with regex on a stream, so we'll just return Title/Link if we can't find snippet easily
-                 results.Add(new SerpResult(title, link, ""));
-             }
-             return results;
-        }
+        var linkMatches = Regex.Matches(html, @"<a[^>]*href=""([^""]*)""[^>]*class=""result-link""[^>]*>(.*?)</a>", RegexOptions.Singleline);
+        var snippetMatches = Regex.Matches(html, @"<td[^>]*class=""result-snippet""[^>]*>(.*?)</td>", RegexOptions.Singleline);
 
-        foreach (Match match in matches)
+        for (int i = 0; i < linkMatches.Count; i++)
         {
-            var content = match.Groups[1].Value;
+            var rawLink = WebUtility.HtmlDecode(linkMatches[i].Groups[1].Value);
+            var title = WebUtility.HtmlDecode(Regex.Replace(linkMatches[i].Groups[2].Value, "<.*?>", ""));
             
-            // Extract Title & Link
-            var linkMatch = Regex.Match(content, @"<a[^>]*class=""[^""]*result__a[^""]*""[^>]*href=""([^""]*)""[^>]*>(.*?)</a>", RegexOptions.Singleline);
-            var snippetMatch = Regex.Match(content, @"<a[^>]*class=""[^""]*result__snippet[^""]*""[^>]*>(.*?)</a>", RegexOptions.Singleline);
-
-            if (linkMatch.Success)
+            var snippet = "";
+            if (i < snippetMatches.Count)
             {
-                var link = WebUtility.HtmlDecode(linkMatch.Groups[1].Value);
-                var title = WebUtility.HtmlDecode(Regex.Replace(linkMatch.Groups[2].Value, "<.*?>", ""));
-                var snippet = snippetMatch.Success 
-                    ? WebUtility.HtmlDecode(Regex.Replace(snippetMatch.Groups[1].Value, "<.*?>", "")) 
-                    : "";
-
-                results.Add(new SerpResult(title, link, snippet));
+                snippet = WebUtility.HtmlDecode(Regex.Replace(snippetMatches[i].Groups[1].Value, "<.*?>", "")).Trim();
             }
+
+            // Decode DDG redirect if present
+            var link = rawLink;
+            var uddgMatch = Regex.Match(rawLink, @"[?&]uddg=([^&]+)");
+            if (uddgMatch.Success) 
+            {
+                link = WebUtility.UrlDecode(uddgMatch.Groups[1].Value);
+            }
+
+            results.Add(new SerpResult(title, link, snippet));
         }
 
         return results;
     }
 }
+// Removed SerpResult record as it is defined at the bottom of the file outside the class
+
 
 public record SerpResult(string Title, string Link, string Snippet);

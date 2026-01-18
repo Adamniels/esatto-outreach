@@ -26,10 +26,10 @@ public class SendEmailViaN8n
             ?? throw new InvalidOperationException(
                 $"Prospect with id {prospectId} not found");
 
-        // Validera att vi har email-data
-        var recipientEmail = prospect.GetWorkEmail();
+        // Validera att vi har email-data via ContactPersons
+        var recipientEmail = prospect.ContactPersons.FirstOrDefault()?.Email;
         if (string.IsNullOrWhiteSpace(recipientEmail))
-            throw new InvalidOperationException("Contact email is missing");
+            throw new InvalidOperationException("Contact email is missing (add a contact person first)");
 
         if (string.IsNullOrWhiteSpace(prospect.MailTitle) ||
             string.IsNullOrWhiteSpace(prospect.MailBodyPlain))

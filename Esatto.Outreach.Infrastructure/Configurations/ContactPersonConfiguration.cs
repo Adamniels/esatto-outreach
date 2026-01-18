@@ -28,5 +28,30 @@ public class ContactPersonConfiguration : IEntityTypeConfiguration<ContactPerson
             .WithMany(p => p.ContactPersons)
             .HasForeignKey(x => x.ProspectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // JSONB columns for lists
+        builder.Property(x => x.PersonalHooks)
+            .HasColumnName("PersonalHooksJson") // Keep DB column name if you want, or migrate. Let's keep for safety or rename? 
+                                                // Actually the previous property was purely string so EF mapped it to PersonalHooksJson directly ideally.
+                                                // Let's stick to the convention.
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<string>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
+
+        builder.Property(x => x.PersonalNews)
+            .HasColumnName("PersonalNewsJson")
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<string>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList()));
     }
 }

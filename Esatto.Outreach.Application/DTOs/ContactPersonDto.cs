@@ -16,13 +16,6 @@ public record ContactPersonDto(
 ) {
     public static ContactPersonDto FromEntity(ContactPerson e)
     {
-        List<string>? DeserializeList(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json)) return new();
-            try { return JsonSerializer.Deserialize<List<string>>(json) ?? new(); }
-            catch { return new(); }
-        }
-
         return new ContactPersonDto(
             e.Id,
             e.ProspectId,
@@ -30,8 +23,8 @@ public record ContactPersonDto(
             e.Title,
             e.Email,
             e.LinkedInUrl,
-            DeserializeList(e.PersonalHooksJson),
-            DeserializeList(e.PersonalNewsJson),
+            e.PersonalHooks,
+            e.PersonalNews,
             e.Summary
         );
     }

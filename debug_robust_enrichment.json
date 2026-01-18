@@ -1,0 +1,173 @@
+{
+  "Snapshot": {
+    "WhatTheyDo": "Esatto AB is a leading Swedish digital agency specializing in comprehensive digital transformation services for organizations navigating the rapidly evolving digital landscape. Founded in 2013, Esatto has established itself as one of Sweden\u2019s larger digital agencies, with a strong presence in Stockholm, Sundsvall, and Krakow. The company\u2019s core philosophy centers on putting people at the heart of digital innovation, ensuring that technology serves real human needs and drives meaningful business outcomes. Esatto\u2019s service portfolio is broad and deep, encompassing business development, digital product development, UX/UI design, digital accessibility, brand and concept creation, system development, solution architecture, generative AI, custom digital solutions, operations and maintenance, and cloud services. Their approach is platform-agnostic, leveraging expertise across multiple technology stacks to deliver tailored solutions that address unique client challenges. Esatto\u2019s client roster spans a diverse array of sectors, including media, energy, automotive, government, real estate, and health, reflecting their versatility and capacity to handle complex, mission-critical projects. Notably, Esatto has demonstrated a strong commitment to digital accessibility and sustainability, as evidenced by projects for public sector agencies and environmentally focused organizations. In 2025, Esatto became part of Dizparc through a majority stake acquisition, a move that expanded its service capabilities and geographic reach while allowing it to retain its brand identity and operational autonomy. This integration has further strengthened Esatto\u2019s ability to deliver long-term, user-centric digital solutions, leveraging Dizparc\u2019s broader network and resources.",
+    "HowTheyOperate": "Esatto operates through a collaborative, multidisciplinary delivery model that emphasizes close partnership with clients throughout the project lifecycle. Their teams are composed of strategists, designers, developers, and solution architects who work in agile, cross-functional units to ensure rapid iteration and continuous feedback. Esatto\u2019s operational model is characterized by a strong focus on discovery and needs analysis, often beginning engagements with workshops and technical studies to deeply understand client objectives and user requirements. The company leverages distributed teams, including resources from their Krakow office, to provide flexibility, scalability, and access to specialized talent. Esatto maintains a platform-independent stance, selecting the most appropriate technologies for each engagement, and is adept at integrating new digital solutions with clients\u2019 existing systems. Their commitment to accessibility, sustainability, and user experience is embedded in their delivery processes, ensuring that solutions are not only technically robust but also inclusive and impactful.",
+    "TargetCustomer": "Esatto\u2019s target customers are medium to large enterprises and public sector organizations undergoing digital and business transformation. Key industries served include media and publishing, energy and utilities, automotive, real estate, government and public administration, health and wellness, and technology. Typical buyer personas are digital transformation leaders, CIOs, CMOs, heads of digital, product owners, and innovation managers who are seeking to modernize their digital platforms, improve customer experience, and drive operational efficiency. Esatto is particularly well-suited for organizations facing complex challenges such as legacy system modernization, digital accessibility compliance, multi-channel service delivery, and the integration of emerging technologies like AI. Their clients often require a partner capable of both strategic consulting and hands-on technical execution, with the ability to deliver scalable, future-proof solutions that align with evolving business goals.",
+    "PrimaryValueProposition": "Esatto\u2019s primary value proposition lies in its ability to deliver holistic, user-centric digital transformation solutions that drive measurable business impact. Clients choose Esatto for their deep expertise across strategy, design, and technology, as well as their proven track record in delivering complex projects on time and within budget. The agency\u2019s platform-agnostic approach ensures that solutions are tailored to each client\u2019s unique needs, rather than being constrained by a single technology stack. Esatto\u2019s emphasis on accessibility, sustainability, and inclusivity resonates strongly with organizations seeking to future-proof their digital assets and comply with regulatory requirements. Their integration into Dizparc further enhances their value by providing access to a broader network of capabilities and resources, enabling them to support clients with long-term, scalable digital solutions. Ultimately, Esatto\u2019s commitment to partnership, innovation, and tangible results makes them a trusted advisor and delivery partner for organizations navigating digital transformation."
+  },
+  "EvidenceLog": [
+    {
+      "Title": "Esatto becomes part of Dizparc",
+      "Publisher": "Esatto",
+      "Date": "2025-10-01",
+      "Url": "https://esatto.se/en/inspiration/esatto-becomes-part-of-dizparc",
+      "KeyFactExtracted": "Esatto joined Dizparc via majority stake acquisition, expanding service portfolio and geographic reach while retaining brand and team structure."
+    },
+    {
+      "Title": "New AI platform to reduce energy consumption",
+      "Publisher": "Esatto",
+      "Date": "2025-11-01",
+      "Url": "https://esatto.se/en/inspiration/new-ai-platform-to-reduce-energy-consumption",
+      "KeyFactExtracted": "Esatto collaborated with Sweco and Calejo to design the Smart Water AI platform, optimizing sewage pump management for sustainability."
+    },
+    {
+      "Title": "EU health data app MyHealthEnabler featured in LinkedIn post",
+      "Publisher": "LinkedIn",
+      "Date": "2025-12-01",
+      "Url": "https://www.linkedin.com/company/esatto",
+      "KeyFactExtracted": "Esatto is building MyHealthEnabler for the EU\u2019s Crane Phase 3, empowering citizens with control over health data for preventive care."
+    },
+    {
+      "Title": "ATL Case Study",
+      "Publisher": "Esatto",
+      "Date": "2025-08-01",
+      "Url": "https://esatto.se/en/cases/atl",
+      "KeyFactExtracted": "Esatto developed a flexible technical platform and new visual identity for ATL.nu, improving content management and subscription conversion."
+    },
+    {
+      "Title": "DIGG Case Study",
+      "Publisher": "Esatto",
+      "Date": "2025-07-01",
+      "Url": "https://esatto.se/en/cases/digg",
+      "KeyFactExtracted": "Esatto built a cloud-based, headless architecture website for Sweden\u2019s digital government agency, enabling scalability and integration."
+    },
+    {
+      "Title": "Gardenize Case Study",
+      "Publisher": "Esatto",
+      "Date": "2025-06-01",
+      "Url": "https://esatto.se/en/cases/gardenize",
+      "KeyFactExtracted": "Esatto improved Gardenize\u2019s app accessibility, onboarding, and visual identity, increasing user engagement and compliance with WCAG."
+    }
+  ],
+  "Challenges": {
+    "Confirmed": [
+      {
+        "ChallengeDescription": "Clients face outdated, inflexible digital platforms that hinder new services and business models.",
+        "EvidenceSnippet": "ATL faced changing audience behaviors and was limited by an outdated, inflexible digital platform that hindered new services and advertising models.",
+        "SourceUrl": "https://esatto.se/en/cases/atl"
+      },
+      {
+        "ChallengeDescription": "Need for improved digital accessibility and compliance with standards such as WCAG.",
+        "EvidenceSnippet": "Svenska Kennelklubben: Redesigned the site with a new visual identity, improved accessibility (WCAG), and technical enhancements for better performance and user experience.",
+        "SourceUrl": "https://esatto.se/en/cases/svenska-kennelklubben"
+      },
+      {
+        "ChallengeDescription": "Requirement for scalable, flexible digital infrastructure to support rapid organizational growth and integration.",
+        "EvidenceSnippet": "DIGG: Developed a cloud-based website using Episerver Digital Experience Cloud (DXC) with headless architecture, enabling easy integration, scalability, and efficient content management.",
+        "SourceUrl": "https://esatto.se/en/cases/digg"
+      },
+      {
+        "ChallengeDescription": "Clients lack qualified digital talent and require distributed teams for continuous development.",
+        "EvidenceSnippet": "LRF Media: Provided distributed development teams from Krak\u00F3w, enabling continuous development, flexibility, and close partnership over four years.",
+        "SourceUrl": "https://esatto.se/en/cases/lrf-media"
+      },
+      {
+        "ChallengeDescription": "Organizations need to integrate emerging technologies such as AI to drive sustainability and operational efficiency.",
+        "EvidenceSnippet": "Esatto collaborated with Sweco and Calejo in an innovation sprint to design the user interface for Smart Water, an AI-driven platform aimed at optimizing sewage pump management to reduce overflows and energy use.",
+        "SourceUrl": "https://esatto.se/en/inspiration/new-ai-platform-to-reduce-energy-consumption"
+      }
+    ],
+    "Inferred": [
+      {
+        "ChallengeDescription": "Managing complex stakeholder environments and change management during digital transformation.",
+        "Reasoning": "Given Esatto\u2019s focus on large enterprises and public sector clients, projects likely involve multiple stakeholders, regulatory constraints, and significant organizational change, requiring robust change management and communication strategies.",
+        "ConfidenceLevel": "High"
+      },
+      {
+        "ChallengeDescription": "Ensuring data privacy and security, especially in health and government projects.",
+        "Reasoning": "Esatto\u2019s involvement in projects like MyHealthEnabler and DIGG suggests a need for stringent data protection and compliance with GDPR and other regulations.",
+        "ConfidenceLevel": "High"
+      },
+      {
+        "ChallengeDescription": "Balancing innovation with legacy system integration.",
+        "Reasoning": "Many clients require modernization of existing systems while maintaining business continuity, necessitating expertise in both new and legacy technologies.",
+        "ConfidenceLevel": "Medium"
+      },
+      {
+        "ChallengeDescription": "Attracting and retaining top digital talent in a competitive market.",
+        "Reasoning": "The need for distributed teams and continuous development points to ongoing challenges in sourcing and retaining skilled professionals.",
+        "ConfidenceLevel": "Medium"
+      }
+    ]
+  },
+  "Profile": {
+    "BusinessModel": "Project-based and retainer-based digital agency services, offering end-to-end digital transformation, product development, and managed services.",
+    "RevenueMotion": "Combination of fixed-price projects, time-and-materials engagements, and ongoing service retainers for operations, maintenance, and continuous development.",
+    "CustomerType": "Medium to large enterprises and public sector organizations, including media, energy, automotive, real estate, government, and health sectors.",
+    "OperationalComplexity": "High",
+    "OperationalComplexityReasoning": "Esatto manages complex, multi-stakeholder projects across diverse industries, often involving legacy system integration, regulatory compliance, distributed teams, and emerging technologies such as AI.",
+    "DataIntegrationNeeds": "Observed: Integration with legacy systems, cloud platforms, and third-party APIs; Inferred: Strong needs for secure data handling, interoperability, and compliance (e.g., GDPR, WCAG).",
+    "ScalingStage": "Scale-up",
+    "ComplianceContext": "High focus on digital accessibility (WCAG), data privacy (GDPR), and sector-specific regulations, especially in public sector and health projects.",
+    "TechnologyPosture": "Platform-agnostic, cloud-first, with strong capabilities in headless architectures, AI integration, and accessibility standards.",
+    "CurrentTechStack": [
+      "Episerver (Optimizely) DXC",
+      "Umbraco",
+      "Cloud services (Azure/AWS)",
+      "Headless CMS",
+      "Generative AI tools"
+    ],
+    "HiringTrends": [
+      "Distributed development teams (notably in Krakow)",
+      "Focus on AI/UX talent",
+      "Emphasis on accessibility and cloud expertise"
+    ],
+    "StrategicPriorities": [
+      "Expand service portfolio via Dizparc integration",
+      "Drive innovation in AI and sustainability",
+      "Enhance digital accessibility and compliance",
+      "Scale operations across new geographies"
+    ],
+    "ProcessMaturity": "High in delivery and technical execution; mature agile practices; continuous improvement culture.",
+    "NotableConstraints": "Potential challenges in scaling culture and processes post-integration with Dizparc; ongoing need to balance innovation with compliance and legacy integration.",
+    "FieldConfidence": {
+      "BusinessModel": "High",
+      "ScalingStage": "Medium"
+    }
+  },
+  "OutreachHooks": [
+    {
+      "HookDescription": "Esatto\u2019s integration into Dizparc expands its service portfolio and geographic reach while maintaining brand and team continuity.",
+      "Date": "2025-10-01",
+      "Source": "https://esatto.se/en/inspiration/esatto-becomes-part-of-dizparc",
+      "WhyItMatters": "Signals increased capabilities, network access, and stability for clients seeking long-term digital transformation partners.",
+      "ConfidenceLevel": "High"
+    },
+    {
+      "HookDescription": "Esatto\u2019s collaboration on the Smart Water AI platform demonstrates expertise in AI, UX, and sustainability.",
+      "Date": "2025-11-01",
+      "Source": "https://esatto.se/en/inspiration/new-ai-platform-to-reduce-energy-consumption",
+      "WhyItMatters": "Highlights Esatto\u2019s ability to deliver innovative, impactful solutions at the intersection of technology and sustainability.",
+      "ConfidenceLevel": "High"
+    },
+    {
+      "HookDescription": "Esatto\u2019s role in building the EU\u2019s MyHealthEnabler app showcases leadership in digital health innovation and data empowerment.",
+      "Date": "2025-12-01",
+      "Source": "https://www.linkedin.com/company/esatto",
+      "WhyItMatters": "Demonstrates Esatto\u2019s capacity to deliver socially impactful, compliant technology in highly regulated sectors.",
+      "ConfidenceLevel": "High"
+    }
+  ],
+  "MethodologyUsed": [
+    "Structured Scraping",
+    "Page Analysis",
+    "Map-Reduce Synthesis"
+  ],
+  "OpenQuestions": [
+    "What are Esatto\u2019s specific revenue figures and growth rates post-Dizparc integration?",
+    "How is Esatto managing cultural and operational integration with Dizparc while maintaining autonomy?",
+    "What are the primary technology stacks and tools used in recent AI and accessibility projects?",
+    "How does Esatto measure and report on the business impact of its digital transformation projects for clients?",
+    "What is the current size and composition of Esatto\u2019s distributed teams, especially in Krakow?"
+  ]
+}

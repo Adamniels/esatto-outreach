@@ -23,10 +23,7 @@ public sealed class UpdateContactPerson
 
         contact.UpdateDetails(dto.Name, dto.Title, dto.Email, dto.LinkedInUrl);
 
-        var hooksJson = dto.PersonalHooks != null ? System.Text.Json.JsonSerializer.Serialize(dto.PersonalHooks) : null;
-        var newsJson = dto.PersonalNews != null ? System.Text.Json.JsonSerializer.Serialize(dto.PersonalNews) : null;
-        
-        contact.UpdateEnrichment(hooksJson, newsJson, dto.GeneralInfo);
+        contact.UpdateEnrichment(dto.PersonalHooks, dto.PersonalNews, dto.GeneralInfo);
 
         await _repository.UpdateContactPersonAsync(contact, ct);
 

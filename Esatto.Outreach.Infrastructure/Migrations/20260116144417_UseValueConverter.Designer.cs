@@ -3,6 +3,7 @@ using System;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
-    partial class OutreachDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260116144417_UseValueConverter")]
+    partial class UseValueConverter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,15 +120,11 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("PersonalHooks")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("PersonalHooksJson");
+                    b.Property<string>("PersonalHooksJson")
+                        .HasColumnType("text");
 
-                    b.Property<string>("PersonalNews")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("PersonalNewsJson");
+                    b.Property<string>("PersonalNewsJson")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ProspectId")
                         .HasColumnType("uuid");
@@ -286,6 +285,10 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("EmailAddresses")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<Guid?>("EntityIntelligenceId")
                         .HasColumnType("uuid");
 
@@ -325,6 +328,10 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.Property<string>("OwnerId")
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
+
+                    b.Property<string>("PhoneNumbers")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("PictureURL")
                         .HasMaxLength(500)

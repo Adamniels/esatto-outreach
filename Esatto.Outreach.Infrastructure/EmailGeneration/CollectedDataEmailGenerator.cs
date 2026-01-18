@@ -53,6 +53,20 @@ Do not include code fences, explanations, or any extra text.
 
         // 6. Kör request mot OpenAI Responses API
         var jsonText = await CallOpenAIAsync(payload, cancellationToken);
+        
+        // Sanitize JSON (remove markdown code fences if present)
+        if (jsonText.StartsWith("```json"))
+        {
+            jsonText = jsonText.Substring(7);
+            if (jsonText.EndsWith("```")) jsonText = jsonText.Substring(0, jsonText.Length - 3);
+        }
+        else if (jsonText.StartsWith("```"))
+        {
+            jsonText = jsonText.Substring(3);
+            if (jsonText.EndsWith("```")) jsonText = jsonText.Substring(0, jsonText.Length - 3);
+        }
+        
+        jsonText = jsonText.Trim();
 
         // 7. Försök deserialisera till din DTO
         CustomEmailDraftDto? dto = null;
@@ -87,7 +101,8 @@ Do not include code fences, explanations, or any extra text.
         return new Dictionary<string, object>
         {
             ["model"] = _options.Model,
-            ["input"] = userPrompt
+            ["input"] = userPrompt,
+            ["max_output_tokens"] = _options.DefaultMaxOutputTokens > 0 ? _options.DefaultMaxOutputTokens : 2000
         };
     }
 
@@ -137,52 +152,37 @@ Do not include code fences, explanations, or any extra text.
 
         string collectedDataSection;
 
-        // Try to parse rich data
-        EnrichedCompanyDataDto? richData = null;
-        if (!string.IsNullOrWhiteSpace(intelligence.CompanyHooksJson) && !intelligence.CompanyHooksJson.TrimStart().StartsWith("["))
+        // Try to access rich data (New Structure)
+        if (intelligence.EnrichedData != null)
         {
-             try 
-             {
-                 richData = JsonSerializer.Deserialize<EnrichedCompanyDataDto>(intelligence.CompanyHooksJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-             }
-             catch { /* Ignore, treat as legacy */ }
-        }
-
-        if (richData != null)
-        {
+            var ed = intelligence.EnrichedData;
             var sb = new StringBuilder();
             sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET (RICH DATA) ===");
             
-            sb.AppendLine($"\nSUMMARY: {richData.Summary}");
-            
-            if (richData.KeyValueProps?.Any() == true)
-                sb.AppendLine($"VALUE PROPS: {string.Join(", ", richData.KeyValueProps)}");
-                
-            if (richData.TechStack?.Any() == true)
-                sb.AppendLine($"TECH STACK: {string.Join(", ", richData.TechStack)}");
-                
-            if (richData.CaseStudies?.Any() == true)
+            sb.AppendLine($"\nSNAPSHOT: {ed.Snapshot.WhatTheyDo}. They operate by {ed.Snapshot.HowTheyOperate}. Target: {ed.Snapshot.TargetCustomer}.");
+
+            sb.AppendLine("\nPROFILE:");
+            sb.AppendLine($"- Business Model: {ed.Profile.BusinessModel}");
+            sb.AppendLine($"- Customer Type: {ed.Profile.CustomerType}");
+            sb.AppendLine($"- Tech Posture: {ed.Profile.TechnologyPosture}");
+            sb.AppendLine($"- Scaling Stage: {ed.Profile.ScalingStage}");
+
+            if (ed.Challenges.Confirmed.Any() || ed.Challenges.Inferred.Any())
             {
-                sb.AppendLine("\nCASE STUDIES:");
-                foreach(var c in richData.CaseStudies)
-                {
-                   sb.AppendLine($"- Client: {c.Client} | Challenge: {c.Challenge} | Solution: {c.Solution} | Outcome: {c.Outcome}");
-                }
+                sb.AppendLine("\nCHALLENGES (PAIN POINTS):");
+                foreach(var c in ed.Challenges.Confirmed)
+                    sb.AppendLine($"- [CONFIRMED] {c.ChallengeDescription}");
+                foreach(var c in ed.Challenges.Inferred)
+                    sb.AppendLine($"- [INFERRED] {c.ChallengeDescription}");
             }
             
-            if (richData.News?.Any() == true)
+            if (ed.OutreachHooks.Any())
             {
-                sb.AppendLine("\nRECENT NEWS:");
-                foreach(var n in richData.News) sb.AppendLine($"- {n.Date}: {n.Description}");
+                sb.AppendLine("\nRECENT EVENTS / HOOKS:");
+                foreach(var h in ed.OutreachHooks)
+                    sb.AppendLine($"- {h.Date}: {h.HookDescription} (Why: {h.WhyItMatters})");
             }
             
-            if (richData.Hiring?.Any() == true)
-            {
-                sb.AppendLine("\nHIRING:");
-                foreach(var h in richData.Hiring) sb.AppendLine($"- {h.Role} ({h.Date})");
-            }
-            
-             // Lägg till när datan samlades in
             sb.AppendLine($"\n(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
             collectedDataSection = sb.ToString();
         }
@@ -198,18 +198,6 @@ Do not include code fences, explanations, or any extra text.
                 sb.AppendLine(intelligence.SummarizedContext);
             }
 
-            if (!string.IsNullOrWhiteSpace(intelligence.CompanyHooksJson))
-            {
-                sb.AppendLine("\nFöretagskrokar (Company Hooks):");
-                sb.AppendLine(intelligence.CompanyHooksJson);
-            }
-            
-            if (!string.IsNullOrWhiteSpace(intelligence.PersonalHooksJson))
-            {
-                sb.AppendLine("\nPersonliga krokar (Personal Hooks):");
-                sb.AppendLine(intelligence.PersonalHooksJson);
-            }
-             // Lägg till när datan samlades in
             sb.AppendLine($"\n(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
             collectedDataSection = sb.ToString();
         }
@@ -223,7 +211,7 @@ Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl p
 
 === MÅLFÖRETAG ===
 Företag: {req.Name}
-{(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.EmailAddresses?.Any() == true ? $"E-postadresser: {string.Join(", ", req.EmailAddresses)}\n" : "")}{(req.PhoneNumbers?.Any() == true ? $"Telefonnummer: {string.Join(", ", req.PhoneNumbers)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
+{(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
 {collectedDataSection}";
 
         // Dynamiska instruktioner från databasen

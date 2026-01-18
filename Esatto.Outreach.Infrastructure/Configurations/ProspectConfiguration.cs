@@ -48,25 +48,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                 c => c.ToList()));
 
-        b.Property(x => x.EmailAddresses)
-            .HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleEmailAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleEmailAddress>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleEmailAddress>>(
-                (c1, c2) => c1!.SequenceEqual(c2!),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                c => c.ToList()));
-
-        b.Property(x => x.PhoneNumbers)
-            .HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsulePhoneNumber>>(v, (JsonSerializerOptions?)null) ?? new List<CapsulePhoneNumber>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsulePhoneNumber>>(
-                (c1, c2) => c1!.SequenceEqual(c2!),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                c => c.ToList()));
 
         b.Property(x => x.Addresses)
             .HasColumnType("jsonb")

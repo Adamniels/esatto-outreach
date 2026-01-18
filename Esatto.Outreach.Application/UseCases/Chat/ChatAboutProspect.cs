@@ -179,40 +179,44 @@ public sealed class ChatWithProspect
     {
         var sb = new System.Text.StringBuilder();
         
-        if (dto.RichData != null)
+        // 1. Summarized Context (Always available logic)
+        if (!string.IsNullOrWhiteSpace(dto.SummarizedContext))
         {
-            var rd = dto.RichData;
-            sb.AppendLine($"SUMMARY: {rd.Summary}");
-            
-            if (rd.KeyValueProps?.Any() == true)
-                sb.AppendLine($"VALUE PROPS: {string.Join(", ", rd.KeyValueProps)}");
-                
-            if (rd.TechStack?.Any() == true)
-                sb.AppendLine($"TECH STACK: {string.Join(", ", rd.TechStack)}");
-                
-            if (rd.CaseStudies?.Any() == true)
-            {
-                sb.AppendLine("CASE STUDIES:");
-                foreach(var c in rd.CaseStudies)
-                {
-                   sb.AppendLine($"- Client: {c.Client} | Challenge: {c.Challenge} | Solution: {c.Solution} | Outcome: {c.Outcome}");
-                }
-            }
-            
-            if (rd.News?.Any() == true)
-            {
-                sb.AppendLine("RECENT NEWS:");
-                foreach(var n in rd.News) sb.AppendLine($"- {n.Date}: {n.Description}");
-            }
+            sb.AppendLine($"SUMMARY CONTEXT: {dto.SummarizedContext}");
         }
-        else
+
+        // 2. Structured Enrichment Data
+        if (dto.EnrichedData != null)
         {
-           sb.AppendLine($"SUMMARY: {dto.SummarizedContext}");
-           if (dto.CompanyHooks?.Any() == true)
-           {
-               sb.AppendLine("HOOKS:");
-               foreach(var h in dto.CompanyHooks) sb.AppendLine($"- {h}");
-           }
+            var ed = dto.EnrichedData;
+            
+            // Snapshot
+            sb.AppendLine($"SNAPSHOT: {ed.Snapshot.WhatTheyDo}. They operate by {ed.Snapshot.HowTheyOperate}. Target: {ed.Snapshot.TargetCustomer}.");
+            
+            // Profile
+            sb.AppendLine("PROFILE:");
+            sb.AppendLine($"- Business Model: {ed.Profile.BusinessModel}");
+            sb.AppendLine($"- Customer Type: {ed.Profile.CustomerType}");
+            sb.AppendLine($"- Tech Posture: {ed.Profile.TechnologyPosture}");
+            sb.AppendLine($"- Scaling Stage: {ed.Profile.ScalingStage}");
+
+            // Challenges
+            if (ed.Challenges.Confirmed.Any() || ed.Challenges.Inferred.Any())
+            {
+                sb.AppendLine("CHALLENGES:");
+                foreach(var c in ed.Challenges.Confirmed)
+                    sb.AppendLine($"- [CONFIRMED] {c.ChallengeDescription} (Source: {c.SourceUrl})");
+                foreach(var c in ed.Challenges.Inferred)
+                    sb.AppendLine($"- [INFERRED] {c.ChallengeDescription} (Reason: {c.Reasoning})");
+            }
+
+            // News / Hooks
+            if (ed.OutreachHooks.Any())
+            {
+                sb.AppendLine("RECENT EVENTS/HOOKS:");
+                foreach(var h in ed.OutreachHooks)
+                    sb.AppendLine($"- {h.Date}: {h.HookDescription} (Why: {h.WhyItMatters})");
+            }
         }
         
         return sb.ToString();

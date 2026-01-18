@@ -67,8 +67,6 @@ public class CreateOrUpdateProspectFromCapsule
 
         // Mappa nested data
         var addresses = MapAddresses(party.Addresses);
-        var phoneNumbers = MapPhoneNumbers(party.PhoneNumbers);
-        var emailAddresses = MapEmailAddresses(party.EmailAddresses);
         var websites = MapWebsites(party.Websites);
         var tags = MapTags(party.Tags);
         var customFields = MapCustomFields(party.Fields);
@@ -80,8 +78,6 @@ public class CreateOrUpdateProspectFromCapsule
             lastContactedAt: party.LastContactedAt,
             pictureURL: party.PictureURL,
             addresses: addresses,
-            phoneNumbers: phoneNumbers,
-            emailAddresses: emailAddresses,
             websites: websites,
             tags: tags,
             customFields: customFields
@@ -108,8 +104,6 @@ public class CreateOrUpdateProspectFromCapsule
 
         // Mappa nested data
         var addresses = MapAddresses(party.Addresses);
-        var phoneNumbers = MapPhoneNumbers(party.PhoneNumbers);
-        var emailAddresses = MapEmailAddresses(party.EmailAddresses);
         var websites = MapWebsites(party.Websites);
         var tags = MapTags(party.Tags);
         var customFields = MapCustomFields(party.Fields);
@@ -123,8 +117,6 @@ public class CreateOrUpdateProspectFromCapsule
             lastContactedAt: party.LastContactedAt,
             pictureURL: party.PictureURL,
             addresses: addresses,
-            phoneNumbers: phoneNumbers,
-            emailAddresses: emailAddresses,
             websites: websites,
             tags: tags,
             customFields: customFields

@@ -10,21 +10,14 @@ public class EntityIntelligence : Entity
     // Navigation property till Prospect
     public Prospect? Prospect { get; private set; }
     
-    // JSON: List<string> of company-level news/events
-    // Ex: ["Launched new AI feature", "Opening office in London"]
-    public string? CompanyHooksJson { get; private set; }
-
-    // JSON: List<string> of personal-level hooks
-    // Ex: ["Host of the 'Digital Future' podcast", "Posted about React 19 on LinkedIn"]
-    public string? PersonalHooksJson { get; private set; }
-
-    // A synthesized summary of why this person/company is a good fit
+    // === NEW ENRICHMENT FIELDS ===
     // "CEO Adam has explicitly mentioned a need for 'modernizing legacy tech' in his recent interview..."
     public string? SummarizedContext { get; private set; }
 
-    // JSON: List of sources used for verification
-    // Ex: [{ "url": "https://linkedin.com/in/...", "type": "profile" }]
-    public string? SourcesJson { get; private set; }
+    public string? EnrichmentVersion { get; private set; } // e.g. "v2-company-only"
+    
+    // Structured Enrichment Data (Mapped to JSON in DB)
+    public Esatto.Outreach.Domain.ValueObjects.CompanyEnrichmentResult? EnrichedData { get; private set; }
 
     // When the research was performed
     public DateTime ResearchedAt { get; private set; }
@@ -35,32 +28,28 @@ public class EntityIntelligence : Entity
 
     public static EntityIntelligence Create(
         Guid prospectId,
-        string? companyHooksJson,
-        string? personalHooksJson,
         string? summarizedContext,
-        string? sourcesJson)
+        Esatto.Outreach.Domain.ValueObjects.CompanyEnrichmentResult? enrichedData,
+        string? enrichmentVersion = null)
     {
         return new EntityIntelligence
         {
             ProspectId = prospectId,
-            CompanyHooksJson = companyHooksJson,
-            PersonalHooksJson = personalHooksJson,
             SummarizedContext = summarizedContext,
-            SourcesJson = sourcesJson,
+            EnrichedData = enrichedData,
+            EnrichmentVersion = enrichmentVersion,
             ResearchedAt = DateTime.UtcNow
         };
     }
 
     public void UpdateResearch(
-           string? companyHooksJson = null,
-           string? personalHooksJson = null,
            string? summarizedContext = null,
-           string? sourcesJson = null)
+           Esatto.Outreach.Domain.ValueObjects.CompanyEnrichmentResult? enrichedData = null,
+           string? enrichmentVersion = null)
     {
-        if (companyHooksJson is not null) CompanyHooksJson = companyHooksJson;
-        if (personalHooksJson is not null) PersonalHooksJson = personalHooksJson;
         if (summarizedContext is not null) SummarizedContext = summarizedContext;
-        if (sourcesJson is not null) SourcesJson = sourcesJson;
+        if (enrichedData is not null) EnrichedData = enrichedData;
+        if (enrichmentVersion is not null) EnrichmentVersion = enrichmentVersion;
 
         ResearchedAt = DateTime.UtcNow;
         Touch();

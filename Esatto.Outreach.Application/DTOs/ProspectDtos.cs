@@ -9,16 +9,12 @@ namespace Esatto.Outreach.Application.DTOs;
 public record ProspectCreateDto(
     string Name,
     List<string>? Websites,
-    List<string>? EmailAddresses,
-    List<string>? PhoneNumbers,
     string? Notes);
 
 // DTO för att uppdatera prospect (både manuell och Capsule)
 public record ProspectUpdateDto(
     string? Name,
     List<string>? Websites,
-    List<string>? EmailAddresses,
-    List<string>? PhoneNumbers,
     string? Notes,
     ProspectStatus? Status,
     string? MailTitle,
@@ -34,8 +30,6 @@ public record ProspectViewDto(
     bool IsPending,
     string? About,
     List<WebsiteDto> Websites,
-    List<EmailAddressDto> EmailAddresses,
-    List<PhoneNumberDto> PhoneNumbers,
     List<AddressDto> Addresses,
     List<TagDto> Tags,
     List<CustomFieldDto> CustomFields,
@@ -63,8 +57,6 @@ public record ProspectViewDto(
             p.IsPending,
             p.About,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
-            p.EmailAddresses?.Select(e => new EmailAddressDto(e.Address, e.Type)).ToList() ?? new(),
-            p.PhoneNumbers?.Select(ph => new PhoneNumberDto(ph.Number, ph.Type)).ToList() ?? new(),
             p.Addresses?.Select(a => new AddressDto(a.Street, a.City, a.State, a.Zip, a.Country, a.Type)).ToList() ?? new(),
             p.Tags?.Select(t => new TagDto(t.Id, t.Name, t.DataTag)).ToList() ?? new(),
             p.CustomFields?.Select(f => new CustomFieldDto(f.Id, f.FieldName, f.FieldDefinitionId, f.Value, f.TagId)).ToList() ?? new(),
@@ -92,7 +84,6 @@ public record PendingProspectDto(
     string? About,
     string? PictureURL,
     List<WebsiteDto> Websites,
-    List<EmailAddressDto> EmailAddresses,
     DateTime CreatedUtc)
 {
     public static PendingProspectDto FromEntity(Prospect p)
@@ -107,7 +98,6 @@ public record PendingProspectDto(
             p.About,
             p.PictureURL,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
-            p.EmailAddresses?.Select(e => new EmailAddressDto(e.Address, e.Type)).ToList() ?? new(),
             p.CreatedUtc);
     }
 }
@@ -125,65 +115,34 @@ public record CustomFieldDto(long Id, string? FieldName, long? FieldDefinitionId
 public record EntityIntelligenceDto(
     Guid Id,
     Guid ProspectId,
-    List<string> CompanyHooks,
-    List<string> PersonalHooks,
     string? SummarizedContext,
-    string? SourcesJson,
-    EnrichedCompanyDataDto? RichData,
+    string? EnrichmentVersion,
+    CompanyEnrichmentResult? EnrichedData,
     DateTime ResearchedAt,
     DateTime CreatedUtc,
-    DateTime? UpdatedUtc
+    DateTime? UpdatedUtc,
+    List<string> CompanyHooks
 )
 {
     public static EntityIntelligenceDto FromEntity(EntityIntelligence entity) 
     {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        
-        List<string> DeserializeList(string? json) 
-        {
-            if (string.IsNullOrWhiteSpace(json)) return new();
-            try { return JsonSerializer.Deserialize<List<string>>(json, options) ?? new(); }
-            catch { return new(); }
-        }
-
-        EnrichedCompanyDataDto? DeserializeRichData(string? json)
-        {
-            if (string.IsNullOrWhiteSpace(json)) return null;
-            try 
-            { 
-                 // If it starts with [, it's a list (legacy), so it's NOT rich data
-                 if (json.TrimStart().StartsWith("[")) return null;
-                 
-                 return JsonSerializer.Deserialize<EnrichedCompanyDataDto>(json, options); 
-            }
-            catch { return null; }
-        }
-
         return new(
             Id: entity.Id,
             ProspectId: entity.ProspectId,
-            CompanyHooks: DeserializeList(entity.CompanyHooksJson), // Legacy/Fallback
-            PersonalHooks: DeserializeList(entity.PersonalHooksJson),
             SummarizedContext: entity.SummarizedContext,
-            SourcesJson: entity.SourcesJson,
-            RichData: DeserializeRichData(entity.CompanyHooksJson), // Try new format
+            EnrichmentVersion: entity.EnrichmentVersion,
+            EnrichedData: entity.EnrichedData,
             ResearchedAt: entity.ResearchedAt,
             CreatedUtc: entity.CreatedUtc,
-            UpdatedUtc: entity.UpdatedUtc
+            UpdatedUtc: entity.UpdatedUtc,
+            CompanyHooks: entity.EnrichedData?.OutreachHooks?.Select(h => h.HookDescription).ToList() ?? new()
         );
     }
 }
 
 // Rich Data Structures
-public record EnrichedCompanyDataDto(
-    string Summary,
-    List<string>? KeyValueProps,
-    List<string>? TechStack,
-    List<CaseStudyDto>? CaseStudies,
-    List<NewsEventDto>? News,
-    List<HiringSignalDto>? Hiring
-);
+// Legacy DTOs removed
 
-public record CaseStudyDto(string Client, string Challenge, string Solution, string Outcome);
-public record NewsEventDto(string Date, string Description, string Source);
-public record HiringSignalDto(string Role, string Date, string Source);
+
+
+

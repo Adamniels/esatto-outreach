@@ -17,8 +17,6 @@ public class Prospect : Entity
 
     // Nested collections (JSON columns) - tomma listor om manuell prospect
     public List<CapsuleWebsite> Websites { get; private set; } = new();
-    public List<CapsuleEmailAddress> EmailAddresses { get; private set; } = new();
-    public List<CapsulePhoneNumber> PhoneNumbers { get; private set; } = new();
     public List<CapsuleAddress> Addresses { get; private set; } = new();
     public List<CapsuleTag> Tags { get; private set; } = new();
     public List<CapsuleCustomField> CustomFields { get; private set; } = new();
@@ -68,8 +66,8 @@ public class Prospect : Entity
     {
         if (!IsFromCapsule) return false;
 
-        var crmFields = new[] { "Name", "About", "Websites", "EmailAddresses",
-                                "PhoneNumbers", "Addresses", "PictureURL",
+        var crmFields = new[] { "Name", "About", "Websites",
+                                "Addresses", "PictureURL",
                                 "CapsuleUpdatedAt", "LastContactedAt" };
         return crmFields.Contains(fieldName);
     }
@@ -86,8 +84,6 @@ public class Prospect : Entity
         string name,
         string ownerId,
         List<string>? websiteUrls = null,
-        List<string>? emailAddresses = null,
-        List<string>? phoneNumbers = null,
         string? notes = null)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -105,9 +101,7 @@ public class Prospect : Entity
             CapsuleId = null,   // Inte från Capsule
 
             // Konvertera enkla strängar till value objects
-            Websites = websiteUrls?.Select(url => new CapsuleWebsite(url, null, null)).ToList() ?? new(),
-            EmailAddresses = emailAddresses?.Select(email => new CapsuleEmailAddress(email, null)).ToList() ?? new(),
-            PhoneNumbers = phoneNumbers?.Select(phone => new CapsulePhoneNumber(phone, null)).ToList() ?? new()
+            Websites = websiteUrls?.Select(url => new CapsuleWebsite(url, null, null)).ToList() ?? new()
         };
 
         return prospect;
@@ -125,8 +119,6 @@ public class Prospect : Entity
         DateTime? lastContactedAt,
         string? pictureURL,
         List<CapsuleAddress>? addresses = null,
-        List<CapsulePhoneNumber>? phoneNumbers = null,
-        List<CapsuleEmailAddress>? emailAddresses = null,
         List<CapsuleWebsite>? websites = null,
         List<CapsuleTag>? tags = null,
         List<CapsuleCustomField>? customFields = null)
@@ -147,8 +139,6 @@ public class Prospect : Entity
             LastContactedAt = lastContactedAt,
             PictureURL = pictureURL,
             Addresses = addresses ?? new(),
-            PhoneNumbers = phoneNumbers ?? new(),
-            EmailAddresses = emailAddresses ?? new(),
             Websites = websites ?? new(),
             Tags = tags ?? new(),
             CustomFields = customFields ?? new(),
@@ -171,8 +161,6 @@ public class Prospect : Entity
         DateTime? lastContactedAt = null,
         string? pictureURL = null,
         List<CapsuleAddress>? addresses = null,
-        List<CapsulePhoneNumber>? phoneNumbers = null,
-        List<CapsuleEmailAddress>? emailAddresses = null,
         List<CapsuleWebsite>? websites = null,
         List<CapsuleTag>? tags = null,
         List<CapsuleCustomField>? customFields = null)
@@ -193,8 +181,6 @@ public class Prospect : Entity
         if (pictureURL is not null) PictureURL = pictureURL;
 
         if (addresses is not null) Addresses = addresses;
-        if (phoneNumbers is not null) PhoneNumbers = phoneNumbers;
-        if (emailAddresses is not null) EmailAddresses = emailAddresses;
         if (websites is not null) Websites = websites;
         if (tags is not null) Tags = tags;
         if (customFields is not null) CustomFields = customFields;
@@ -209,8 +195,6 @@ public class Prospect : Entity
     public void UpdateBasics(
         string? name = null,
         List<string>? websiteUrls = null,
-        List<string>? emailAddresses = null,
-        List<string>? phoneNumbers = null,
         string? notes = null,
         string? mailTitle = null,
         string? mailBodyPlain = null,
@@ -226,12 +210,6 @@ public class Prospect : Entity
         // Konvertera enkla strängar till value objects
         if (websiteUrls is not null)
             Websites = websiteUrls.Select(url => new CapsuleWebsite(url, null, null)).ToList();
-
-        if (emailAddresses is not null)
-            EmailAddresses = emailAddresses.Select(email => new CapsuleEmailAddress(email, null)).ToList();
-
-        if (phoneNumbers is not null)
-            PhoneNumbers = phoneNumbers.Select(phone => new CapsulePhoneNumber(phone, null)).ToList();
 
         if (notes is not null) Notes = notes;
         if (mailTitle is not null) MailTitle = mailTitle;
@@ -262,19 +240,6 @@ public class Prospect : Entity
 
     // === HELPER METHODS ===
 
-    public void AddEmailAddress(string email, string type = "Work")
-    {
-        if (string.IsNullOrWhiteSpace(email)) return;
-        
-        EmailAddresses ??= new List<CapsuleEmailAddress>();
-        
-        // De-dupe
-        if (EmailAddresses.Any(e => e.Address.Equals(email, StringComparison.OrdinalIgnoreCase)))
-            return;
-
-        EmailAddresses.Add(new CapsuleEmailAddress(email, type));
-        Touch();
-    }
 
     public void AddContactPerson(string name, string? title = null, string? email = null)
     {
@@ -295,13 +260,6 @@ public class Prospect : Entity
     // TODO: maybe i should change so we send all, becuase all it is used for now is as informtion sent to AI
     public string? GetPrimaryWebsite() => Websites?.FirstOrDefault()?.Url;
 
-    public string? GetPrimaryEmail() => EmailAddresses?.FirstOrDefault()?.Address;
-
-    public string? GetWorkEmail() =>
-        EmailAddresses?.FirstOrDefault(e => e.Type?.Equals("Work", StringComparison.OrdinalIgnoreCase) == true)?.Address
-        ?? GetPrimaryEmail();
-
-    public string? GetPrimaryPhone() => PhoneNumbers?.FirstOrDefault()?.Number;
 
     public string? GetLinkedInUrl() =>
         Websites?.FirstOrDefault(w =>

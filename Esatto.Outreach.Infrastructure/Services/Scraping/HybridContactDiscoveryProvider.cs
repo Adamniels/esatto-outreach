@@ -9,13 +9,13 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
 {
     private readonly IWebScraperService _webScraper;
     private readonly DuckDuckGoSerpService _serpService;
-    private readonly IOpenAIChatClient _aiClient;
+    private readonly IGenerativeAIClient _aiClient;
     private readonly ILogger<HybridContactDiscoveryProvider> _logger;
 
     public HybridContactDiscoveryProvider(
         IWebScraperService webScraper,
         DuckDuckGoSerpService serpService,
-        IOpenAIChatClient aiClient,
+        IGenerativeAIClient aiClient,
         ILogger<HybridContactDiscoveryProvider> logger)
     {
         _webScraper = webScraper;
@@ -83,18 +83,16 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
                                    $"Include the CEO, CFO, CTO, VP of Sales, VP of Marketing, and other Directors. " +
                                    $"List at least 10 people if possible with their exact titles.";
                                    
-                var (response, _) = await _aiClient.SendChatMessageAsync(
+                var responseText = await _aiClient.GenerateTextAsync(
                     userInput: searchPrompt,
                     systemPrompt: "You are an expert researcher. Find as many relevant senior contacts as possible.",
-                    previousResponseId: null,
                     useWebSearch: true, // Enable Browsing
                     temperature: 0.3, // Slightly higher temp for broader search
                     maxOutputTokens: 1500,
-                    initialMailContext: null,
                     ct: ct
                 );
-                _logger.LogInformation("Method [OpenAI Web Search]: Call completed. Response length: {Length}", response.AiMessage.Length);
-                return response.AiMessage;
+                _logger.LogInformation("Method [OpenAI Web Search]: Call completed. Response length: {Length}", responseText.Length);
+                return responseText;
             }
             catch (Exception ex)
             {
@@ -158,19 +156,17 @@ Do not include markdown formatting (```json).
         // 4. Final LLM Processing
         _logger.LogInformation("Sending aggregated context to LLM for final processing...");
         
-        var (finalResponse, _) = await _aiClient.SendChatMessageAsync(
+        var finalResponseText = await _aiClient.GenerateTextAsync(
             userInput: finalPrompt,
             systemPrompt: "You are an expert sales researcher. Extract structured contact data from the provided context.",
-            previousResponseId: null,
             useWebSearch: false, // No need to search again, we have the context
             temperature: 0.1, 
             maxOutputTokens: 2000,
-            initialMailContext: null,
             ct: ct
         );
 
         // 5. Parse JSON
-        var json = CleanJson(finalResponse.AiMessage);
+        var json = CleanJson(finalResponseText);
         try
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };

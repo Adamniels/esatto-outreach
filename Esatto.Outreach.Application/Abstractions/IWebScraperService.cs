@@ -12,6 +12,17 @@ public interface IWebScraperService
     /// Visits the company homepage and extracts key metadata useful for AI analysis.
     /// </summary>
     Task<ScrapedSiteData> ScrapeCompanySiteAsync(string domain, CancellationToken ct = default);
+    
+    /// <summary>
+    /// Attempts to find and parse the sitemap to discover high-value pages.
+    /// </summary>
+    Task<List<string>> GetSitemapUrlsAsync(string domain, CancellationToken ct = default);
+
+    /// <summary>
+    /// Scrapes a single specific URL and returns structured content (Title, H1, Body).
+    /// </summary>
+    Task<WebPageContent> ScrapePageAsync(string url, CancellationToken ct = default);
 }
 
-public record ScrapedSiteData(string Url, string Title, string MetaDescription, string BodyText, List<string> Links);
+public record ScrapedSiteData(string Url, string Title, string MetaDescription, string BodyText, List<string> Links, List<WebPageContent> Pages);
+public record WebPageContent(string Url, string Title, string H1, string BodyText);

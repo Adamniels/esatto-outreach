@@ -14,12 +14,12 @@ namespace Esatto.Outreach.Application.UseCases.SoftDataCollection;
 public sealed class EnrichContactPerson
 {
     private readonly IProspectRepository _prospectRepo;
-    private readonly IOpenAIChatClient _aiClient;
+    private readonly IGenerativeAIClient _aiClient;
     private readonly ILogger<EnrichContactPerson> _logger;
 
     public EnrichContactPerson(
         IProspectRepository prospectRepo,
-        IOpenAIChatClient aiClient,
+        IGenerativeAIClient aiClient,
         ILogger<EnrichContactPerson> logger)
     {
         _prospectRepo = prospectRepo;
@@ -54,24 +54,22 @@ public sealed class EnrichContactPerson
         var researchPrompt = BuildResearchPrompt(contact, prospect);
 
         // 4. AI Research with Web Search
-        var (aiResponse, _) = await _aiClient.SendChatMessageAsync(
+        var aiResponseText = await _aiClient.GenerateTextAsync(
             userInput: researchPrompt,
             systemPrompt: "You are an expert researcher specializing in B2B sales intelligence and personal background research for outreach purposes.",
-            previousResponseId: null,
             useWebSearch: true, // Enable web search for LinkedIn/news
             temperature: 0.3,
             maxOutputTokens: 1500,
-            initialMailContext: null,
             ct: ct
         );
 
         // 5. Parse AI Response
-        var enrichmentData = ParseEnrichmentResponse(aiResponse?.AiMessage);
+        var enrichmentData = ParseEnrichmentResponse(aiResponseText);
 
         // 6. Update Contact Entity
         contact.UpdateEnrichment(
-            personalHooksJson: enrichmentData.PersonalHooksJson,
-            personalNewsJson: enrichmentData.PersonalNewsJson,
+            personalHooks: enrichmentData.PersonalHooks,
+            personalNews: enrichmentData.PersonalNews,
             summary: enrichmentData.Summary
         );
 
@@ -204,16 +202,7 @@ public sealed class EnrichContactPerson
                 return new EnrichmentData(null, null, "Failed to parse AI response.");
             }
 
-            // Serialize lists back to JSON for storage
-            var hooksJson = parsed.PersonalHooks?.Any() == true 
-                ? JsonSerializer.Serialize(parsed.PersonalHooks) 
-                : null;
-            
-            var newsJson = parsed.PersonalNews?.Any() == true 
-                ? JsonSerializer.Serialize(parsed.PersonalNews) 
-                : null;
-
-            return new EnrichmentData(hooksJson, newsJson, parsed.Summary ?? "No summary available.");
+            return new EnrichmentData(parsed.PersonalHooks, parsed.PersonalNews, parsed.Summary ?? "No summary available.");
         }
         catch (JsonException ex)
         {
@@ -228,7 +217,7 @@ public sealed class EnrichContactPerson
         }
     }
 
-    private record EnrichmentData(string? PersonalHooksJson, string? PersonalNewsJson, string Summary);
+    private record EnrichmentData(List<string>? PersonalHooks, List<string>? PersonalNews, string Summary);
     
     private record EnrichmentResponseDto(
         List<string>? PersonalHooks,
