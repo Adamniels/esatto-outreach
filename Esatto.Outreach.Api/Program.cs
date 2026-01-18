@@ -42,6 +42,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Use-cases (each action the system can perform)
+
+
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Register>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Login>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken>();
