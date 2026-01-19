@@ -56,6 +56,9 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.AddCon
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.UpdateContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.DeleteContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.EnrichContactPerson>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.SetActiveContact>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.ClearActiveContact>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailDelivery.SendEmailViaN8n>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ChatWithProspect>();

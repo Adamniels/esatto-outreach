@@ -1,6 +1,7 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
@@ -14,17 +15,20 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
     private readonly IProspectRepository _prospectRepo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IGenerateEmailPromptRepository _promptRepo;
+    private readonly UserManager<ApplicationUser> _userManager;
     private static string? _esattoCompanyInfo;
     private static readonly object _lock = new();
 
     public EmailContextBuilder(
         IProspectRepository prospectRepo,
         IEntityIntelligenceRepository enrichmentRepo,
-        IGenerateEmailPromptRepository promptRepo)
+        IGenerateEmailPromptRepository promptRepo,
+        UserManager<ApplicationUser> userManager)
     {
         _prospectRepo = prospectRepo;
         _enrichmentRepo = enrichmentRepo;
         _promptRepo = promptRepo;
+        _userManager = userManager;
         LoadEsattoCompanyInfo();
     }
 
@@ -56,7 +60,22 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
                 throw new InvalidOperationException("Entity Intelligence record not found.");
         }
 
-        // 4. Bygg request DTO från prospect
+        // 4. Hämta aktiv kontaktperson
+        ContactPersonContext? activeContactContext = null;
+        var activeContact = prospect.GetActiveContact();
+        if (activeContact != null)
+        {
+            activeContactContext = new ContactPersonContext(
+                Name: activeContact.Name,
+                Title: activeContact.Title,
+                Email: activeContact.Email,
+                PersonalHooks: activeContact.PersonalHooks?.Count > 0 ? activeContact.PersonalHooks : null,
+                PersonalNews: activeContact.PersonalNews?.Count > 0 ? activeContact.PersonalNews : null,
+                Summary: activeContact.Summary
+            );
+        }
+
+        // 5. Bygg request DTO från prospect
         var request = new CustomEmailRequestDto(
             ProspectId: prospect.Id,
             Name: prospect.Name,
@@ -70,12 +89,18 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
             Notes: prospect.Notes
         );
 
-        // 5. Skapa och returnera context
+        // 6. Hämta användarens namn för signatur
+        var user = await _userManager.FindByIdAsync(userId);
+        var userFullName = user?.FullName ?? user?.UserName ?? "Esatto AB";
+
+        // 7. Skapa och returnera context med aktiv kontakt och användarnamn
         return EmailGenerationContext.Create(
             companyInfo: _esattoCompanyInfo ?? "{}",
             instructions: activePrompt.Instructions,
             request: request,
-            entityIntelligence: entityIntelligence
+            entityIntelligence: entityIntelligence,
+            activeContact: activeContactContext,
+            userFullName: userFullName
         );
     }
 

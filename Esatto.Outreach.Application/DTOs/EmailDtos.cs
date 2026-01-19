@@ -61,20 +61,46 @@ public sealed record EmailGenerationContext
     public EntityIntelligence? EntityIntelligence { get; init; }
 
     /// <summary>
+    /// Active contact person and their enrichment data (if available)
+    /// </summary>
+    public ContactPersonContext? ActiveContact { get; init; }
+
+    /// <summary>
+    /// Full name of the user generating the email (for signature)
+    /// </summary>
+    public string? UserFullName { get; init; }
+
+    /// <summary>
     /// Factory method to create context with all required data
     /// </summary>
     public static EmailGenerationContext Create(
         string companyInfo,
         string instructions,
         CustomEmailRequestDto request,
-        EntityIntelligence? entityIntelligence = null)
+        EntityIntelligence? entityIntelligence = null,
+        ContactPersonContext? activeContact = null,
+        string? userFullName = null)
     {
         return new EmailGenerationContext
         {
             CompanyInfo = companyInfo,
             Instructions = instructions,
             Request = request,
-            EntityIntelligence = entityIntelligence
+            EntityIntelligence = entityIntelligence,
+            ActiveContact = activeContact,
+            UserFullName = userFullName
         };
     }
 }
+
+/// <summary>
+/// Contains contact person data to include in email generation context.
+/// </summary>
+public record ContactPersonContext(
+    string Name,
+    string? Title,
+    string? Email,
+    List<string>? PersonalHooks,
+    List<string>? PersonalNews,
+    string? Summary
+);

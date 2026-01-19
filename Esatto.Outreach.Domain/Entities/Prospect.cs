@@ -301,5 +301,49 @@ public class Prospect : Entity
         EntityIntelligenceId = null;
         Touch();
     }
+
+    // ========== ACTIVE CONTACT MANAGEMENT ==========
+
+    /// <summary>
+    /// Sets the specified contact as active for email generation.
+    /// Ensures only one contact can be active at a time by deactivating others.
+    /// </summary>
+    /// <param name="contactPersonId">ID of the contact to activate</param>
+    /// <exception cref="ArgumentException">Thrown when contact not found in this prospect's contacts</exception>
+    public void SetActiveContact(Guid contactPersonId)
+    {
+        var contact = ContactPersons.FirstOrDefault(c => c.Id == contactPersonId);
+        if (contact == null)
+            throw new ArgumentException($"Contact person with ID {contactPersonId} not found for this prospect", nameof(contactPersonId));
+        
+        // Deactivate all other contacts
+        foreach (var c in ContactPersons.Where(c => c.IsActive && c.Id != contactPersonId))
+        {
+            c.Deactivate();
+        }
+        
+        // Activate the selected one
+        contact.Activate();
+        Touch();
+    }
+    
+    /// <summary>
+    /// Gets the currently active contact for this prospect.
+    /// </summary>
+    /// <returns>The active ContactPerson, or null if no contact is active</returns>
+    public ContactPerson? GetActiveContact() 
+        => ContactPersons.FirstOrDefault(c => c.IsActive);
+        
+    /// <summary>
+    /// Clears the active contact (deactivates all contacts).
+    /// </summary>
+    public void ClearActiveContact()
+    {
+        foreach (var c in ContactPersons.Where(c => c.IsActive))
+        {
+            c.Deactivate();
+        }
+        Touch();
+    }
 }
 

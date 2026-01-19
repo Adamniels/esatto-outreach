@@ -163,16 +163,40 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
             }
         }
 
-        // Extract contact person name from request
-        var contactPerson = context.Request.Name ?? "there";
+        // Add contact person enrichment data if available
+        if (context.ActiveContact != null)
+        {
+            var contactInfo = new StringBuilder();
+            contactInfo.AppendLine($"Kontaktperson: {context.ActiveContact.Name}");
+            if (!string.IsNullOrWhiteSpace(context.ActiveContact.Title))
+                contactInfo.AppendLine($"Titel: {context.ActiveContact.Title}");
+            if (context.ActiveContact.PersonalHooks?.Any() == true)
+                contactInfo.AppendLine($"Hooks: {string.Join(", ", context.ActiveContact.PersonalHooks)}");
+            if (!string.IsNullOrWhiteSpace(context.ActiveContact.Summary))
+                contactInfo.AppendLine($"Sammanfattning: {context.ActiveContact.Summary}");
 
-        // Build preferences
+            documents.Add(new RagDocument
+            {
+                DocType = "contact",
+                Title = "Contact Person",
+                Text = contactInfo.ToString(),
+                SourceUrl = "Contact Enrichment",
+                Priority = 1.7
+            });
+        }
+
+        // Extract contact person name from active contact or fallback to company name
+        var contactPerson = context.ActiveContact?.Name ?? context.Request.Name ?? "there";
+
+        // Build preferences with user signature if available
+        var senderName = context.UserFullName ?? "Esatto AB";
         var preferences = new RagPreferences
         {
             Tone = "professional",
             Language = "sv",
             MaxLength = 400,
-            FocusAreas = new List<string>() // Could be extracted from instructions in the future
+            FocusAreas = new List<string>(), // Could be extracted from instructions in the future
+            SenderName = senderName  // Add sender name for signature
         };
 
         return new EsattoRagRequest

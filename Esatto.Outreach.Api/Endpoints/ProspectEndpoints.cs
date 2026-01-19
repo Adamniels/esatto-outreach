@@ -148,6 +148,84 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
+        // ============ ACTIVE CONTACT ENDPOINTS ============
+
+        app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/activate", async (
+            Guid prospectId,
+            Guid contactId,
+            SetActiveContact useCase,
+            ClaimsPrincipal user,
+            CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            try
+            {
+                await useCase.Handle(prospectId, contactId, userId, ct);
+                return Results.Ok(new { success = true });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
+        })
+        .RequireAuthorization();
+
+        app.MapDelete("/prospects/{prospectId:guid}/contacts/active", async (
+            Guid prospectId,
+            ClearActiveContact useCase,
+            ClaimsPrincipal user,
+            CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            try
+            {
+                await useCase.Handle(prospectId, userId, ct);
+                return Results.NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
+        })
+        .RequireAuthorization();
+
+        app.MapGet("/prospects/{prospectId:guid}/contacts/active", async (
+            Guid prospectId,
+            GetActiveContact useCase,
+            ClaimsPrincipal user,
+            CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            try
+            {
+                var contact = await useCase.Handle(prospectId, userId, ct);
+                return contact is null ? Results.NotFound() : Results.Ok(contact);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
+        })
+        .RequireAuthorization();
+
         // ============ EMAIL ENDPOINTS ============
 
         app.MapPost("/prospects/{id:guid}/email/draft", async (

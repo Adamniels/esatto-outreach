@@ -32,11 +32,11 @@ public sealed class CollectedDataEmailGenerator : ICustomEmailGenerator
         EmailGenerationContext context,
         CancellationToken cancellationToken = default)
     {
-        // 1. Validera att soft data finns i context
+        // 1. Validate that enrichment is collected
         if (context.EntityIntelligence == null)
             throw new InvalidOperationException("No Entity Intelligence available in context. This generator requires it.");
 
-        // 2. Bygg upp prompten med samlad data
+        // 2. Build the prompt with the collected data
         var userPrompt = BuildPromptWithCollectedData(context) + @"
 
 Return ONLY a valid JSON object with the following structure, nothing else:
@@ -48,12 +48,12 @@ Return ONLY a valid JSON object with the following structure, nothing else:
 Do not include code fences, explanations, or any extra text.
 ";
 
-        // 5. Bygg payload för OpenAI Responses API (UTAN web_search verktyg)
+        // 3. Build payload for OpenAI Responses API (wo websearch)
         var payload = BuildResponsesPayload(userPrompt);
 
-        // 6. Kör request mot OpenAI Responses API
+        // 4. Run request
         var jsonText = await CallOpenAIAsync(payload, cancellationToken);
-        
+
         // Sanitize JSON (remove markdown code fences if present)
         if (jsonText.StartsWith("```json"))
         {
@@ -65,10 +65,10 @@ Do not include code fences, explanations, or any extra text.
             jsonText = jsonText.Substring(3);
             if (jsonText.EndsWith("```")) jsonText = jsonText.Substring(0, jsonText.Length - 3);
         }
-        
+
         jsonText = jsonText.Trim();
 
-        // 7. Försök deserialisera till din DTO
+        // 5. Try to Deserialize to dto
         CustomEmailDraftDto? dto = null;
         try
         {
@@ -85,7 +85,7 @@ Do not include code fences, explanations, or any extra text.
         if (dto == null)
             throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
 
-        // 8. Säkerställ titel om den saknas
+        // Incase title is missing, make a manual
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
             dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
@@ -148,7 +148,7 @@ Do not include code fences, explanations, or any extra text.
     private static string BuildPromptWithCollectedData(EmailGenerationContext context)
     {
         var req = context.Request;
-        var intelligence = context.EntityIntelligence!; 
+        var intelligence = context.EntityIntelligence!;
 
         string collectedDataSection;
 
@@ -158,7 +158,7 @@ Do not include code fences, explanations, or any extra text.
             var ed = intelligence.EnrichedData;
             var sb = new StringBuilder();
             sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET (RICH DATA) ===");
-            
+
             sb.AppendLine($"\nSNAPSHOT: {ed.Snapshot.WhatTheyDo}. They operate by {ed.Snapshot.HowTheyOperate}. Target: {ed.Snapshot.TargetCustomer}.");
 
             sb.AppendLine("\nPROFILE:");
@@ -170,19 +170,19 @@ Do not include code fences, explanations, or any extra text.
             if (ed.Challenges.Confirmed.Any() || ed.Challenges.Inferred.Any())
             {
                 sb.AppendLine("\nCHALLENGES (PAIN POINTS):");
-                foreach(var c in ed.Challenges.Confirmed)
+                foreach (var c in ed.Challenges.Confirmed)
                     sb.AppendLine($"- [CONFIRMED] {c.ChallengeDescription}");
-                foreach(var c in ed.Challenges.Inferred)
+                foreach (var c in ed.Challenges.Inferred)
                     sb.AppendLine($"- [INFERRED] {c.ChallengeDescription}");
             }
-            
+
             if (ed.OutreachHooks.Any())
             {
                 sb.AppendLine("\nRECENT EVENTS / HOOKS:");
-                foreach(var h in ed.OutreachHooks)
+                foreach (var h in ed.OutreachHooks)
                     sb.AppendLine($"- {h.Date}: {h.HookDescription} (Why: {h.WhyItMatters})");
             }
-            
+
             sb.AppendLine($"\n(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
             collectedDataSection = sb.ToString();
         }
@@ -191,7 +191,7 @@ Do not include code fences, explanations, or any extra text.
             // Legacy / Fallback
             var sb = new StringBuilder();
             sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET/PERSONEN ===");
-            
+
             if (!string.IsNullOrWhiteSpace(intelligence.SummarizedContext))
             {
                 sb.AppendLine("\nSammanfattning:");
@@ -214,8 +214,21 @@ Företag: {req.Name}
 {(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}\n")}{(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}\n" : "")}{(req.Addresses?.Any() == true ? $"Adresser: {string.Join("; ", req.Addresses)}\n" : "")}{(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}\n" : "")}{(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}\n")}
 {collectedDataSection}";
 
+        // Kontaktperson och signatur
+        var contactGreeting = context.ActiveContact != null
+            ? $@"
+            
+=== KONTAKTPERSON ===
+Namn: {context.ActiveContact.Name}
+{(string.IsNullOrWhiteSpace(context.ActiveContact.Title) ? "" : $"Titel: {context.ActiveContact.Title}\n")}{(string.IsNullOrWhiteSpace(context.ActiveContact.Email) ? "" : $"E-post: {context.ActiveContact.Email}\n")}{(context.ActiveContact.PersonalHooks?.Any() == true ? $"Personliga hooks: {string.Join(", ", context.ActiveContact.PersonalHooks)}\n" : "")}{(context.ActiveContact.PersonalNews?.Any() == true ? $"Senaste nyheter: {string.Join(", ", context.ActiveContact.PersonalNews)}\n" : "")}{(string.IsNullOrWhiteSpace(context.ActiveContact.Summary) ? "" : $"Sammanfattning: {context.ActiveContact.Summary}\n")}"
+            : "";
+
+        var signatureInstruction = !string.IsNullOrWhiteSpace(context.UserFullName)
+            ? $"\n5. Avsluta mejlet med din signatur: '{context.UserFullName}, Esatto AB'"
+            : "";
+
         // Dynamiska instruktioner från databasen
-        return systemContext + @$"
+        return systemContext + contactGreeting + @$"
 
 === INSTRUKTIONER ===
 {context.Instructions}
@@ -223,8 +236,7 @@ Företag: {req.Name}
 VIKTIGT:
 1. Använd informationen under 'INSAMLAD DATA' för att hitta en konkret koppling till kunden.
 2. Matcha kundens utmaningar eller bransch (från Case Studies/Summary) med Esattos tjänster.
-3. Skriv personligt och engagerande.
-4. Referera gärna till liknande case om det finns i datan.";
+3. Skriv personligt och engagerande.{(context.ActiveContact != null ? $"\n4. Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "")}{signatureInstruction}";
     }
 }
 

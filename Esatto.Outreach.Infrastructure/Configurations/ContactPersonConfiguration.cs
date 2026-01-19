@@ -31,9 +31,7 @@ public class ContactPersonConfiguration : IEntityTypeConfiguration<ContactPerson
 
         // JSONB columns for lists
         builder.Property(x => x.PersonalHooks)
-            .HasColumnName("PersonalHooksJson") // Keep DB column name if you want, or migrate. Let's keep for safety or rename? 
-                                                // Actually the previous property was purely string so EF mapped it to PersonalHooksJson directly ideally.
-                                                // Let's stick to the convention.
+            .HasColumnName("PersonalHooksJson")
             .HasColumnType("jsonb")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
@@ -53,5 +51,17 @@ public class ContactPersonConfiguration : IEntityTypeConfiguration<ContactPerson
                 (c1, c2) => c1!.SequenceEqual(c2!),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                 c => c.ToList()));
+
+        // IsActive property for marking the active contact for email generation
+        builder.Property(x => x.IsActive)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        // Partial unique index: ensures only one active contact per prospect
+        // Allows multiple IsActive=false, but only one IsActive=true per ProspectId
+        builder.HasIndex(x => new { x.ProspectId, x.IsActive })
+            .IsUnique()
+            .HasFilter("\"IsActive\" = true")
+            .HasDatabaseName("IX_ContactPersons_ProspectId_IsActive");
     }
 }

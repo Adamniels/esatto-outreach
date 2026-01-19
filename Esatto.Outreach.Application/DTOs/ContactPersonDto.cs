@@ -12,7 +12,8 @@ public record ContactPersonDto(
     string? LinkedInUrl,
     List<string>? PersonalHooks,
     List<string>? PersonalNews,
-    string? GeneralInfo  // Mapped from Summary
+    string? GeneralInfo,  // Mapped from Summary
+    bool IsActive
 ) {
     public static ContactPersonDto FromEntity(ContactPerson e)
     {
@@ -25,7 +26,8 @@ public record ContactPersonDto(
             e.LinkedInUrl,
             e.PersonalHooks,
             e.PersonalNews,
-            e.Summary
+            e.Summary,
+            e.IsActive
         );
     }
 }
