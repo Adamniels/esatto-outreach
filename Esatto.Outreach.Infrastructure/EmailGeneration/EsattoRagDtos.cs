@@ -57,6 +57,9 @@ public sealed record RagPreferences
 
     [JsonPropertyName("focus_areas")]
     public List<string> FocusAreas { get; init; } = new();
+
+    [JsonPropertyName("sender_name")]
+    public string? SenderName { get; init; }
 }
 
 /// <summary>
