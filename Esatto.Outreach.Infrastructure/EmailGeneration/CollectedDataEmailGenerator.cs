@@ -236,7 +236,6 @@ Namn: {context.ActiveContact.Name}
 VIKTIGT:
 1. Använd informationen under 'INSAMLAD DATA' för att hitta en konkret koppling till kunden.
 2. Matcha kundens utmaningar eller bransch (från Case Studies/Summary) med Esattos tjänster.
-3. Skriv personligt och engagerande.{(context.ActiveContact != null ? $"\n4. Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "")}{signatureInstruction}";
+3. Skriv personligt och engagerande.{(context.ActiveContact != null ? $"\n4. Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n4. Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
     }
 }
-

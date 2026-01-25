@@ -13,6 +13,8 @@ using Esatto.Outreach.Infrastructure.Auth;
 using Esatto.Outreach.Infrastructure.CompanyInfo;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
+using Esatto.Outreach.Application.UseCases.Workflows;
+using Esatto.Outreach.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -160,7 +162,21 @@ public static class DependencyInjection
         services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
         services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>(); // Register UseCase
 
+        // Workflow Mocks
+        services.AddScoped<IEmailSender, MockEmailSender>();
+        services.AddScoped<ILinkedInActionsClient, MockLinkedInClient>();
+
+
+        // Workflow Services
+        services.AddScoped<IWorkflowRepository, WorkflowRepository>();
+        services.AddScoped<WorkflowTemplateService>();
+
+        services.AddScoped<WorkflowInstanceService>();
+        services.AddScoped<DraftGenerationService>();
+        services.AddScoped<StepExecutionService>();
+
         return services;
+
     }
 }
 

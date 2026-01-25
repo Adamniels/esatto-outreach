@@ -173,14 +173,20 @@ Do not include code fences, explanations, or any extra text.
             : "";
 
         var signatureInstruction = !string.IsNullOrWhiteSpace(context.UserFullName)
-            ? $"\n\nVIKTIGT: Avsluta mejlet med din signatur: '{context.UserFullName}, Esatto AB'"
+            ? $"\n4. Avsluta mejlet med din signatur: '{context.UserFullName}, Esatto AB'"
             : "";
 
         // Dynamiska instruktioner från databasen
         return systemContext + contactGreeting + @$"
 
             === INSTRUKTIONER ===
-            {context.Instructions}{signatureInstruction}";
+            {context.Instructions}
+
+            VIKTIGT:
+            1. Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget.
+            2. Match rätt tjänster och metoder till kundens situation.
+            3. Skriv personligt och engagerande.
+            {(context.ActiveContact != null ? $"\n   - Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n   - Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
     }
 }
 // TIDIGARE VERSION AV PROMPTEN:

@@ -140,9 +140,88 @@ RETURN ONLY JSON: [ {{ ""url"": ""..."", ""date"": ""..."", ... }} ]";
         Console.WriteLine("========================================");
         await File.WriteAllTextAsync("debug_robust_enrichment.json", json);
     }
+    else if (mode == "repro-cycle")
+    {
+        Console.WriteLine("Reproducing Workflow Cycle Bug...");
+        
+        using var scope = host.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        
+        var db = sp.GetRequiredService<Esatto.Outreach.Infrastructure.OutreachDbContext>();
+        await db.Database.EnsureCreatedAsync();
+        
+        // 1. Create Data
+        var prospectRepo = sp.GetRequiredService<IProspectRepository>();
+        // Resolve concrete services as they are registered as Scoped
+        var tmplService = sp.GetRequiredService<Esatto.Outreach.Application.UseCases.Workflows.WorkflowTemplateService>();
+        var instService = sp.GetRequiredService<Esatto.Outreach.Application.UseCases.Workflows.WorkflowInstanceService>();
+        
+        // Typically UserManager is registered by AddIdentity.
+        var userManagerImpl = sp.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Esatto.Outreach.Domain.Entities.ApplicationUser>>();
+
+        var userId = Guid.NewGuid().ToString();
+        var unique = Guid.NewGuid().ToString("N").Substring(0, 8);
+        var user = new Esatto.Outreach.Domain.Entities.ApplicationUser { Id = userId, UserName = $"repro-{unique}", Email = $"repro-{unique}@test.com" };
+        var createResult = await userManagerImpl.CreateAsync(user);
+        if (!createResult.Succeeded) throw new Exception("Failed to create user: " + string.Join(", ", createResult.Errors.Select(e => e.Description)));
+        
+        // Prospect with Contact Person
+        var p = Esatto.Outreach.Domain.Entities.Prospect.CreateManual("Test Corp", userId);
+        p.AddContactPerson("John Doe", "CEO", "john@test.com");
+        await prospectRepo.AddAsync(p, default);
+        
+        // Template
+        var tmpl = await tmplService.CreateTemplateAsync("Test Tmpl", "Desc", new(), default);
+        
+        // Instance
+        Console.WriteLine($"Creating instance for Prospect {p.Id} from Template {tmpl.Id}...");
+        var instance = await instService.CreateInstanceFromTemplateAsync(p.Id, tmpl.Id, userId, default);
+        
+        Console.WriteLine("Instance created. Attempting serialization...");
+        
+        var options = new JsonSerializerOptions 
+        { 
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+        };
+        
+        Console.WriteLine("Instance created. MAPPING TO DTO (The Fix)...");
+        
+        // Manual mapping mimicking Endpoint logic
+        var dto = new Esatto.Outreach.Application.DTOs.WorkflowInstanceDto(
+            instance.Id,
+            instance.ProspectId,
+            instance.Status,
+            instance.CreatedAt,
+            instance.StartedAt,
+            instance.CompletedAt,
+            instance.Steps.Select(s => new Esatto.Outreach.Application.DTOs.WorkflowStepDto(
+                s.Id,
+                s.Type,
+                s.OrderIndex,
+                s.DayOffset,
+                $"{(int)s.TimeOfDay.TotalHours:D2}:{s.TimeOfDay.Minutes:D2}",
+                s.GenerationStrategy,
+                s.RunAt,
+                s.Status,
+                s.EmailSubject,
+                s.BodyContent,
+                s.FailureReason,
+                s.RetryCount
+            )).OrderBy(s => s.OrderIndex).ToList()
+        );
+
+        Console.WriteLine("Dto mapped. Attempting serialization...");
+
+        // THIS SHOULD SUCEEED
+        var json = JsonSerializer.Serialize(dto, options);
+        
+        Console.WriteLine("Serialization SUCCESS:");
+        Console.WriteLine(json.Substring(0, Math.Min(500, json.Length)));
+    }
     else 
     {
-        Console.WriteLine($"Unknown mode: {mode}. Use 'full', 'ddg', or 'scraper'.");
+        Console.WriteLine($"Unknown mode: {mode}. Use 'full', 'ddg', 'scraper', or 'repro-cycle'.");
     }
 }
 catch (Exception ex)
