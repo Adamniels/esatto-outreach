@@ -115,14 +115,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.UpdatedUtc);
 
         // ========== RELATIONER ==========
-        // Foreign Key till HardCompanyData (nullable, One-to-One)
-        b.Property(x => x.HardCompanyDataId);
-
-        b.HasOne(x => x.HardCompanyData)
-            .WithMany()
-            .HasForeignKey(x => x.HardCompanyDataId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         // Foreign Key till EntityIntelligence (nullable, One-to-One)
         b.Property(x => x.EntityIntelligenceId);
 
@@ -166,7 +158,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.HasIndex(x => new { x.Status, x.CreatedUtc });
 
         // Relationer
-        b.HasIndex(x => x.HardCompanyDataId);
         b.HasIndex(x => x.EntityIntelligenceId);
     }
 }

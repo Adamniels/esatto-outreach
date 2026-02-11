@@ -92,7 +92,6 @@ graph TB
 - `Prospect` - Central entity representing a target company
 - `ContactPerson` - Decision-makers at target companies
 - `EntityIntelligence` - AI-generated company research and insights
-- `HardCompanyData` - Structured company information (industry, size, etc.)
 
 #### **Infrastructure Services**
 - **CompanyEnrichmentService** - Orchestrates multi-source data collection

@@ -14,8 +14,9 @@ public class Prospect : Entity
     public DateTime? CapsuleUpdatedAt { get; private set; }
     public DateTime? LastContactedAt { get; private set; }
     public string? PictureURL { get; private set; }
+    public bool IsPending { get; private set; } = false;  // Default false for the ones that been added manually
 
-    // Nested collections (JSON columns) - tomma listor om manuell prospect
+    // Nested collections (JSON columns) - empty list if manually added prospect
     public List<CapsuleWebsite> Websites { get; private set; } = new();
     public List<CapsuleAddress> Addresses { get; private set; } = new();
     public List<CapsuleTag> Tags { get; private set; } = new();
@@ -25,18 +26,11 @@ public class Prospect : Entity
     public List<ContactPerson> ContactPersons { get; private set; } = new();
 
     // === ESATTO WORKFLOW ===
-    public bool IsPending { get; private set; } = false;  // Default false för manuella
     public string? Notes { get; private set; }
     public string? MailTitle { get; private set; }
     public string? MailBodyPlain { get; private set; }
     public string? MailBodyHTML { get; private set; }
     public string? LastOpenAIResponseId { get; private set; }
-
-    // Foreign Key till HardCompanyData (One-to-One, nullable)
-    public Guid? HardCompanyDataId { get; private set; }
-
-    // Navigation property till HardCompanyData
-    public HardCompanyData? HardCompanyData { get; private set; }
 
     // Foreign Key till EntityIntelligence (One-to-One, nullable)
     public Guid? EntityIntelligenceId { get; private set; }
@@ -275,18 +269,6 @@ public class Prospect : Entity
     public void SetLastOpenAIResponseId(string? id)
     {
         LastOpenAIResponseId = string.IsNullOrWhiteSpace(id) ? null : id.Trim();
-        Touch();
-    }
-
-    public void LinkHardCompanyData(Guid? hardCompanyDataId)
-    {
-        HardCompanyDataId = hardCompanyDataId;
-        Touch();
-    }
-
-    public void UnlinkHardCompanyData()
-    {
-        HardCompanyDataId = null;
         Touch();
     }
 

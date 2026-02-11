@@ -13,8 +13,6 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
     // Betyder bara: "jag har en tabell för prospect Entities"
     public DbSet<Prospect> Prospects => Set<Prospect>();
 
-    public DbSet<HardCompanyData> HardCompanyData => Set<HardCompanyData>();
-
     public DbSet<EntityIntelligence> EntityIntelligences => Set<EntityIntelligence>();
     
     public DbSet<ContactPerson> ContactPersons => Set<ContactPerson>();

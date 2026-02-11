@@ -117,7 +117,6 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         services.AddScoped<IProspectRepository, ProspectRepository>();
-        services.AddScoped<IHardCompanyDataRepository, HardCompanyDataRepository>();
         services.AddScoped<IEntityIntelligenceRepository, EntityIntelligenceRepository>();
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
