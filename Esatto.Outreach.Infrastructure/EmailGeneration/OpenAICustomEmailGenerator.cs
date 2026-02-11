@@ -159,11 +159,34 @@ Do not include code fences, explanations, or any extra text.
             {(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}" : "")}
             {(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}")}";
 
+        // Kontaktperson och signatur
+        var contactGreeting = context.ActiveContact != null
+            ? $@"
+            
+            === KONTAKTPERSON ===
+            Namn: {context.ActiveContact.Name}
+            {(string.IsNullOrWhiteSpace(context.ActiveContact.Title) ? "" : $"Titel: {context.ActiveContact.Title}")}
+            {(string.IsNullOrWhiteSpace(context.ActiveContact.Email) ? "" : $"E-post: {context.ActiveContact.Email}")}
+            {(context.ActiveContact.PersonalHooks?.Any() == true ? $"Personliga hooks: {string.Join(", ", context.ActiveContact.PersonalHooks)}" : "")}
+            {(context.ActiveContact.PersonalNews?.Any() == true ? $"Senaste nyheter: {string.Join(", ", context.ActiveContact.PersonalNews)}" : "")}
+            {(string.IsNullOrWhiteSpace(context.ActiveContact.Summary) ? "" : $"Sammanfattning: {context.ActiveContact.Summary}")}"
+            : "";
+
+        var signatureInstruction = !string.IsNullOrWhiteSpace(context.UserFullName)
+            ? $"\n4. Avsluta mejlet med din signatur: '{context.UserFullName}, Esatto AB'"
+            : "";
+
         // Dynamiska instruktioner från databasen
-        return systemContext + @$"
+        return systemContext + contactGreeting + @$"
 
             === INSTRUKTIONER ===
-            {context.Instructions}";
+            {context.Instructions}
+
+            VIKTIGT:
+            1. Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget.
+            2. Match rätt tjänster och metoder till kundens situation.
+            3. Skriv personligt och engagerande.
+            {(context.ActiveContact != null ? $"\n   - Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n   - Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
     }
 }
 // TIDIGARE VERSION AV PROMPTEN:

@@ -62,17 +62,17 @@ public class CompanyEnrichmentService : ICompanyEnrichmentService
         // We prioritize Internal for "Truth" but External for "Hooks/Signals"
         var allNuggets = internalNuggets.Concat(externalNuggets).ToList();
 
-        // --- DEBUG: LOG EVERYTHING ---
-        _logger.LogInformation("=== DEBUG: ENRICHMENT DATA DUMP ===");
-        _logger.LogInformation("1. INTERNAL NUGGETS ({Count}):\n{Json}", internalNuggets.Count, DumpJson(internalNuggets));
-        _logger.LogInformation("2. EXTERNAL NUGGETS ({Count}):\n{Json}", externalNuggets.Count, DumpJson(externalNuggets));
-        _logger.LogInformation("3. COMBINED CONTEXT (Input to LLM):\n{Json}", DumpJson(allNuggets));
+        // --- DEBUG: LOG EVERYTHING (LogDebug = disabled in production) ---
+        _logger.LogDebug("=== DEBUG: ENRICHMENT DATA DUMP ===");
+        _logger.LogDebug("1. INTERNAL NUGGETS ({Count}):\n{Json}", internalNuggets.Count, DumpJson(internalNuggets));
+        _logger.LogDebug("2. EXTERNAL NUGGETS ({Count}):\n{Json}", externalNuggets.Count, DumpJson(externalNuggets));
+        _logger.LogDebug("3. COMBINED CONTEXT (Input to LLM):\n{Json}", DumpJson(allNuggets));
         // -----------------------------
 
         // 4. Synthesis
         var finalPrompt = BuildPrompt(companyName, domain, allNuggets);
         
-        _logger.LogInformation("=== DEBUG: FINAL LLM PROMPT (Verify Context) ===\n{Prompt}", finalPrompt);
+        _logger.LogDebug("=== DEBUG: FINAL LLM PROMPT (Verify Context) ===\n{Prompt}", finalPrompt);
 
         var responseText = await _aiClient.GenerateTextAsync(
             userInput: finalPrompt,
@@ -83,7 +83,7 @@ public class CompanyEnrichmentService : ICompanyEnrichmentService
             ct: ct
         );
 
-        _logger.LogInformation("=== DEBUG: RAW SYNTHESIS RESPONSE ===\n{Response}", responseText);
+        _logger.LogDebug("=== DEBUG: RAW SYNTHESIS RESPONSE ===\n{Response}", responseText);
 
         // 5. Parse Result
         var result = ParseResponse(responseText);

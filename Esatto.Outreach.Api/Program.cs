@@ -2,6 +2,7 @@ using Esatto.Outreach.Api.Endpoints;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
+using System.Text.Json.Serialization;
 
 // Load .env file only if it exists (local development)
 // On Azure, Application Settings are used instead
@@ -32,10 +33,11 @@ if (!string.IsNullOrWhiteSpace(dbPasswordEnvVar))
     }
 }
 
-// Configure JSON options for case-insensitive property matching
+// Configure JSON options for case-insensitive property matching and String Enums
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNameCaseInsensitive = true;
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 // Infrastructure (DbContext + repository via our extension method)
@@ -56,6 +58,9 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.AddCon
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.UpdateContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.DeleteContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.EnrichContactPerson>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.SetActiveContact>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.ClearActiveContact>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMailOpenAIResponeAPI>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailDelivery.SendEmailViaN8n>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ChatWithProspect>();
@@ -75,6 +80,11 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSourc
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.RejectPendingProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.ListPendingProspects>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.HandleCapsuleWebhook>();
+
+// Workflow Worker
+builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowExecutionWorker>();
+builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowCleanupWorker>();
+
 
 // CORS - allow n8n and frontend UI
 builder.Services.AddCors(opt =>
@@ -125,5 +135,9 @@ app.MapBatchEndpoints();
 app.MapCapsuleEndpoints();
 app.MapEmailPromptEndpoints();
 app.MapCompanyInfoEndpoints();
+app.MapWorkflowEndpoints();
+
 
 app.Run();
+
+public partial class Program { }

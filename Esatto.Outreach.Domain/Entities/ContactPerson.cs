@@ -12,6 +12,9 @@ public class ContactPerson : Entity
     public string? Email { get; private set; }
     public string? LinkedInUrl { get; private set; }
     
+    // Indicates if this contact is the active contact for email generation
+    public bool IsActive { get; private set; } = false;
+    
     public List<string> PersonalHooks { get; private set; } = new();
     
     // JSON: List<string> of personal news
@@ -68,6 +71,25 @@ public class ContactPerson : Entity
         if (summary is not null) Summary = summary;
         
         ResearchedAt = DateTime.UtcNow;
+        Touch();
+    }
+
+    /// <summary>
+    /// Marks this contact as active for email generation.
+    /// Business logic: Only call this through Prospect.SetActiveContact() to ensure uniqueness.
+    /// </summary>
+    public void Activate()
+    {
+        IsActive = true;
+        Touch();
+    }
+
+    /// <summary>
+    /// Marks this contact as inactive.
+    /// </summary>
+    public void Deactivate()
+    {
+        IsActive = false;
         Touch();
     }
 }

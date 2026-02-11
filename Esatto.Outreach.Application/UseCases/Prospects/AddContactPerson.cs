@@ -18,6 +18,9 @@ public class AddContactPerson
         var prospect = await _repository.GetByIdAsync(prospectId, ct);
         if (prospect is null) return null;
 
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new ArgumentException("Name is required");
+
         var existing = prospect.ContactPersons.FirstOrDefault(c => c.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase));
         if (existing != null)
         {

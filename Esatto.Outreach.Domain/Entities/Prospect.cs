@@ -14,8 +14,9 @@ public class Prospect : Entity
     public DateTime? CapsuleUpdatedAt { get; private set; }
     public DateTime? LastContactedAt { get; private set; }
     public string? PictureURL { get; private set; }
+    public bool IsPending { get; private set; } = false;  // Default false for the ones that been added manually
 
-    // Nested collections (JSON columns) - tomma listor om manuell prospect
+    // Nested collections (JSON columns) - empty list if manually added prospect
     public List<CapsuleWebsite> Websites { get; private set; } = new();
     public List<CapsuleAddress> Addresses { get; private set; } = new();
     public List<CapsuleTag> Tags { get; private set; } = new();
@@ -25,18 +26,11 @@ public class Prospect : Entity
     public List<ContactPerson> ContactPersons { get; private set; } = new();
 
     // === ESATTO WORKFLOW ===
-    public bool IsPending { get; private set; } = false;  // Default false för manuella
     public string? Notes { get; private set; }
     public string? MailTitle { get; private set; }
     public string? MailBodyPlain { get; private set; }
     public string? MailBodyHTML { get; private set; }
     public string? LastOpenAIResponseId { get; private set; }
-
-    // Foreign Key till HardCompanyData (One-to-One, nullable)
-    public Guid? HardCompanyDataId { get; private set; }
-
-    // Navigation property till HardCompanyData
-    public HardCompanyData? HardCompanyData { get; private set; }
 
     // Foreign Key till EntityIntelligence (One-to-One, nullable)
     public Guid? EntityIntelligenceId { get; private set; }
@@ -278,18 +272,6 @@ public class Prospect : Entity
         Touch();
     }
 
-    public void LinkHardCompanyData(Guid? hardCompanyDataId)
-    {
-        HardCompanyDataId = hardCompanyDataId;
-        Touch();
-    }
-
-    public void UnlinkHardCompanyData()
-    {
-        HardCompanyDataId = null;
-        Touch();
-    }
-
     public void LinkEntityIntelligence(Guid? entityIntelligenceId)
     {
         EntityIntelligenceId = entityIntelligenceId;
@@ -299,6 +281,50 @@ public class Prospect : Entity
     public void UnlinkEntityIntelligence()
     {
         EntityIntelligenceId = null;
+        Touch();
+    }
+
+    // ========== ACTIVE CONTACT MANAGEMENT ==========
+
+    /// <summary>
+    /// Sets the specified contact as active for email generation.
+    /// Ensures only one contact can be active at a time by deactivating others.
+    /// </summary>
+    /// <param name="contactPersonId">ID of the contact to activate</param>
+    /// <exception cref="ArgumentException">Thrown when contact not found in this prospect's contacts</exception>
+    public void SetActiveContact(Guid contactPersonId)
+    {
+        var contact = ContactPersons.FirstOrDefault(c => c.Id == contactPersonId);
+        if (contact == null)
+            throw new ArgumentException($"Contact person with ID {contactPersonId} not found for this prospect", nameof(contactPersonId));
+        
+        // Deactivate all other contacts
+        foreach (var c in ContactPersons.Where(c => c.IsActive && c.Id != contactPersonId))
+        {
+            c.Deactivate();
+        }
+        
+        // Activate the selected one
+        contact.Activate();
+        Touch();
+    }
+    
+    /// <summary>
+    /// Gets the currently active contact for this prospect.
+    /// </summary>
+    /// <returns>The active ContactPerson, or null if no contact is active</returns>
+    public ContactPerson? GetActiveContact() 
+        => ContactPersons.FirstOrDefault(c => c.IsActive);
+        
+    /// <summary>
+    /// Clears the active contact (deactivates all contacts).
+    /// </summary>
+    public void ClearActiveContact()
+    {
+        foreach (var c in ContactPersons.Where(c => c.IsActive))
+        {
+            c.Deactivate();
+        }
         Touch();
     }
 }
