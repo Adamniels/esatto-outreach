@@ -53,12 +53,12 @@ public class ClaimPendingProspect
             throw new InvalidOperationException("Prospect is not pending");
         }
 
-        if (!prospect.IsFromCapsule)
+        if (!prospect.IsFromCrm)
         {
             _logger.LogWarning(
-                "Cannot claim non-Capsule prospect: {ProspectId}",
+                "Cannot claim non-CRM prospect: {ProspectId}",
                 prospectId);
-            throw new InvalidOperationException("Can only claim Capsule prospects");
+            throw new InvalidOperationException("Can only claim CRM-imported prospects");
         }
 
         prospect.Claim(userId);

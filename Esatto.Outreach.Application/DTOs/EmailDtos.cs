@@ -9,7 +9,6 @@ public record CustomEmailRequestDto(
     string? About,
     string? PictureURL,
     List<string>? Websites,
-    List<string>? Addresses,
     List<string>? Tags,
     string? Notes
 );

@@ -7,7 +7,7 @@ public interface IProspectRepository
 {
     Task<Prospect?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<Prospect?> GetByIdReadOnlyAsync(Guid id, CancellationToken ct = default);
-    Task<Prospect?> GetByCapsuleIdAsync(long capsuleId, CancellationToken ct = default);
+    Task<Prospect?> GetByExternalCrmIdAsync(CrmProvider provider, string externalId, CancellationToken ct = default);
     Task<IReadOnlyList<Prospect>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default);
     Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default);
     Task<IReadOnlyList<Prospect>> ListByOwnerAsync(string ownerId, CancellationToken ct = default);

@@ -21,22 +21,24 @@ public record ProspectUpdateDto(
     string? MailBodyPlain,
     string? MailBodyHTML);
 
-// DTO för att visa prospect (inklusive Capsule-data)
+// DTO for viewing prospect (CRM-agnostic)
 public record ProspectViewDto(
     Guid Id,
     string Name,
-    bool IsFromCapsule,
-    long? CapsuleId,
+    CrmProvider CrmSource,
+    string? ExternalCrmId,
     bool IsPending,
     string? About,
     List<WebsiteDto> Websites,
-    List<AddressDto> Addresses,
     List<TagDto> Tags,
     List<CustomFieldDto> CustomFields,
     string? PictureURL,
-    DateTime? CapsuleCreatedAt,
-    DateTime? CapsuleUpdatedAt,
+    
+    // CRM timestamps
+    DateTime? CrmCreatedAt,
+    DateTime? CrmUpdatedAt,
     DateTime? LastContactedAt,
+    
     string? Notes,
     ProspectStatus Status,
     DateTime CreatedUtc,
@@ -52,17 +54,16 @@ public record ProspectViewDto(
         new(
             p.Id,
             p.Name,
-            p.IsFromCapsule,
-            p.CapsuleId,
+            p.CrmSource,
+            p.ExternalCrmId,
             p.IsPending,
             p.About,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
-            p.Addresses?.Select(a => new AddressDto(a.Street, a.City, a.State, a.Zip, a.Country, a.Type)).ToList() ?? new(),
             p.Tags?.Select(t => new TagDto(t.Id, t.Name, t.DataTag)).ToList() ?? new(),
             p.CustomFields?.Select(f => new CustomFieldDto(f.Id, f.FieldName, f.FieldDefinitionId, f.Value, f.TagId)).ToList() ?? new(),
             p.PictureURL,
-            p.CapsuleCreatedAt,
-            p.CapsuleUpdatedAt,
+            p.CrmCreatedAt,
+            p.CrmUpdatedAt,
             p.LastContactedAt,
             p.Notes,
             p.Status,
@@ -76,11 +77,12 @@ public record ProspectViewDto(
             p.ContactPersons?.Select(ContactPersonDto.FromEntity).ToList() ?? new());
 }
 
-// DTO för pending prospects lista
+// DTO for pending prospects list
 public record PendingProspectDto(
     Guid Id,
     string Name,
-    long CapsuleId,
+    CrmProvider CrmSource,
+    string? ExternalCrmId,
     string? About,
     string? PictureURL,
     List<WebsiteDto> Websites,
@@ -94,7 +96,8 @@ public record PendingProspectDto(
         return new(
             p.Id,
             p.Name,
-            p.CapsuleId!.Value,
+            p.CrmSource,
+            p.ExternalCrmId,
             p.About,
             p.PictureURL,
             p.Websites?.Select(w => new WebsiteDto(w.Url, w.Service, w.Type)).ToList() ?? new(),
@@ -102,13 +105,10 @@ public record PendingProspectDto(
     }
 }
 
-// Nested DTOs för collections
+// Nested DTOs for collections (CRM-agnostic)
 public record WebsiteDto(string? Url, string? Service, string? Type);
-public record EmailAddressDto(string? Address, string? Type);
-public record PhoneNumberDto(string? Number, string? Type);
-public record AddressDto(string? Street, string? City, string? State, string? Zip, string? Country, string? Type);
-public record TagDto(long Id, string Name, bool DataTag);
-public record CustomFieldDto(long Id, string? FieldName, long? FieldDefinitionId, string? Value, long? TagId);
+public record TagDto(long? Id, string Name, bool DataTag);  // Id nullable for manual tags
+public record CustomFieldDto(long? Id, string? FieldName, long? FieldDefinitionId, string? Value, long? TagId);  // Id nullable for manual fields
 
 // ...existing code...
 

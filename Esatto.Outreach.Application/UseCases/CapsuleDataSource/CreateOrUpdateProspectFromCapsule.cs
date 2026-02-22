@@ -1,14 +1,16 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Application.UseCases.CapsuleDataSource;
 
 /// <summary>
-/// Hanterar party/created och party/updated webhooks från Capsule CRM.
-/// Skapar ny pending prospect eller uppdaterar befintlig.
+/// Handles party/created and party/updated webhooks from Capsule CRM.
+/// Creates new pending prospect or updates existing one.
+/// Maps Capsule-specific DTOs to generic domain value objects.
 /// </summary>
 public class CreateOrUpdateProspectFromCapsule
 {
@@ -39,17 +41,20 @@ public class CreateOrUpdateProspectFromCapsule
             return new WebhookResultDto(false, "Party name is required");
         }
 
-        // Kolla om prospect redan finns (via CapsuleId)
-        var existingProspect = await _prospectRepo.GetByCapsuleIdAsync(party.Id, ct);
+        // Check if prospect already exists (via external CRM ID)
+        var existingProspect = await _prospectRepo.GetByExternalCrmIdAsync(
+            CrmProvider.Capsule, 
+            party.Id.ToString(), 
+            ct);
 
         if (existingProspect != null)
         {
-            // Uppdatera befintlig prospect (även om den är pending)
+            // Update existing prospect (even if pending)
             return await UpdateExistingProspect(existingProspect, party, ct);
         }
         else
         {
-            // Skapa ny pending prospect
+            // Create new pending prospect
             return await CreateNewPendingProspect(party, ct);
         }
     }
@@ -65,19 +70,17 @@ public class CreateOrUpdateProspectFromCapsule
             party.Id,
             prospect.IsPending);
 
-        // Mappa nested data
-        var addresses = MapAddresses(party.Addresses);
+        // Map Capsule DTOs to generic domain value objects
         var websites = MapWebsites(party.Websites);
         var tags = MapTags(party.Tags);
         var customFields = MapCustomFields(party.Fields);
 
-        prospect.UpdateFromCapsule(
+        prospect.UpdateFromCrm(
             name: party.Name,
             about: party.About,
-            capsuleUpdatedAt: party.UpdatedAt,
+            crmUpdatedAt: party.UpdatedAt,
             lastContactedAt: party.LastContactedAt,
             pictureURL: party.PictureURL,
-            addresses: addresses,
             websites: websites,
             tags: tags,
             customFields: customFields
@@ -102,21 +105,20 @@ public class CreateOrUpdateProspectFromCapsule
             party.Name,
             party.Id);
 
-        // Mappa nested data
-        var addresses = MapAddresses(party.Addresses);
+        // Map Capsule DTOs to generic domain value objects
         var websites = MapWebsites(party.Websites);
         var tags = MapTags(party.Tags);
         var customFields = MapCustomFields(party.Fields);
 
-        var prospect = Prospect.CreatePendingFromCapsule(
-            capsuleId: party.Id,
-            name: party.Name,
+        var prospect = Prospect.CreatePendingFromCrm(
+            crmSource: CrmProvider.Capsule,
+            externalCrmId: party.Id.ToString(),
+            name: party.Name!,
             about: party.About,
-            capsuleCreatedAt: party.CreatedAt ?? DateTime.UtcNow,
-            capsuleUpdatedAt: party.UpdatedAt ?? DateTime.UtcNow,
+            crmCreatedAt: party.CreatedAt ?? DateTime.UtcNow,
+            crmUpdatedAt: party.UpdatedAt ?? DateTime.UtcNow,
             lastContactedAt: party.LastContactedAt,
             pictureURL: party.PictureURL,
-            addresses: addresses,
             websites: websites,
             tags: tags,
             customFields: customFields
@@ -132,74 +134,37 @@ public class CreateOrUpdateProspectFromCapsule
         return new WebhookResultDto(true, $"Created pending prospect: {party.Name}");
     }
 
-    // Mapping helpers
-    private static List<CapsuleAddress> MapAddresses(List<CapsuleAddressDto>? dtos)
+    // Mapping helpers: Convert Capsule DTOs to generic domain value objects
+    private static List<Website> MapWebsites(List<CapsuleWebsiteDto>? dtos)
     {
         if (dtos == null || dtos.Count == 0)
-            return new List<CapsuleAddress>();
+            return new List<Website>();
 
-        return dtos.Select(a => new CapsuleAddress(
-            a.Street,
-            a.City,
-            a.State,
-            a.Zip,
-            a.Country,
-            a.Type
-        )).ToList();
-    }
-
-    private static List<CapsulePhoneNumber> MapPhoneNumbers(List<CapsulePhoneDto>? dtos)
-    {
-        if (dtos == null || dtos.Count == 0)
-            return new List<CapsulePhoneNumber>();
-
-        return dtos.Select(p => new CapsulePhoneNumber(
-            p.Number,
-            p.Type
-        )).ToList();
-    }
-
-    private static List<CapsuleEmailAddress> MapEmailAddresses(List<CapsuleEmailDto>? dtos)
-    {
-        if (dtos == null || dtos.Count == 0)
-            return new List<CapsuleEmailAddress>();
-
-        return dtos.Select(e => new CapsuleEmailAddress(
-            e.Address,
-            e.Type
-        )).ToList();
-    }
-
-    private static List<CapsuleWebsite> MapWebsites(List<CapsuleWebsiteDto>? dtos)
-    {
-        if (dtos == null || dtos.Count == 0)
-            return new List<CapsuleWebsite>();
-
-        return dtos.Select(w => new CapsuleWebsite(
+        return dtos.Select(w => new Website(
             w.Url,
             w.Service,
             w.Type
         )).ToList();
     }
 
-    private static List<CapsuleTag> MapTags(List<CapsuleTagDto>? dtos)
+    private static List<Tag> MapTags(List<CapsuleTagDto>? dtos)
     {
         if (dtos == null || dtos.Count == 0)
-            return new List<CapsuleTag>();
+            return new List<Tag>();
 
-        return dtos.Select(t => new CapsuleTag(
+        return dtos.Select(t => new Tag(
             t.Id,
             t.Name,
             t.DataTag
         )).ToList();
     }
 
-    private static List<CapsuleCustomField> MapCustomFields(List<CapsuleCustomFieldDto>? dtos)
+    private static List<CustomField> MapCustomFields(List<CapsuleCustomFieldDto>? dtos)
     {
         if (dtos == null || dtos.Count == 0)
-            return new List<CapsuleCustomField>();
+            return new List<CustomField>();
 
-        return dtos.Select(f => new CapsuleCustomField(
+        return dtos.Select(f => new CustomField(
             f.Id,
             f.Definition?.Name,
             f.Definition?.Id,
