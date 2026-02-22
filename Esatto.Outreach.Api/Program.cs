@@ -72,8 +72,6 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.Cre
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.UpdateEmailPrompt>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.ActivateEmailPrompt>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.DeleteEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Batch.GenerateEntityIntelligenceBatch>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Batch.GenerateEmailBatch>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CompanyInfo.GetCompanyInfo>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.CreateOrUpdateProspectFromCapsule>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.ClaimPendingProspect>();
@@ -131,7 +129,6 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 // ============ MAP ALL ENDPOINTS ============
 app.MapAuthEndpoints();
 app.MapProspectEndpoints();
-app.MapBatchEndpoints();
 app.MapCapsuleEndpoints();
 app.MapEmailPromptEndpoints();
 app.MapCompanyInfoEndpoints();
