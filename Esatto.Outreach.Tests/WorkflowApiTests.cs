@@ -85,6 +85,13 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
 
                 // Mock AI Client
                 services.AddScoped<Esatto.Outreach.Application.Abstractions.IGenerativeAIClient, FakeAIClient>();
+                
+                // Mock External Action Clients
+                services.AddScoped<Esatto.Outreach.Application.Abstractions.IEmailSender, Esatto.Outreach.Infrastructure.Services.MockEmailSender>();
+                services.AddScoped<Esatto.Outreach.Application.Abstractions.ILinkedInActionsClient, Esatto.Outreach.Infrastructure.Services.MockLinkedInClient>();
+                
+                // Mock Email Factory
+                services.AddScoped<Esatto.Outreach.Application.Abstractions.IEmailGeneratorFactory, FakeEmailGeneratorFactory>();
             });
         });
     }
@@ -95,6 +102,20 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         {
             return Task.FromResult("SUBJECT: Test Subject\nBODY: Test Body");
         }
+    }
+
+    private class FakeEmailGenerator : Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator
+    {
+        public Task<CustomEmailDraftDto> GenerateAsync(EmailGenerationContext context, CancellationToken ct = default)
+        {
+            return Task.FromResult(new CustomEmailDraftDto("New Subject", "New Body", "<p>New Body</p>"));
+        }
+    }
+
+    private class FakeEmailGeneratorFactory : Esatto.Outreach.Application.Abstractions.IEmailGeneratorFactory
+    {
+        public Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator GetGenerator() => new FakeEmailGenerator();
+        public Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator GetGenerator(string type) => new FakeEmailGenerator();
     }
 
     [Fact]

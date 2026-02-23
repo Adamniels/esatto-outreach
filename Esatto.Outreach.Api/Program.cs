@@ -3,6 +3,7 @@ using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.RateLimiting;
 
 // Load .env file only if it exists (local development)
 // On Azure, Application Settings are used instead
@@ -49,6 +50,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Register>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Login>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.ValidateInvitation>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.CreateInvitation>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.CreateProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetProspectById>();
@@ -104,6 +108,20 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Esatto.Outreach API", Version = "v1" });
 });
 
+// Rate Limiting for Auth
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+    
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 var app = builder.Build();
 
 // Configure port - use Azure's PORT environment variable if available, otherwise default to 3000
@@ -115,6 +133,7 @@ app.UseCors("ui");
 // ============ AUTHENTICATION & AUTHORIZATION MIDDLEWARE ============
 app.UseAuthentication();  // MUST be before UseAuthorization
 app.UseAuthorization();
+app.UseRateLimiter();
 // ===================================================================
 
 if (app.Environment.IsDevelopment())
@@ -128,6 +147,7 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
 // ============ MAP ALL ENDPOINTS ============
 app.MapAuthEndpoints();
+app.MapInvitationEndpoints();
 app.MapProspectEndpoints();
 app.MapCapsuleEndpoints();
 app.MapEmailPromptEndpoints();

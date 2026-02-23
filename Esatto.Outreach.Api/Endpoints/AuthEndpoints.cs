@@ -7,7 +7,9 @@ public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this WebApplication app)
     {
-        var auth = app.MapGroup("/auth").WithTags("Authentication");
+        var auth = app.MapGroup("/auth")
+                      .WithTags("Authentication")
+                      .RequireRateLimiting("AuthPolicy");
 
         auth.MapPost("/register", async (
             RegisterRequestDto dto,
