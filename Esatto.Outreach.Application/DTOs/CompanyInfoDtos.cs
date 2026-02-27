@@ -1,33 +1,28 @@
 namespace Esatto.Outreach.Application.DTOs;
 
-/// <summary>
-/// DTO representing the complete company information from JSON file
-/// </summary>
 public record CompanyInfoDto(
-    string Overview,
-    List<CaseItemDto> Cases
-);
-
-/// <summary>
-/// DTO representing a single case/service entry from company info
-/// </summary>
-public record CaseItemDto(
-    string PageTitle,
-    string PageType,
-    CaseDetailDto Case,
-    List<string> Services,
-    List<string> Industries,
-    List<string> MethodsOrTech,
-    List<string> ValuesOrTone
-);
-
-/// <summary>
-/// DTO representing the nested case details
-/// </summary>
-public record CaseDetailDto(
+    Guid Id,
     string Name,
-    string Industry,
-    string Challenge,
-    string Solution,
-    string Result
+    string Overview,
+    string ValueProposition
 );
+
+public record CompanyInfoUpdateDto(
+    string Name,
+    string Overview,
+    string ValueProposition
+);
+
+public record ProjectCaseDto(
+    Guid Id,
+    string ClientName,
+    string Text,
+    bool IsActive
+);
+
+public record ProjectCaseUpdateDto(
+    string ClientName,
+    string Text,
+    bool IsActive
+);
+

@@ -10,7 +10,6 @@ using Esatto.Outreach.Infrastructure.EmailGeneration;
 using Esatto.Outreach.Infrastructure.EmailDelivery;
 using Esatto.Outreach.Infrastructure.Chat;
 using Esatto.Outreach.Infrastructure.Auth;
-using Esatto.Outreach.Infrastructure.CompanyInfo;
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Esatto.Outreach.Application.UseCases.Workflows;
@@ -122,11 +121,9 @@ public static class DependencyInjection
         services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
+        services.AddScoped<IProjectCaseRepository, ProjectCaseRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        // Company Info
-        services.AddSingleton<ICompanyInfoFileService, CompanyInfoFileService>();
-
         // OpenAI options (shared across features)
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));

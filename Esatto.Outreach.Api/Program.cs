@@ -77,6 +77,12 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.Upd
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.ActivateEmailPrompt>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.DeleteEmailPrompt>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CompanyInfo.GetCompanyInfo>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CompanyInfo.UpdateCompanyInfo>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.GetProjectCases>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.GetProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.CreateProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.UpdateProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.DeleteProjectCase>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.CreateOrUpdateProspectFromCapsule>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.ClaimPendingProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.RejectPendingProspect>();

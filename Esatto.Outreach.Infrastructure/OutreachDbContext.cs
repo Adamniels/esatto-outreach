@@ -14,6 +14,8 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Prospect> Prospects => Set<Prospect>();
 
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<CompanyInformation> CompanyInformations => Set<CompanyInformation>();
+    public DbSet<ProjectCase> ProjectCases => Set<ProjectCase>();
 
     public DbSet<EntityIntelligence> EntityIntelligences => Set<EntityIntelligence>();
     

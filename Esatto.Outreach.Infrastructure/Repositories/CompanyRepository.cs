@@ -22,4 +22,10 @@ public class CompanyRepository : ICompanyRepository
         await _db.Companies.AddAsync(company, ct);
         await _db.SaveChangesAsync(ct);
     }
+
+    public async Task UpdateAsync(Company company, CancellationToken ct = default)
+    {
+        _db.Companies.Update(company);
+        await _db.SaveChangesAsync(ct);
+    }
 }

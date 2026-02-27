@@ -15,6 +15,7 @@ public sealed class Register
     private readonly IRefreshTokenRepository _refreshTokenRepo;
     private readonly IGenerateEmailPromptRepository _promptRepo;
     private readonly ICompanyRepository _companyRepo;
+    private readonly ICompanyInfoRepository _companyInfoRepo;
     private readonly IUnitOfWork _unitOfWork;
 
     // TODO: Esatto hardcoded prompt, should be removed/changed
@@ -38,6 +39,7 @@ Krav:
         IRefreshTokenRepository refreshTokenRepo,
         IGenerateEmailPromptRepository promptRepo,
         ICompanyRepository companyRepo,
+        ICompanyInfoRepository companyInfoRepo,
         IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
@@ -45,6 +47,7 @@ Krav:
         _refreshTokenRepo = refreshTokenRepo;
         _promptRepo = promptRepo;
         _companyRepo = companyRepo;
+        _companyInfoRepo = companyInfoRepo;
         _unitOfWork = unitOfWork;
     }
 
@@ -64,6 +67,15 @@ Krav:
         {
             var company = new Company { Name = request.CompanyName.Trim() };
             await _companyRepo.AddAsync(company, ct);
+
+            // Automatically create empty CompanyInformation for the new company
+            var companyInfo = new CompanyInformation
+            {
+                CompanyId = company.Id,
+                Overview = "Din företagspresentation här...",
+                ValueProposition = "Ditt värdeerbjudande här..."
+            };
+            await _companyInfoRepo.AddAsync(companyInfo, ct);
 
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)

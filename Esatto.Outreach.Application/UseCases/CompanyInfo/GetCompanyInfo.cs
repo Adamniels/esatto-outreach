@@ -3,21 +3,25 @@ using Esatto.Outreach.Application.DTOs;
 
 namespace Esatto.Outreach.Application.UseCases.CompanyInfo;
 
-/// <summary>
-/// Use case for retrieving company information from JSON file.
-/// Read-only operation - editing happens manually in JSON file.
-/// </summary>
 public sealed class GetCompanyInfo
 {
-    private readonly ICompanyInfoFileService _fileService;
+    private readonly ICompanyInfoRepository _repo;
 
-    public GetCompanyInfo(ICompanyInfoFileService fileService)
+    public GetCompanyInfo(ICompanyInfoRepository repo)
     {
-        _fileService = fileService;
+        _repo = repo;
     }
 
-    public async Task<CompanyInfoDto> Handle(CancellationToken ct = default)
+    public async Task<CompanyInfoDto?> Handle(string userId, CancellationToken ct = default)
     {
-        return await _fileService.GetCompanyInfoAsync(ct);
+        var companyId = await _repo.GetCompanyIdByUserIdAsync(userId, ct);
+        if (companyId == null)
+            return null;
+
+        var info = await _repo.GetByCompanyIdAsync(companyId.Value, ct);
+        if (info == null)
+            return null;
+
+        return new CompanyInfoDto(info.Id, info.Company.Name, info.Overview, info.ValueProposition);
     }
 }

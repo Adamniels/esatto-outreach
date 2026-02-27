@@ -27,5 +27,7 @@ TRUNCATE TABLE
   "WorkflowTemplates",
   "entity_intelligence",
   "ContactPersons",
-  "prospects"
+  "prospects",
+  "company_informations",
+  "project_cases"
 RESTART IDENTITY CASCADE;
