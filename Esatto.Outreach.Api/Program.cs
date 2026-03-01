@@ -65,7 +65,7 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollecti
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.SetActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.ClearActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetActiveContact>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMailOpenAIResponeAPI>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMail>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailDelivery.SendEmailViaN8n>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ChatWithProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ResetProspectChat>();
@@ -124,7 +124,6 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 2;
     });
-    
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 

@@ -140,16 +140,39 @@ Do not include code fences, explanations, or any extra text.
         throw new InvalidOperationException("Could not extract content from OpenAI Responses API response");
     }
 
+    private static string FormatProjectCases(List<ProjectCaseDto>? projectCases)
+    {
+        if (projectCases is not { Count: > 0 })
+            return "Inga tidigare projekt tillgängliga.";
+
+        var activeCases = projectCases.Where(c => c.IsActive).ToList();
+        if (activeCases.Count == 0)
+            return "Inga aktiva projekt tillgängliga.";
+
+        return string.Join("\n\n", activeCases.Select(c =>
+        {
+            var name = c.ClientName ?? "Okänt företag";
+            var text = c.Text ?? "";
+            return string.IsNullOrWhiteSpace(text) ? $"• {name}" : $"• {name}: {text}";
+        }));
+    }
+
     private static string BuildPrompt(EmailGenerationContext context)
     {
         var req = context.Request;
 
+        var projectCasesSection = FormatProjectCases(context.ProjectCases);
+
         // Statisk systemkontext (hårdkodad)
         var systemContext = @$"
-            Du är en säljare på Esatto AB och ska skriva ett kort, personligt säljmejl på svenska (max 500 ord).
+            Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt sälj mejl på svenska (max 500 ord).
             
-            === INFORMATION OM ESATTO AB ===
-            {context.CompanyInfo}
+            === INFORMATION OM OSS ({context.CompanyInfo.Name}) ===
+            {context.CompanyInfo.Overview}
+            {context.CompanyInfo.ValueProposition}
+
+            === TIDIGARE PROJEKT/CASES ===
+            {projectCasesSection}
             
             === MÅLFÖRETAG ===
             Företag: {req.Name}
@@ -182,7 +205,7 @@ Do not include code fences, explanations, or any extra text.
             {context.Instructions}
 
             VIKTIGT:
-            1. Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget.
+            1. Fokusera på hur vi ({context.CompanyInfo.Name}) kan hjälpa målföretaget.
             2. Match rätt tjänster och metoder till kundens situation.
             3. Skriv personligt och engagerande.
             {(context.ActiveContact != null ? $"\n   - Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n   - Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";

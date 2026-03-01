@@ -2,13 +2,13 @@ using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 
 namespace Esatto.Outreach.Application.UseCases.EmailGeneration;
-public class GenerateMailOpenAIResponeAPI
+public class GenerateMail
 {
     private readonly IEmailContextBuilder _contextBuilder;
     private readonly IEmailGeneratorFactory _generatorFactory;
     private readonly IProspectRepository _prospectRepository;
 
-    public GenerateMailOpenAIResponeAPI(
+    public GenerateMail(
         IEmailContextBuilder contextBuilder,
         IEmailGeneratorFactory generatorFactory,
         IProspectRepository prospectRepository)

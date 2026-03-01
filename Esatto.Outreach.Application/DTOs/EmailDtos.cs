@@ -32,6 +32,7 @@ public record ResponseSendOutreachToN8nDTO(
         string? Message
 );
 
+
 /// <summary>
 /// Context containing all data needed for email generation.
 /// Use case prepares this context, generator uses it.
@@ -42,7 +43,12 @@ public sealed record EmailGenerationContext
     /// <summary>
     /// Information about Esatto AB (loaded from JSON file)
     /// </summary>
-    public required string CompanyInfo { get; init; }
+    public required CompanyInfoDto CompanyInfo { get; init; }
+
+    /// <summary>
+    /// Relevant project cases to include in email generation (loaded from database)
+    /// </summary>
+    public List<ProjectCaseDto>? ProjectCases { get; init; }
 
     /// <summary>
     /// User-specific email generation instructions from database
@@ -73,7 +79,8 @@ public sealed record EmailGenerationContext
     /// Factory method to create context with all required data
     /// </summary>
     public static EmailGenerationContext Create(
-        string companyInfo,
+        CompanyInfoDto companyInfo,
+        List<ProjectCaseDto>? projectCases,
         string instructions,
         CustomEmailRequestDto request,
         EntityIntelligence? entityIntelligence = null,
@@ -83,6 +90,7 @@ public sealed record EmailGenerationContext
         return new EmailGenerationContext
         {
             CompanyInfo = companyInfo,
+            ProjectCases = projectCases,
             Instructions = instructions,
             Request = request,
             EntityIntelligence = entityIntelligence,

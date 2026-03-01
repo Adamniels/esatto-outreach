@@ -1,13 +1,17 @@
 # Impact Analysis: File-Based to Database Refactoring
 
-The recent refactoring migrated `CompanyInformation` and `ProjectCase` from a static JSON file (`esatto-company-info.json`) into persistent PostgreSQL database entities. While the core CRUD operations and endpoints are now successfully compiling and functioning, there are significant downstream consequences for the AI features in the system.
+The recent refactoring migrated `CompanyInformation` and `ProjectCase` from a static JSON file (`esatto-company-info.json`) 
+into persistent PostgreSQL database entities. While the core CRUD operations and endpoints are now successfully compiling and 
+functioning, there are significant downstream consequences for the AI features in the system.
 
-Because the system was wiped of the old file and the backend was rebuilt, **any feature that relied on reading the hardcoded JSON file to build LLM prompts is currently broken** (failing silently by providing no context).
+Because the system was wiped of the old file and the backend was rebuilt, **any feature that relied on reading the hardcoded 
+JSON file to build LLM prompts is currently broken** (failing silently by providing no context).
 
 Here is a comprehensive summary of the affected components:
 
 ## 1. AI Email Generation is Missing Context
-The `EmailContextBuilder` (`Esatto.Outreach.Infrastructure/EmailGeneration/EmailContextBuilder.cs`) is responsible for compiling all relevant data (Prospect, Soft Data, Contact Person, and Company Info) before sending it to the LLM (OpenAI or Claude) to generate emails.
+The `EmailContextBuilder` (`Esatto.Outreach.Infrastructure/EmailGeneration/EmailContextBuilder.cs`) is responsible for compiling 
+all relevant data (Prospect, Soft Data, Contact Person, and Company Info) before sending it to the LLM (OpenAI or Claude) to generate emails.
 
 **The Problem:** 
 `EmailContextBuilder.LoadEsattoCompanyInfo()` is heavily hardcoded to read from `Data/esatto-company-info.json`. Since this file was removed:
@@ -16,7 +20,8 @@ The `EmailContextBuilder` (`Esatto.Outreach.Infrastructure/EmailGeneration/Email
 - The AI will hallucinate or generate generic emails because it essentially has amnesia about who "Esatto" is and what services they offer.
 
 ## 2. AI Chat Assistant is Missing Context
-The `ChatAboutProspect` use case (`Esatto.Outreach.Application/UseCases/Chat/ChatAboutProspect.cs`) processes real-time user chat interactions to review or refine prospect emails.
+The `ChatAboutProspect` use case (`Esatto.Outreach.Application/UseCases/Chat/ChatAboutProspect.cs`) processes real-time user chat 
+interactions to review or refine prospect emails.
 
 **The Problem:**
 Similar to email generation, line 41 of `ChatAboutProspect.cs` explicitly looks for `Data/esatto-company-info.json` using `File.ReadAllText`. 
@@ -29,7 +34,8 @@ The old `esatto-company-info.json` file used to contain a nested array of `Proje
 **The Problem:**
 - The new database schema separated `CompanyInformation` and `ProjectCase` into two distinct tables.
 - Even if we wire up `EmailContextBuilder` to fetch from the new `company_informations` table, it will **only** fetch the Overview and Value Proposition. 
-- The LLM will completely lose access to previous project cases unless we intentionally write new logic to fetch `ProjectCases` from the database and inject them into the `EmailGenerationContext` alongside the Company Info.
+- The LLM will completely lose access to previous project cases unless we intentionally write new logic to fetch `ProjectCases` from the database 
+and inject them into the `EmailGenerationContext` alongside the Company Info.
 
 ---
 
@@ -47,4 +53,6 @@ To fully restore the AI capabilities of the platform, the following needs to be 
    - Apply the exact same database-fetching logic as above so the chat assistant regains its context.
 
 3. **Remove Static Caching (`_esattoCompanyInfo`)**:
-   - The old system used a `static` variable because the `.json` file never changed during runtime. Since Company Info is now user-editable via the UI `/settings/company-info`, the contexts must be fetched dynamically per-request (or per-user), otherwise one user might generate emails using another user's outdated company info cache.
+   - The old system used a `static` variable because the `.json` file never changed during runtime. Since Company Info is now user-editable 
+   via the UI `/settings/company-info`, the contexts must be fetched dynamically per-request (or per-user), otherwise one user might generate 
+   emails usin<F13>g another user's outdated company info cache.

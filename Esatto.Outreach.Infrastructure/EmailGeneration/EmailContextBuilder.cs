@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
+
 /// <summary>
 /// Implementation of email context builder.
 /// Orchestrates data fetching from repositories and file system.
@@ -15,21 +16,24 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
     private readonly IProspectRepository _prospectRepo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IGenerateEmailPromptRepository _promptRepo;
+    private readonly ICompanyInfoRepository _companyInfoRepo;
+    private readonly IProjectCaseRepository _projectCaseRepo;
     private readonly UserManager<ApplicationUser> _userManager;
-    private static string? _esattoCompanyInfo;
-    private static readonly object _lock = new();
 
     public EmailContextBuilder(
         IProspectRepository prospectRepo,
         IEntityIntelligenceRepository enrichmentRepo,
         IGenerateEmailPromptRepository promptRepo,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ICompanyInfoRepository companyInfoRepo,
+        IProjectCaseRepository projectCaseRepo)
     {
         _prospectRepo = prospectRepo;
         _enrichmentRepo = enrichmentRepo;
         _promptRepo = promptRepo;
         _userManager = userManager;
-        LoadEsattoCompanyInfo();
+        _companyInfoRepo = companyInfoRepo;
+        _projectCaseRepo = projectCaseRepo;
     }
 
     public async Task<EmailGenerationContext> BuildContextAsync(
@@ -88,43 +92,37 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
 
         // 6. Hämta användarens namn för signatur
         var user = await _userManager.FindByIdAsync(userId);
-        var userFullName = user?.FullName ?? user?.UserName ?? "Esatto AB";
+        var userFullName = user?.FullName ?? user?.UserName ?? "Unknown User";
 
-        // 7. Skapa och returnera context med aktiv kontakt och användarnamn
+        // 7. Get company info and project cases
+        var companyId = await _companyInfoRepo.GetCompanyIdByUserIdAsync(userId, cancellationToken);
+        if (companyId == null)
+            throw new InvalidOperationException("No company associated with this user.");
+
+        var companyInfoEntity = await _companyInfoRepo.GetByCompanyIdAsync(companyId.Value, cancellationToken);
+        if (companyInfoEntity == null)
+            throw new InvalidOperationException("Company information not found.");
+
+        var companyInfo = new CompanyInfoDto(
+            companyInfoEntity.Id,
+            companyInfoEntity.Company.Name,
+            companyInfoEntity.Overview,
+            companyInfoEntity.ValueProposition);
+
+        var projectCaseEntities = await _projectCaseRepo.ListByCompanyIdAsync(companyId.Value, cancellationToken);
+        var projectCases = projectCaseEntities
+            .Select(pc => new ProjectCaseDto(pc.Id, pc.ClientName, pc.Text, pc.IsActive))
+            .ToList();
+
+        // 8. Skapa och returnera context med aktiv kontakt och användarnamn
         return EmailGenerationContext.Create(
-            companyInfo: _esattoCompanyInfo ?? "{}",
+            companyInfo: companyInfo,
+            projectCases: projectCases,
             instructions: activePrompt.Instructions,
             request: request,
             entityIntelligence: entityIntelligence,
             activeContact: activeContactContext,
             userFullName: userFullName
         );
-    }
-
-    private static void LoadEsattoCompanyInfo()
-    {
-        if (_esattoCompanyInfo != null) return;
-        
-        lock (_lock)
-        {
-            if (_esattoCompanyInfo != null) return;
-
-            try
-            {
-                var filePath = Path.Combine(AppContext.BaseDirectory, "Data", "esatto-company-info.json");
-                if (File.Exists(filePath))
-                {
-                    _esattoCompanyInfo = File.ReadAllText(filePath);
-                }
-                else
-                {
-                    _esattoCompanyInfo = "{}";
-                }
-            }
-            catch
-            {
-                _esattoCompanyInfo = "{}";
-            }
-        }
     }
 }

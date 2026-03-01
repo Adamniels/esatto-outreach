@@ -98,11 +98,11 @@ public static class ProspectEndpoints
         .RequireAuthorization();
 
         app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
-            Guid prospectId, 
-            Guid contactId, 
-            UpdateContactPersonDto dto, 
-            UpdateContactPerson useCase, 
-            ClaimsPrincipal user, 
+            Guid prospectId,
+            Guid contactId,
+            UpdateContactPersonDto dto,
+            UpdateContactPerson useCase,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -114,10 +114,10 @@ public static class ProspectEndpoints
         .RequireAuthorization();
 
         app.MapDelete("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
-            Guid prospectId, 
-            Guid contactId, 
-            DeleteContactPerson useCase, 
-            ClaimsPrincipal user, 
+            Guid prospectId,
+            Guid contactId,
+            DeleteContactPerson useCase,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -225,7 +225,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/email/draft", async (
            Guid id,
-           GenerateMailOpenAIResponeAPI useCase,
+           GenerateMail useCase,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
