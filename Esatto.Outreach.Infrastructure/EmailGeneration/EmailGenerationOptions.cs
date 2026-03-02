@@ -5,6 +5,7 @@ namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 /// <summary>
 /// Configuration options for email generation method selection.
 /// </summary>
+// TODO: Should rename this OutreachGenerationOptions
 public sealed class EmailGenerationOptions
 {
     public const string SectionName = "EmailGeneration";

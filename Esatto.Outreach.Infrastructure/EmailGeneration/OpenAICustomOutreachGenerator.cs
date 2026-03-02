@@ -6,15 +6,16 @@ using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Infrastructure.Common;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
-public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
+public sealed class OpenAICustomOutreachGenerator : IOutreachGenerator
 {
     private readonly HttpClient _http;
     private readonly OpenAiOptions _options;
-    private readonly ILogger<OpenAICustomEmailGenerator> _logger;
+    private readonly ILogger<OpenAICustomOutreachGenerator> _logger;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -22,10 +23,10 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
         WriteIndented = false
     };
 
-    public OpenAICustomEmailGenerator(
+    public OpenAICustomOutreachGenerator(
         HttpClient http,
         IOptions<OpenAiOptions> options,
-        ILogger<OpenAICustomEmailGenerator> logger)
+        ILogger<OpenAICustomOutreachGenerator> logger)
     {
         _http = http;
         _http.BaseAddress = new Uri("https://api.openai.com/");
@@ -33,19 +34,26 @@ public sealed class OpenAICustomEmailGenerator : ICustomEmailGenerator
         _logger = logger;
     }
 
-    public async Task<CustomEmailDraftDto> GenerateAsync(
-        EmailGenerationContext context,
+    public async Task<CustomOutreachDraftDto> GenerateAsync(
+        OutreachGenerationContext context,
         CancellationToken cancellationToken = default)
     {
-        // 1. Bygg upp själva prompten från context
-        var userPrompt = BuildPrompt(context) + @"
-
-Return ONLY a valid JSON object with the following structure, nothing else:
+        var jsonFormatSpecifier = context.Channel == OutreachChannel.Email
+            ? @"
 {
   ""Title"": ""string"",
   ""BodyPlain"": ""string"",
   ""BodyHTML"": ""string""
-}
+}"
+            : @"
+{
+  ""BodyPlain"": ""string""
+}";
+
+        // 1. Bygg upp själva prompten från context
+        var userPrompt = BuildPrompt(context) + $@"
+
+Return ONLY a valid JSON object with the following structure, nothing else:{jsonFormatSpecifier}
 Do not include code fences, explanations, or any extra text.
 ";
 
@@ -56,10 +64,10 @@ Do not include code fences, explanations, or any extra text.
         var jsonText = await CallOpenAIAsync(payload, cancellationToken);
 
         // 5. Försök deserialisera till din DTO
-        CustomEmailDraftDto? dto = null;
+        CustomOutreachDraftDto? dto = null;
         try
         {
-            dto = JsonSerializer.Deserialize<CustomEmailDraftDto>(jsonText, new JsonSerializerOptions
+            dto = JsonSerializer.Deserialize<CustomOutreachDraftDto>(jsonText, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -78,7 +86,7 @@ Do not include code fences, explanations, or any extra text.
             dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
         }
 
-        return dto;
+        return dto with { Channel = context.Channel };
     }
 
     private object BuildResponsesPayload(string userPrompt)
@@ -157,15 +165,17 @@ Do not include code fences, explanations, or any extra text.
         }));
     }
 
-    private static string BuildPrompt(EmailGenerationContext context)
+    private static string BuildPrompt(OutreachGenerationContext context)
     {
         var req = context.Request;
 
         var projectCasesSection = FormatProjectCases(context.ProjectCases);
 
         // Statisk systemkontext (hårdkodad)
+        string targetFormat = context.Channel == OutreachChannel.Email ? "sälj mejl" : "LinkedIn-meddelande";
+
         var systemContext = @$"
-            Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt sälj mejl på svenska (max 500 ord).
+            Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt {targetFormat} på svenska (max 500 ord).
             
             === INFORMATION OM OSS ({context.CompanyInfo.Name}) ===
             {context.CompanyInfo.Overview}
@@ -195,20 +205,27 @@ Do not include code fences, explanations, or any extra text.
             : "";
 
         var signatureInstruction = !string.IsNullOrWhiteSpace(context.UserFullName)
-            ? $"\n4. Avsluta mejlet med din signatur: '{context.UserFullName}, Esatto AB'"
+            ? $"\n- Avsluta meddelandet med din signatur: '{context.UserFullName}, Esatto AB'"
             : "";
 
+        var outputFormatInstruction = context.Channel switch
+        {
+            OutreachChannel.Email => "\n- Skriv i ett format som är lätt att konvertera till ett mejl, med en tydlig ämnesrad och en personlig, engagerande brödtext.",
+            OutreachChannel.LinkedIn => "\n- Skriv i ett format som passar för ett LinkedIn-meddelande, med en hook i början och en personlig, engagerande ton.",
+            _ => ""
+        };
+
         // Dynamiska instruktioner från databasen
-        return systemContext + contactGreeting + @$"
+        return systemContext + contactGreeting + outputFormatInstruction + @$"
 
             === INSTRUKTIONER ===
             {context.Instructions}
 
             VIKTIGT:
-            1. Fokusera på hur vi ({context.CompanyInfo.Name}) kan hjälpa målföretaget.
-            2. Match rätt tjänster och metoder till kundens situation.
-            3. Skriv personligt och engagerande.
-            {(context.ActiveContact != null ? $"\n   - Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n   - Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
+            - Fokusera på hur vi ({context.CompanyInfo.Name}) kan hjälpa målföretaget.
+            - Match rätt tjänster och metoder till kundens situation.
+            - Skriv personligt och engagerande.
+            {(context.ActiveContact != null ? $"\n  * Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n  * Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
     }
 }
 // TIDIGARE VERSION AV PROMPTEN:

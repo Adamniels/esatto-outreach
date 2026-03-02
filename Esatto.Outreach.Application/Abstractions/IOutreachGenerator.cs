@@ -5,18 +5,18 @@ using Esatto.Outreach.Domain.Enums;
 namespace Esatto.Outreach.Application.Abstractions;
 
 /// <summary>
-/// Generator for creating custom email drafts.
+/// Generator for creating custom outreach drafts.
 /// Follows Clean Architecture: Receives all data via context, focuses only on AI interaction.
 /// </summary>
-public interface ICustomEmailGenerator
+public interface IOutreachGenerator
 {
     /// <summary>
-    /// Generates an email draft using the provided context.
+    /// Generates an outreach draft using the provided context.
     /// </summary>
     /// <param name="context">All data needed for generation (prepared by use case)</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Generated email draft</returns>
-    Task<CustomEmailDraftDto> GenerateAsync(
-        EmailGenerationContext context,
+    /// <returns>Generated outreach draft</returns>
+    Task<CustomOutreachDraftDto> GenerateAsync(
+        OutreachGenerationContext context,
         CancellationToken cancellationToken = default);
 }

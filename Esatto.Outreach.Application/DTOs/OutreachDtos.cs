@@ -14,10 +14,11 @@ public record CustomEmailRequestDto(
 );
 
 
-public record CustomEmailDraftDto(
+public record CustomOutreachDraftDto(
    string Title,
    string BodyPlain,
-   string BodyHTML
+   string BodyHTML,
+   OutreachChannel Channel = default
 );
 
 
@@ -34,11 +35,11 @@ public record ResponseSendOutreachToN8nDTO(
 
 
 /// <summary>
-/// Context containing all data needed for email generation.
+/// Context containing all data needed for outreach generation.
 /// Use case prepares this context, generator uses it.
 /// Follows Clean Architecture: Use case orchestrates data, generator focuses on technical implementation.
 /// </summary>
-public sealed record EmailGenerationContext
+public sealed record OutreachGenerationContext
 {
     /// <summary>
     /// Information about Esatto AB (loaded from JSON file)
@@ -56,9 +57,14 @@ public sealed record EmailGenerationContext
     public required string Instructions { get; init; }
 
     /// <summary>
-    /// Basic prospect information for email
+    /// Basic prospect information for outreach
     /// </summary>
     public required CustomEmailRequestDto Request { get; init; }
+
+    /// <summary>
+    /// The outreach channel (Email, LinkedIn, etc.)
+    /// </summary>
+    public required OutreachChannel Channel { get; init; }
 
     /// <summary>
     /// Collected soft data (only present when using UseCollectedData generation type)
@@ -78,21 +84,23 @@ public sealed record EmailGenerationContext
     /// <summary>
     /// Factory method to create context with all required data
     /// </summary>
-    public static EmailGenerationContext Create(
+    public static OutreachGenerationContext Create(
         CompanyInfoDto companyInfo,
         List<ProjectCaseDto>? projectCases,
         string instructions,
         CustomEmailRequestDto request,
+        OutreachChannel channel,
         EntityIntelligence? entityIntelligence = null,
         ContactPersonContext? activeContact = null,
         string? userFullName = null)
     {
-        return new EmailGenerationContext
+        return new OutreachGenerationContext
         {
             CompanyInfo = companyInfo,
             ProjectCases = projectCases,
             Instructions = instructions,
             Request = request,
+            Channel = channel,
             EntityIntelligence = entityIntelligence,
             ActiveContact = activeContact,
             UserFullName = userFullName

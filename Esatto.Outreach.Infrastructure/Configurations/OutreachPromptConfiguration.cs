@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Esatto.Outreach.Infrastructure.Configurations;
 
-public sealed class GenerateEmailPromptConfiguration : IEntityTypeConfiguration<GenerateEmailPrompt>
+public sealed class OutreachPromptConfiguration : IEntityTypeConfiguration<OutreachPrompt>
 {
-    public void Configure(EntityTypeBuilder<GenerateEmailPrompt> builder)
+    public void Configure(EntityTypeBuilder<OutreachPrompt> builder)
     {
-        builder.ToTable("generate_email_prompts");
+        builder.ToTable("outreach_prompts");
         
         builder.HasKey(x => x.Id);
         
@@ -18,6 +18,10 @@ public sealed class GenerateEmailPromptConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.Instructions)
             .IsRequired()
             .HasColumnType("text"); // Långtext för prompten
+        
+        builder.Property(x => x.Type)
+            .IsRequired()
+            .HasConversion<string>();
         
         builder.Property(x => x.IsActive)
             .IsRequired();
@@ -38,8 +42,8 @@ public sealed class GenerateEmailPromptConfiguration : IEntityTypeConfiguration<
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        // Index för snabb lookup av aktiv prompt per user
-        builder.HasIndex(x => new { x.UserId, x.IsActive });
+        // Index för snabb lookup av aktiv prompt per user och typ
+        builder.HasIndex(x => new { x.UserId, x.Type, x.IsActive });
         builder.HasIndex(x => x.UserId);
     }
 }

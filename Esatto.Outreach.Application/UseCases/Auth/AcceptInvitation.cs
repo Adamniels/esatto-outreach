@@ -1,5 +1,6 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -15,7 +16,7 @@ public sealed class AcceptInvitation
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtTokenService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
-    private readonly IGenerateEmailPromptRepository _promptRepo;
+    private readonly IOutreachPromptRepository _promptRepo;
 
     private const string DEFAULT_PROMPT = @"Fokusera på hur vi (Esatto AB) kan hjälpa företaget. 
 Använd informationen ovan om Esatto för att:
@@ -36,7 +37,7 @@ Krav:
         UserManager<ApplicationUser> userManager,
         IJwtTokenService jwtService,
         IRefreshTokenRepository refreshTokenRepo,
-        IGenerateEmailPromptRepository promptRepo)
+        IOutreachPromptRepository promptRepo)
     {
         _invitationRepo = invitationRepo;
         _userManager = userManager;
@@ -87,8 +88,12 @@ Krav:
             return (false, null, $"Registration failed: {errors}");
         }
 
-        var defaultPrompt = GenerateEmailPrompt.Create(user.Id, DEFAULT_PROMPT, isActive: true);
-        await _promptRepo.AddAsync(defaultPrompt, ct);
+        var defaultGeneral = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.General, isActive: true);
+        var defaultEmail = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.Email, isActive: true);
+        var defaultLinkedIn = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.LinkedIn, isActive: true);
+        await _promptRepo.AddAsync(defaultGeneral, ct);
+        await _promptRepo.AddAsync(defaultEmail, ct);
+        await _promptRepo.AddAsync(defaultLinkedIn, ct);
 
         if (!await _invitationRepo.MarkAsUsedAsync(invitation.Id, ct))
         {

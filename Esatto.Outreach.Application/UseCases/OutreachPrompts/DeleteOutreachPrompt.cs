@@ -1,12 +1,12 @@
 using Esatto.Outreach.Application.Abstractions;
 
-namespace Esatto.Outreach.Application.UseCases.EmailPrompts;
+namespace Esatto.Outreach.Application.UseCases.OutreachPrompts;
 
-public sealed class DeleteEmailPrompt
+public sealed class DeleteOutreachPrompt
 {
-    private readonly IGenerateEmailPromptRepository _repo;
+    private readonly IOutreachPromptRepository _repo;
 
-    public DeleteEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
+    public DeleteOutreachPrompt(IOutreachPromptRepository repo) => _repo = repo;
 
     public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
     {

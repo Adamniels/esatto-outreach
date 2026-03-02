@@ -1,18 +1,22 @@
+using Esatto.Outreach.Domain.Enums;
+
 namespace Esatto.Outreach.Application.DTOs;
 
-public record EmailPromptDto(
+public record OutreachPromptDto(
     Guid Id,
     string Instructions,
+    PromptType Type,
     bool IsActive,
     DateTime CreatedUtc,
     DateTime UpdatedUtc
 );
 
-public record CreateEmailPromptDto(
+public record CreateOutreachPromptDto(
     string Instructions,
+    PromptType Type,
     bool IsActive = false
 );
 
-public record UpdateEmailPromptDto(
+public record UpdateOutreachPromptDto(
     string Instructions
 );

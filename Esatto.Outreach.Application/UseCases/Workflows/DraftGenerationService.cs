@@ -8,10 +8,10 @@ namespace Esatto.Outreach.Application.UseCases.Workflows;
 
 public class DraftGenerationService
 {
-    private readonly IEmailContextBuilder _contextBuilder;
-    private readonly IEmailGeneratorFactory _factory;
+    private readonly IOutreachContextBuilder _contextBuilder;
+    private readonly IOutreachGeneratorFactory _factory;
 
-    public DraftGenerationService(IEmailContextBuilder contextBuilder, IEmailGeneratorFactory factory)
+    public DraftGenerationService(IOutreachContextBuilder contextBuilder, IOutreachGeneratorFactory factory)
     {
         _contextBuilder = contextBuilder;
         _factory = factory;
@@ -24,9 +24,9 @@ public class DraftGenerationService
     }
 
     public async Task<(string Subject, string Body)> GenerateDraftAsync(
-        Guid prospectId, 
-        WorkflowStepType type, 
-        string? userId = null, 
+        Guid prospectId,
+        WorkflowStepType type,
+        string? userId = null,
         ContentGenerationStrategy? strategy = null,
         CancellationToken ct = default)
     {
@@ -34,10 +34,12 @@ public class DraftGenerationService
         var uid = userId ?? "System";
         var strategyKey = strategy?.ToString() ?? ContentGenerationStrategy.WebSearch.ToString();
 
-        bool includeSoftData = strategy == ContentGenerationStrategy.UseCollectedData 
+        bool includeSoftData = strategy == ContentGenerationStrategy.UseCollectedData
                             || strategy == ContentGenerationStrategy.EsattoRag;
 
-        var context = await _contextBuilder.BuildContextAsync(prospectId, uid, includeSoftData: includeSoftData, cancellationToken: ct);
+        var channel = type == WorkflowStepType.Email ? OutreachChannel.Email : OutreachChannel.LinkedIn;
+
+        var context = await _contextBuilder.BuildContextAsync(prospectId, uid, channel, includeSoftData: includeSoftData, cancellationToken: ct);
 
         // 2. Get Generator based on Strategy (Default to WebSearch if null)
         var generator = _factory.GetGenerator(strategyKey);
@@ -45,11 +47,11 @@ public class DraftGenerationService
         // 3. Generate
         var draft = await generator.GenerateAsync(context, ct);
 
-        // 4. Return as tuple (Mapping CustomEmailDraftDto to Subject/Body)
+        // 4. Return as tuple (Mapping CustomOutreachDraftDto to Subject/Body)
         // If it's a LinkedIn message, we might ignore the title/subject or map it differently.
         // But for consistency, we'll return what the generator produced.
         // Typically Title map to Subject, BodyPlain/BodyHTML map to Body.
-        
+
         if (type == WorkflowStepType.Email)
         {
             return (draft.Title, draft.BodyPlain);

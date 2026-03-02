@@ -21,7 +21,7 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
     
     public DbSet<ContactPerson> ContactPersons => Set<ContactPerson>();
 
-    public DbSet<GenerateEmailPrompt> GenerateEmailPrompts => Set<GenerateEmailPrompt>();
+    public DbSet<OutreachPrompt> OutreachPrompts => Set<OutreachPrompt>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

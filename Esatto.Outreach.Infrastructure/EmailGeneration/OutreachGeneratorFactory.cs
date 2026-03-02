@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
 /// <summary>
-/// Factory implementation for creating the appropriate email generator based on configuration.
+/// Factory implementation for creating the appropriate outreach generator based on configuration.
 /// </summary>
-public sealed class EmailGeneratorFactory : IEmailGeneratorFactory
+public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly EmailGenerationOptions _options;
@@ -21,18 +21,18 @@ public sealed class EmailGeneratorFactory : IEmailGeneratorFactory
         _options = options.Value;
     }
 
-    public ICustomEmailGenerator GetGenerator()
+    public IOutreachGenerator GetGenerator()
     {
         return _options.DefaultType switch
         {
-            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomEmailGenerator>(),
+            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
             EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
             EmailGenerationType.EsattoRag => _serviceProvider.GetRequiredService<EsattoRagEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {_options.DefaultType}")
         };
     }
 
-    public ICustomEmailGenerator GetGenerator(string type)
+    public IOutreachGenerator GetGenerator(string type)
     {
         if (string.IsNullOrWhiteSpace(type))
             return GetGenerator();
@@ -46,7 +46,7 @@ public sealed class EmailGeneratorFactory : IEmailGeneratorFactory
 
         return generatorType switch
         {
-            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomEmailGenerator>(),
+            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
             EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
             EmailGenerationType.EsattoRag => _serviceProvider.GetRequiredService<EsattoRagEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {generatorType}")

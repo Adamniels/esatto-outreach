@@ -1,15 +1,15 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
 
-namespace Esatto.Outreach.Application.UseCases.EmailPrompts;
+namespace Esatto.Outreach.Application.UseCases.OutreachPrompts;
 
-public sealed class UpdateEmailPrompt
+public sealed class UpdateOutreachPrompt
 {
-    private readonly IGenerateEmailPromptRepository _repo;
+    private readonly IOutreachPromptRepository _repo;
 
-    public UpdateEmailPrompt(IGenerateEmailPromptRepository repo) => _repo = repo;
+    public UpdateOutreachPrompt(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<EmailPromptDto?> Handle(Guid id, string userId, UpdateEmailPromptDto dto, CancellationToken ct = default)
+    public async Task<OutreachPromptDto?> Handle(Guid id, string userId, UpdateOutreachPromptDto dto, CancellationToken ct = default)
     {
         var prompt = await _repo.GetByIdAsync(id, userId, ct);
         if (prompt == null)
@@ -18,9 +18,10 @@ public sealed class UpdateEmailPrompt
         prompt.UpdateInstructions(dto.Instructions);
         await _repo.UpdateAsync(prompt, ct);
 
-        return new EmailPromptDto(
+        return new OutreachPromptDto(
             prompt.Id,
             prompt.Instructions,
+            prompt.Type,
             prompt.IsActive,
             prompt.CreatedUtc,
             prompt.UpdatedUtc

@@ -118,7 +118,7 @@ public static class DependencyInjection
         services.AddScoped<IProspectRepository, ProspectRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IEntityIntelligenceRepository, EntityIntelligenceRepository>();
-        services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
+        services.AddScoped<IOutreachPromptRepository, OutreachPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
@@ -131,11 +131,11 @@ public static class DependencyInjection
         // Email Generation (multi-method)
         services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
         services.Configure<EsattoRagOptions>(configuration.GetSection(EsattoRagOptions.SectionName));
-        services.AddHttpClient<OpenAICustomEmailGenerator>();
+        services.AddHttpClient<OpenAICustomOutreachGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
         services.AddHttpClient<EsattoRagEmailGenerator>();
-        services.AddScoped<IEmailContextBuilder, EmailContextBuilder>();
-        services.AddScoped<IEmailGeneratorFactory, EmailGeneratorFactory>();
+        services.AddScoped<IOutreachContextBuilder, OutreachContextBuilder>();
+        services.AddScoped<IOutreachGeneratorFactory, EmailGeneratorFactory>();
 
         // Email Delivery (N8n)
         services.Configure<N8nOptions>(configuration.GetSection(N8nOptions.SectionName));

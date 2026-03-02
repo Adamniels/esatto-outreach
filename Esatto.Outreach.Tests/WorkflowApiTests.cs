@@ -91,7 +91,7 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
                 services.AddScoped<Esatto.Outreach.Application.Abstractions.ILinkedInActionsClient, Esatto.Outreach.Infrastructure.Services.MockLinkedInClient>();
                 
                 // Mock Email Factory
-                services.AddScoped<Esatto.Outreach.Application.Abstractions.IEmailGeneratorFactory, FakeEmailGeneratorFactory>();
+                services.AddScoped<Esatto.Outreach.Application.Abstractions.IOutreachGeneratorFactory, FakeOutreachGeneratorFactory>();
             });
         });
     }
@@ -104,18 +104,18 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
         }
     }
 
-    private class FakeEmailGenerator : Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator
+    private class FakeOutreachGenerator : Esatto.Outreach.Application.Abstractions.IOutreachGenerator
     {
-        public Task<CustomEmailDraftDto> GenerateAsync(EmailGenerationContext context, CancellationToken ct = default)
+        public Task<CustomOutreachDraftDto> GenerateAsync(OutreachGenerationContext context, CancellationToken ct = default)
         {
-            return Task.FromResult(new CustomEmailDraftDto("New Subject", "New Body", "<p>New Body</p>"));
+            return Task.FromResult(new CustomOutreachDraftDto("New Subject", "New Body", "<p>New Body</p>", context.Channel));
         }
     }
 
-    private class FakeEmailGeneratorFactory : Esatto.Outreach.Application.Abstractions.IEmailGeneratorFactory
+    private class FakeOutreachGeneratorFactory : Esatto.Outreach.Application.Abstractions.IOutreachGeneratorFactory
     {
-        public Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator GetGenerator() => new FakeEmailGenerator();
-        public Esatto.Outreach.Application.Abstractions.ICustomEmailGenerator GetGenerator(string type) => new FakeEmailGenerator();
+        public Esatto.Outreach.Application.Abstractions.IOutreachGenerator GetGenerator() => new FakeOutreachGenerator();
+        public Esatto.Outreach.Application.Abstractions.IOutreachGenerator GetGenerator(string type) => new FakeOutreachGenerator();
     }
 
     [Fact]
@@ -139,8 +139,9 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             prospect.SetActiveContact(contact.Id);
             db.Prospects.Add(prospect);
             
-            var prompt = GenerateEmailPrompt.Create(user.Id, "Refine draft...", true);
-            db.Set<GenerateEmailPrompt>().Add(prompt);
+            var generalPrompt = OutreachPrompt.Create(user.Id, "General info...", PromptType.General, true);
+            var prompt = OutreachPrompt.Create(user.Id, "Refine draft...", PromptType.Email, true);
+            db.Set<OutreachPrompt>().AddRange(generalPrompt, prompt);
 
             var intelligence = EntityIntelligence.Create(prospect.Id, "Simulated Context", null);
             db.Set<EntityIntelligence>().Add(intelligence);
@@ -203,8 +204,8 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             // 3. Soft Data (Intelligence)
             // 4. Active Contact
             
-            var prompt = GenerateEmailPrompt.Create(user.Id, "Refine draft...", true);
-            db.Set<GenerateEmailPrompt>().Add(prompt);
+            var prompt = OutreachPrompt.Create(user.Id, "Refine draft...", PromptType.Email, true);
+            db.Set<OutreachPrompt>().Add(prompt);
 
             var intelligence = EntityIntelligence.Create(prospect.Id, "Context", null);
             db.Set<EntityIntelligence>().Add(intelligence);
@@ -286,8 +287,8 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             db.Prospects.Add(prospect);
             
             // Seed Workflow Dependencies
-            var prompt = GenerateEmailPrompt.Create(user.Id, "Draft...", true);
-            db.Set<GenerateEmailPrompt>().Add(prompt);
+            var prompt = OutreachPrompt.Create(user.Id, "Draft...", PromptType.Email, true);
+            db.Set<OutreachPrompt>().Add(prompt);
             var intelligence = EntityIntelligence.Create(prospect.Id, "Context", null);
             db.Set<EntityIntelligence>().Add(intelligence);
             prospect.LinkEntityIntelligence(intelligence.Id);
@@ -370,8 +371,8 @@ public class WorkflowApiTests : IClassFixture<WebApplicationFactory<Program>>, I
             db.Prospects.Add(prospect);
             
             // Dependencies for generation
-            var prompt = GenerateEmailPrompt.Create(user.Id, "Draft...", true);
-            db.Set<GenerateEmailPrompt>().Add(prompt);
+            var prompt = OutreachPrompt.Create(user.Id, "Draft...", PromptType.Email, true);
+            db.Set<OutreachPrompt>().Add(prompt);
             var intelligence = EntityIntelligence.Create(prospect.Id, "Context", null);
             db.Set<EntityIntelligence>().Add(intelligence);
             prospect.LinkEntityIntelligence(intelligence.Id);

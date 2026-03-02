@@ -1,26 +1,28 @@
 using System.Security.Claims;
 using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.UseCases.EmailPrompts;
+using Esatto.Outreach.Application.UseCases.OutreachPrompts;
+using Esatto.Outreach.Domain.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
-public static class EmailPromptEndpoints
+public static class OutreachPromptEndpoints
 {
-    public static void MapEmailPromptEndpoints(this WebApplication app)
+    public static void MapOutreachPromptEndpoints(this WebApplication app)
     {
-        // Get active prompt
-        app.MapGet("/settings/email-prompt", async (GetActiveEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        // Get active prompt by type
+        app.MapGet("/settings/outreach-prompts/active/{type}", async (PromptType type, GetActiveOutreachPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var prompt = await useCase.Handle(userId, ct);
-            return prompt == null ? Results.NotFound(new { error = "No active email prompt found" }) : Results.Ok(prompt);
+            var prompt = await useCase.Handle(userId, type, ct);
+            return prompt == null ? Results.NotFound(new { error = $"No active {type} prompt found" }) : Results.Ok(prompt);
         }).RequireAuthorization();
 
         // List all prompts
-        app.MapGet("/settings/email-prompts", async (ListEmailPrompts useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/settings/outreach-prompts", async (ListOutreachPrompts useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -31,7 +33,7 @@ public static class EmailPromptEndpoints
         }).RequireAuthorization();
 
         // Create new prompt
-        app.MapPost("/settings/email-prompts", async (CreateEmailPromptDto dto, CreateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptDto dto, CreateOutreachPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -43,7 +45,7 @@ public static class EmailPromptEndpoints
             try
             {
                 var created = await useCase.Handle(userId, dto, ct);
-                return Results.Created($"/settings/email-prompts/{created.Id}", created);
+                return Results.Created($"/settings/outreach-prompts/{created.Id}", created);
             }
             catch (ArgumentException ex)
             {
@@ -52,7 +54,7 @@ public static class EmailPromptEndpoints
         }).RequireAuthorization();
 
         // Update existing prompt
-        app.MapPut("/settings/email-prompts/{id:guid}", async (Guid id, UpdateEmailPromptDto dto, UpdateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptDto dto, UpdateOutreachPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -73,7 +75,7 @@ public static class EmailPromptEndpoints
         }).RequireAuthorization();
 
         // Activate specific prompt (deactivates all others)
-        app.MapPost("/settings/email-prompts/{id:guid}/activate", async (Guid id, ActivateEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/settings/outreach-prompts/{id:guid}/activate", async (Guid id, ActivateOutreachPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -84,7 +86,7 @@ public static class EmailPromptEndpoints
         }).RequireAuthorization();
 
         // Delete prompt
-        app.MapDelete("/settings/email-prompts/{id:guid}", async (Guid id, DeleteEmailPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapDelete("/settings/outreach-prompts/{id:guid}", async (Guid id, DeleteOutreachPrompt useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))

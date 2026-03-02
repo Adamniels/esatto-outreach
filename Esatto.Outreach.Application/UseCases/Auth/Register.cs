@@ -1,6 +1,7 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Application.UseCases.Auth;
@@ -13,7 +14,7 @@ public sealed class Register
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtTokenService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
-    private readonly IGenerateEmailPromptRepository _promptRepo;
+    private readonly IOutreachPromptRepository _promptRepo;
     private readonly ICompanyRepository _companyRepo;
     private readonly ICompanyInfoRepository _companyInfoRepo;
     private readonly IUnitOfWork _unitOfWork;
@@ -37,7 +38,7 @@ Krav:
         UserManager<ApplicationUser> userManager,
         IJwtTokenService jwtService,
         IRefreshTokenRepository refreshTokenRepo,
-        IGenerateEmailPromptRepository promptRepo,
+        IOutreachPromptRepository promptRepo,
         ICompanyRepository companyRepo,
         ICompanyInfoRepository companyInfoRepo,
         IUnitOfWork unitOfWork)
@@ -102,8 +103,12 @@ Krav:
             await _unitOfWork.CommitTransactionAsync(ct);
 
             // Create default email prompt for the new user
-            var defaultPrompt = GenerateEmailPrompt.Create(user.Id, DEFAULT_PROMPT, isActive: true);
-            await _promptRepo.AddAsync(defaultPrompt, ct);
+            var defaultGeneral = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.General, isActive: true);
+            var defaultEmail = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.Email, isActive: true);
+            var defaultLinkedIn = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.LinkedIn, isActive: true);
+            await _promptRepo.AddAsync(defaultGeneral, ct);
+            await _promptRepo.AddAsync(defaultEmail, ct);
+            await _promptRepo.AddAsync(defaultLinkedIn, ct);
             
             // Generate tokens
             var (accessToken, expiresAt) = _jwtService.GenerateAccessToken(user);

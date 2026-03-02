@@ -30,6 +30,7 @@ public class Prospect : Entity
     public string? MailTitle { get; private set; }
     public string? MailBodyPlain { get; private set; }
     public string? MailBodyHTML { get; private set; }
+    public string? LinkedInMessage { get; private set; }
     public string? LastOpenAIResponseId { get; private set; }
 
     // Foreign Key till EntityIntelligence (One-to-One, nullable)
@@ -207,6 +208,15 @@ public class Prospect : Entity
         if (mailBodyPlain is not null) MailBodyPlain = mailBodyPlain;
         if (mailBodyHTML is not null) MailBodyHTML = mailBodyHTML;
 
+        Touch();
+    }
+
+    public void UpdateLinkedInMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("LinkedIn Message cannot be empty", nameof(message));
+
+        LinkedInMessage = message;
         Touch();
     }
 

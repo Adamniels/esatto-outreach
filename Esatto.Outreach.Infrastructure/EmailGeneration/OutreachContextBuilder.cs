@@ -3,27 +3,29 @@ using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
+using Esatto.Outreach.Domain.Enums;
+
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
 
 /// <summary>
-/// Implementation of email context builder.
+/// Implementation of outreach context builder.
 /// Orchestrates data fetching from repositories and file system.
 /// Follows Clean Architecture: This is where data orchestration happens.
 /// </summary>
-public sealed class EmailContextBuilder : IEmailContextBuilder
+public sealed class OutreachContextBuilder : IOutreachContextBuilder
 {
     private readonly IProspectRepository _prospectRepo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
-    private readonly IGenerateEmailPromptRepository _promptRepo;
+    private readonly IOutreachPromptRepository _promptRepo;
     private readonly ICompanyInfoRepository _companyInfoRepo;
     private readonly IProjectCaseRepository _projectCaseRepo;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public EmailContextBuilder(
+    public OutreachContextBuilder(
         IProspectRepository prospectRepo,
         IEntityIntelligenceRepository enrichmentRepo,
-        IGenerateEmailPromptRepository promptRepo,
+        IOutreachPromptRepository promptRepo,
         UserManager<ApplicationUser> userManager,
         ICompanyInfoRepository companyInfoRepo,
         IProjectCaseRepository projectCaseRepo)
@@ -36,9 +38,10 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
         _projectCaseRepo = projectCaseRepo;
     }
 
-    public async Task<EmailGenerationContext> BuildContextAsync(
+    public async Task<OutreachGenerationContext> BuildContextAsync(
         Guid prospectId,
         string userId,
+        OutreachChannel channel,
         bool includeSoftData,
         CancellationToken cancellationToken = default)
     {
@@ -47,10 +50,17 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
         if (prospect == null)
             throw new InvalidOperationException($"Prospect with id {prospectId} not found");
 
-        // 2. Hämta aktiv prompt för användaren
-        var activePrompt = await _promptRepo.GetActiveByUserIdAsync(userId, cancellationToken);
-        if (activePrompt == null)
-            throw new InvalidOperationException("No active email prompt template found for this user");
+        // 2. Fetch General and Channel specific prompts
+        var generalPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, PromptType.General, cancellationToken);
+        var targetType = channel == OutreachChannel.Email ? PromptType.Email : PromptType.LinkedIn;
+        var specificPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, targetType, cancellationToken);
+        
+        if (generalPrompt == null)
+            throw new InvalidOperationException("No active general prompt template found for this user");
+        if (specificPrompt == null)
+            throw new InvalidOperationException($"No active {channel} prompt template found for this user");
+
+        var combinedInstructions = $"{generalPrompt.Instructions}\n\n{specificPrompt.Instructions}";
 
         // 3. Hämta soft data om det krävs
         EntityIntelligence? entityIntelligence = null;
@@ -114,12 +124,13 @@ public sealed class EmailContextBuilder : IEmailContextBuilder
             .Select(pc => new ProjectCaseDto(pc.Id, pc.ClientName, pc.Text, pc.IsActive))
             .ToList();
 
-        // 8. Skapa och returnera context med aktiv kontakt och användarnamn
-        return EmailGenerationContext.Create(
+        // 8. Create and return context
+        return OutreachGenerationContext.Create(
             companyInfo: companyInfo,
             projectCases: projectCases,
-            instructions: activePrompt.Instructions,
+            instructions: combinedInstructions,
             request: request,
+            channel: channel,
             entityIntelligence: entityIntelligence,
             activeContact: activeContactContext,
             userFullName: userFullName

@@ -11,7 +11,7 @@ using Esatto.Outreach.Infrastructure.Common;
 
 namespace Esatto.Outreach.Infrastructure.EmailGeneration;
 
-public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
+public sealed class EsattoRagEmailGenerator : IOutreachGenerator
 {
     private readonly HttpClient _http;
     private readonly EsattoRagOptions _options;
@@ -43,8 +43,8 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
         }
     }
 
-    public async Task<CustomEmailDraftDto> GenerateAsync(
-        EmailGenerationContext context,
+    public async Task<CustomOutreachDraftDto> GenerateAsync(
+        OutreachGenerationContext context,
         CancellationToken cancellationToken = default)
     {
         // Validate that we have collected soft data
@@ -79,15 +79,16 @@ public sealed class EsattoRagEmailGenerator : ICustomEmailGenerator
                 ragResponse.Metadata.LlmModel);
         }
 
-        // Map RAG response to CustomEmailDraftDto
-        return new CustomEmailDraftDto(
+        // Map RAG response to CustomOutreachDraftDto
+        return new CustomOutreachDraftDto(
             Title: ragResponse.Subject ?? "Samarbetsmöjlighet",
             BodyPlain: ragResponse.Body,
-            BodyHTML: ConvertToHtml(ragResponse.Body)
+            BodyHTML: ConvertToHtml(ragResponse.Body),
+            Channel: context.Channel
         );
     }
 
-    private static EsattoRagRequest BuildRagRequest(EmailGenerationContext context)
+    private static EsattoRagRequest BuildRagRequest(OutreachGenerationContext context)
     {
         var documents = new List<RagDocument>();
         var intelligence = context.EntityIntelligence!;

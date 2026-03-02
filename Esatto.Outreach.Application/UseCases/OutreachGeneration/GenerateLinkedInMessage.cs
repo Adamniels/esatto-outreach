@@ -1,16 +1,17 @@
 using Esatto.Outreach.Application.Abstractions;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.UseCases.EmailGeneration;
-public class GenerateMail
+public class GenerateLinkedInMessage
 {
-    private readonly IEmailContextBuilder _contextBuilder;
-    private readonly IEmailGeneratorFactory _generatorFactory;
+    private readonly IOutreachContextBuilder _contextBuilder;
+    private readonly IOutreachGeneratorFactory _generatorFactory;
     private readonly IProspectRepository _prospectRepository;
 
-    public GenerateMail(
-        IEmailContextBuilder contextBuilder,
-        IEmailGeneratorFactory generatorFactory,
+    public GenerateLinkedInMessage(
+        IOutreachContextBuilder contextBuilder,
+        IOutreachGeneratorFactory generatorFactory,
         IProspectRepository prospectRepository)
     {
         _contextBuilder = contextBuilder;
@@ -20,13 +21,10 @@ public class GenerateMail
 
     public async Task<ProspectViewDto> Handle(Guid id, string userId, string? type = null, CancellationToken ct = default)
     {
-        // 1. Determine if we need soft data based on generator type
-        bool includeSoftData = !string.IsNullOrWhiteSpace(type) &&
-            (type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase) ||
-             type.Equals("EsattoRag", StringComparison.OrdinalIgnoreCase));
+        bool includeSoftData = true;
 
         // 2. Build context with all required data
-        var context = await _contextBuilder.BuildContextAsync(id, userId, includeSoftData, ct);
+        var context = await _contextBuilder.BuildContextAsync(id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);
 
         // 3. Get the appropriate generator
         var generator = string.IsNullOrWhiteSpace(type)
@@ -41,11 +39,7 @@ public class GenerateMail
         if (prospect == null)
             throw new InvalidOperationException($"Prospect with id {id} not found");
 
-        prospect.UpdateBasics(
-            mailTitle: draft.Title,
-            mailBodyPlain: draft.BodyPlain,
-            mailBodyHTML: draft.BodyHTML
-        );
+        prospect.UpdateLinkedInMessage(draft.BodyPlain);
 
         await _prospectRepository.UpdateAsync(prospect, ct);
 
