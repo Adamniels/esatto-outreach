@@ -19,7 +19,8 @@ public record ProspectUpdateDto(
     ProspectStatus? Status,
     string? MailTitle,
     string? MailBodyPlain,
-    string? MailBodyHTML);
+    string? MailBodyHTML,
+    string? LinkedInMessage);
 
 // DTO for viewing prospect (CRM-agnostic)
 public record ProspectViewDto(
@@ -46,6 +47,7 @@ public record ProspectViewDto(
     string? MailTitle,
     string? MailBodyPlain,
     string? MailBodyHTML,
+    string? LinkedInMessage,
     string? OwnerId,
     EntityIntelligenceDto? EntityIntelligence,
     List<ContactPersonDto> ContactPersons)
@@ -72,6 +74,7 @@ public record ProspectViewDto(
             p.MailTitle,
             p.MailBodyPlain,
             p.MailBodyHTML,
+            p.LinkedInMessage,
             p.OwnerId,
             p.EntityIntelligence != null ? EntityIntelligenceDto.FromEntity(p.EntityIntelligence) : null,
             p.ContactPersons?.Select(ContactPersonDto.FromEntity).ToList() ?? new());
@@ -142,7 +145,6 @@ public record EntityIntelligenceDto(
 
 // Rich Data Structures
 // Legacy DTOs removed
-
 
 
 

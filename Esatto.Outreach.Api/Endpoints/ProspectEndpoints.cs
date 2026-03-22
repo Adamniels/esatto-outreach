@@ -273,6 +273,35 @@ public static class ProspectEndpoints
             }
         });
 
+        // ============ LINKEDIN ENDPOINTS ============
+        // LinkedIn message generation is similar to email, but we can have a separate endpoint for clarity
+
+        app.MapPost("/prospects/{id:guid}/linkedin/draft", async (
+           Guid id,
+           GenerateLinkedInMessage useCase,
+           ClaimsPrincipal user,
+           string? type,
+           CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
+            try
+            {
+                var prospect = await useCase.Handle(id, userId, type, ct);
+                return Results.Ok(prospect);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        }).RequireAuthorization();
+
         // ============ CHAT ENDPOINTS ============
 
         app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, CancellationToken ct) =>

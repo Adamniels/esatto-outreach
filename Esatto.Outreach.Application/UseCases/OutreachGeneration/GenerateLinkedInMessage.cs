@@ -3,6 +3,7 @@ using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.UseCases.EmailGeneration;
+
 public class GenerateLinkedInMessage
 {
     private readonly IOutreachContextBuilder _contextBuilder;
@@ -21,7 +22,9 @@ public class GenerateLinkedInMessage
 
     public async Task<ProspectViewDto> Handle(Guid id, string userId, string? type = null, CancellationToken ct = default)
     {
-        bool includeSoftData = true;
+        bool includeSoftData = !string.IsNullOrWhiteSpace(type) &&
+            (type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase) ||
+             type.Equals("EsattoRag", StringComparison.OrdinalIgnoreCase));
 
         // 2. Build context with all required data
         var context = await _contextBuilder.BuildContextAsync(id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);

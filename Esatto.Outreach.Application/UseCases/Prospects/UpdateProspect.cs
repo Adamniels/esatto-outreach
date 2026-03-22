@@ -26,7 +26,8 @@ public class UpdateProspect
             notes: dto.Notes,
             mailTitle: dto.MailTitle,
             mailBodyPlain: dto.MailBodyPlain,
-            mailBodyHTML: dto.MailBodyHTML
+            mailBodyHTML: dto.MailBodyHTML,
+            linkedInMessage: dto.LinkedInMessage
         );
 
         if (dto.Status.HasValue)

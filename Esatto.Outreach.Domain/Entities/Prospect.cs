@@ -9,7 +9,7 @@ public class Prospect : Entity
     // === CRM IDENTITY ===
     public CrmProvider CrmSource { get; private set; } = CrmProvider.None;
     public string? ExternalCrmId { get; private set; }
-    
+
     // === CORE DATA ===
     public string Name { get; private set; } = default!;
     public string? About { get; private set; }
@@ -48,7 +48,7 @@ public class Prospect : Entity
 
     // === HELPER PROPERTIES ===
     public bool IsFromCrm => CrmSource != CrmProvider.None;
-    
+
     /// <summary>
     /// Checks if a field will be overwritten by CRM webhook updates.
     /// </summary>
@@ -190,7 +190,8 @@ public class Prospect : Entity
         string? notes = null,
         string? mailTitle = null,
         string? mailBodyPlain = null,
-        string? mailBodyHTML = null)
+        string? mailBodyHTML = null,
+        string? linkedInMessage = null)
     {
         if (name is not null)
         {
@@ -203,10 +204,13 @@ public class Prospect : Entity
         if (websiteUrls is not null)
             Websites = websiteUrls.Select(url => new Website(url, null, null)).ToList();
 
+        // BUG: This is probably why i cant save empty notes, which I would like to be able to do.
         if (notes is not null) Notes = notes;
+
         if (mailTitle is not null) MailTitle = mailTitle;
         if (mailBodyPlain is not null) MailBodyPlain = mailBodyPlain;
         if (mailBodyHTML is not null) MailBodyHTML = mailBodyHTML;
+        if (linkedInMessage is not null) LinkedInMessage = linkedInMessage;
 
         Touch();
     }
@@ -245,9 +249,9 @@ public class Prospect : Entity
     public void AddContactPerson(string name, string? title = null, string? email = null)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
-        
+
         ContactPersons ??= new List<ContactPerson>();
-        
+
         // Simple de-dupe by name for now, logic can be refined later
         if (ContactPersons.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             return;
@@ -304,25 +308,25 @@ public class Prospect : Entity
         var contact = ContactPersons.FirstOrDefault(c => c.Id == contactPersonId);
         if (contact == null)
             throw new ArgumentException($"Contact person with ID {contactPersonId} not found for this prospect", nameof(contactPersonId));
-        
+
         // Deactivate all other contacts
         foreach (var c in ContactPersons.Where(c => c.IsActive && c.Id != contactPersonId))
         {
             c.Deactivate();
         }
-        
+
         // Activate the selected one
         contact.Activate();
         Touch();
     }
-    
+
     /// <summary>
     /// Gets the currently active contact for this prospect.
     /// </summary>
     /// <returns>The active ContactPerson, or null if no contact is active</returns>
-    public ContactPerson? GetActiveContact() 
+    public ContactPerson? GetActiveContact()
         => ContactPersons.FirstOrDefault(c => c.IsActive);
-        
+
     /// <summary>
     /// Clears the active contact (deactivates all contacts).
     /// </summary>
@@ -335,4 +339,3 @@ public class Prospect : Entity
         Touch();
     }
 }
-
