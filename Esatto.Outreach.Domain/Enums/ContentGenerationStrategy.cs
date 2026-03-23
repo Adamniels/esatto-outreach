@@ -9,15 +9,10 @@ public enum ContentGenerationStrategy
     /// Use AI with web search capabilities to generate content.
     /// </summary>
     WebSearch,
-    
+
     /// <summary>
     /// Use pre-collected Entity Intelligence data to generate content.
     /// Requires that the prospect has been enriched.
     /// </summary>
     UseCollectedData,
-    
-    /// <summary>
-    /// Use Esatto RAG (Retrieval Augmented Generation) to generate content.
-    /// </summary>
-    EsattoRag
 }

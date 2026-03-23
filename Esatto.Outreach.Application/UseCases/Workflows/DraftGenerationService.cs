@@ -34,8 +34,8 @@ public class DraftGenerationService
         var uid = userId ?? "System";
         var strategyKey = strategy?.ToString() ?? ContentGenerationStrategy.WebSearch.ToString();
 
-        bool includeSoftData = strategy == ContentGenerationStrategy.UseCollectedData
-                            || strategy == ContentGenerationStrategy.EsattoRag;
+        bool includeSoftData = strategy == ContentGenerationStrategy.UseCollectedData;
+
 
         var channel = type == WorkflowStepType.Email ? OutreachChannel.Email : OutreachChannel.LinkedIn;
 

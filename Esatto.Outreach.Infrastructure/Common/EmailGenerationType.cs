@@ -14,9 +14,4 @@ public enum EmailGenerationType
     /// Use previously collected data (soft data, hard data) to generate the email, with openAI
     /// </summary>
     UseCollectedData,
-
-    /// <summary>
-    /// Use previously collected data (soft data, hard data) to generate the email, on our own RAG + fine-tuned modell
-    /// </summary>
-    EsattoRag
 }

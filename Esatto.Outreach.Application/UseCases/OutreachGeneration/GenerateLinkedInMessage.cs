@@ -23,8 +23,7 @@ public class GenerateLinkedInMessage
     public async Task<ProspectViewDto> Handle(Guid id, string userId, string? type = null, CancellationToken ct = default)
     {
         bool includeSoftData = !string.IsNullOrWhiteSpace(type) &&
-            (type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase) ||
-             type.Equals("EsattoRag", StringComparison.OrdinalIgnoreCase));
+            (type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase));
 
         // 2. Build context with all required data
         var context = await _contextBuilder.BuildContextAsync(id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);

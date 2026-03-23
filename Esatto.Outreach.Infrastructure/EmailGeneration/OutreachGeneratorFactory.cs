@@ -27,7 +27,6 @@ public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
         {
             EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
             EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
-            EmailGenerationType.EsattoRag => _serviceProvider.GetRequiredService<EsattoRagEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {_options.DefaultType}")
         };
     }
@@ -48,7 +47,6 @@ public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
         {
             EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
             EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
-            EmailGenerationType.EsattoRag => _serviceProvider.GetRequiredService<EsattoRagEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {generatorType}")
         };
     }

@@ -130,10 +130,8 @@ public static class DependencyInjection
 
         // Email Generation (multi-method)
         services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
-        services.Configure<EsattoRagOptions>(configuration.GetSection(EsattoRagOptions.SectionName));
         services.AddHttpClient<OpenAICustomOutreachGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
-        services.AddHttpClient<EsattoRagEmailGenerator>();
         services.AddScoped<IOutreachContextBuilder, OutreachContextBuilder>();
         services.AddScoped<IOutreachGeneratorFactory, EmailGeneratorFactory>();
 
