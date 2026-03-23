@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Application.UseCases.Prospects;
 using Esatto.Outreach.Application.UseCases.EmailGeneration;
-using Esatto.Outreach.Application.UseCases.EmailDelivery;
 using Esatto.Outreach.Application.UseCases.SoftDataCollection;
 using Esatto.Outreach.Application.UseCases.Chat;
 
@@ -248,30 +247,6 @@ public static class ProspectEndpoints
                 return Results.BadRequest(new { error = ex.Message });
             }
         }).RequireAuthorization();
-
-        app.MapPost("/prospects/{id:guid}/email/send", async (
-            Guid id,
-            SendEmailViaN8n useCase,
-            CancellationToken ct) =>
-        {
-            try
-            {
-                var result = await useCase.Handle(id, ct);
-                return result.Success
-                    ? Results.Ok(result)
-                    : Results.BadRequest(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: 500);
-            }
-        });
 
         // ============ LINKEDIN ENDPOINTS ============
         // LinkedIn message generation is similar to email, but we can have a separate endpoint for clarity

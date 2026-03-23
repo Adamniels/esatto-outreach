@@ -22,18 +22,6 @@ public record CustomOutreachDraftDto(
 );
 
 
-public record SendOutreachToN8nDTO(
-   string To,
-   string Subject,
-   string Body
-);
-
-public record ResponseSendOutreachToN8nDTO(
-        bool Success,
-        string? Message
-);
-
-
 /// <summary>
 /// Context containing all data needed for outreach generation.
 /// Use case prepares this context, generator uses it.

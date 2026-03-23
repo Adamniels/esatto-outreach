@@ -96,7 +96,7 @@ public class WebScraperService : IWebScraperService
 
     private List<string> FilterRelevantUrls(List<string> urls)
     {
-        // Blocklist (from n8n workflow)
+        // Blocklist for low-relevance pages
         var excludePatterns = new[] 
         {
             "/kontakt", "/contact", "/kontakta-oss", "/jobb", "/karriar", "/career", "/job",

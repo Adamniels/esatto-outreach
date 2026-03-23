@@ -67,7 +67,6 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.ClearA
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMail>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateLinkedInMessage>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailDelivery.SendEmailViaN8n>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ChatWithProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ResetProspectChat>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>();
@@ -95,7 +94,7 @@ builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowExecutionW
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowCleanupWorker>();
 
 
-// CORS - allow n8n and frontend UI
+// CORS - allow frontend UI
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("ui", p => p

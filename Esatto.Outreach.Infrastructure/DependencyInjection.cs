@@ -7,7 +7,6 @@ using Esatto.Outreach.Infrastructure.Common;
 using Esatto.Outreach.Infrastructure.Services.Scraping;
 using Esatto.Outreach.Infrastructure.Services.Enrichment;
 using Esatto.Outreach.Infrastructure.EmailGeneration;
-using Esatto.Outreach.Infrastructure.EmailDelivery;
 using Esatto.Outreach.Infrastructure.Chat;
 using Esatto.Outreach.Infrastructure.Auth;
 using Esatto.Outreach.Application.Abstractions;
@@ -134,14 +133,6 @@ public static class DependencyInjection
         services.AddHttpClient<CollectedDataEmailGenerator>();
         services.AddScoped<IOutreachContextBuilder, OutreachContextBuilder>();
         services.AddScoped<IOutreachGeneratorFactory, EmailGeneratorFactory>();
-
-        // Email Delivery (N8n)
-        services.Configure<N8nOptions>(configuration.GetSection(N8nOptions.SectionName));
-        services.AddHttpClient<IN8nEmailService, N8nEmailService>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<N8nOptions>>().Value;
-            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
-        });
 
         // Chat
         services.AddHttpClient<IOpenAIChatClient, OpenAIChatService>();
