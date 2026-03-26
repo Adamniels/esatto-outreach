@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.Services.Scraping;

@@ -1,9 +1,15 @@
 using System.Security.Claims;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Application.DTOs.Prospects;
+using Esatto.Outreach.Application.DTOs.Auth;
+using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.DTOs.Webhooks;
+using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Application.UseCases.Prospects;
-using Esatto.Outreach.Application.UseCases.EmailGeneration;
-using Esatto.Outreach.Application.UseCases.SoftDataCollection;
-using Esatto.Outreach.Application.UseCases.Chat;
+using Esatto.Outreach.Application.UseCases.OutreachGeneration;
+using Esatto.Outreach.Application.UseCases.Intelligence;
+using Esatto.Outreach.Application.UseCases.Intelligence;
 
 namespace Esatto.Outreach.Api.Endpoints;
 

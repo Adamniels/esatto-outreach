@@ -1,4 +1,6 @@
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.UseCases.Workflows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

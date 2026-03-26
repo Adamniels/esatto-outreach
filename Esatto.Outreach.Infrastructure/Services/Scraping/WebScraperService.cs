@@ -1,6 +1,8 @@
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 
 namespace Esatto.Outreach.Infrastructure.Services.Scraping;
 

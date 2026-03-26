@@ -1,5 +1,11 @@
 using System.Security.Claims;
 using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Application.DTOs.Prospects;
+using Esatto.Outreach.Application.DTOs.Auth;
+using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.DTOs.Webhooks;
+using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Application.UseCases.Workflows;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;

@@ -1,15 +1,21 @@
+using Esatto.Outreach.Infrastructure.Services;
+using Esatto.Outreach.Infrastructure.Clients;
+using Esatto.Outreach.Infrastructure.Options;
+using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 using Microsoft.Extensions.Http;
 using System.Net.Http;
 using System.Text;
 using Esatto.Outreach.Domain.Entities;
-using Esatto.Outreach.Infrastructure.Common;
+
 
 using Esatto.Outreach.Infrastructure.Services.Scraping;
 using Esatto.Outreach.Infrastructure.Services.Enrichment;
-using Esatto.Outreach.Infrastructure.EmailGeneration;
-using Esatto.Outreach.Infrastructure.Chat;
-using Esatto.Outreach.Infrastructure.Auth;
-using Esatto.Outreach.Application.Abstractions;
+
+
+
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Esatto.Outreach.Application.UseCases.Workflows;
 using Esatto.Outreach.Infrastructure.Services;
@@ -148,7 +154,7 @@ public static class DependencyInjection
         services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
         services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
         services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
-        services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>(); // Register UseCase
+        services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence>(); // Register UseCase
 
         // Workflow Mocks
         services.AddScoped<IEmailSender, MockEmailSender>();
@@ -160,7 +166,7 @@ public static class DependencyInjection
         services.AddScoped<WorkflowTemplateService>();
 
         services.AddScoped<WorkflowInstanceService>();
-        services.AddScoped<DraftGenerationService>();
+        services.AddScoped<GenerateDraftWorkflow>();
         services.AddScoped<StepExecutionService>();
 
         return services;
