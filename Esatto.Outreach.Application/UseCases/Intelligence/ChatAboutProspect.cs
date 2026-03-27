@@ -38,28 +38,9 @@ public sealed class ChatWithProspect
 
     private static void LoadEsattoCompanyInfo()
     {
-        if (_esattoCompanyInfo != null) return;
-        
-        lock (_lock)
+        if (_esattoCompanyInfo == null)
         {
-            if (_esattoCompanyInfo != null) return;
-
-            try
-            {
-                var filePath = Path.Combine(AppContext.BaseDirectory, "Data", "esatto-company-info.json");
-                if (File.Exists(filePath))
-                {
-                    _esattoCompanyInfo = File.ReadAllText(filePath);
-                }
-                else
-                {
-                    _esattoCompanyInfo = "{}"; // Fallback om filen inte hittas
-                }
-            }
-            catch
-            {
-                _esattoCompanyInfo = "{}";
-            }
+            _esattoCompanyInfo = "{}";
         }
     }
 

@@ -18,7 +18,7 @@ using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Infrastructure.Repositories;
 using Esatto.Outreach.Application.UseCases.Workflows;
-using Esatto.Outreach.Infrastructure.Services;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

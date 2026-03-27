@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Esatto.Outreach.Domain\Esatto.Outreach.Domain.csproj" />
@@ -27,8 +27,6 @@
     <WarningsNotAsErrors>OPENAI001</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Data\esatto-company-info.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+
 
 </Project>

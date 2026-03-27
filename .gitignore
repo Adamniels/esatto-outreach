@@ -78,3 +78,8 @@ build/
 # --- Docker ---
 *.pid
 docker-compose.override.yml
+
+# --- Test Coverage ---
+coveragereport/
+TestResults/
+*.cobertura.xml
