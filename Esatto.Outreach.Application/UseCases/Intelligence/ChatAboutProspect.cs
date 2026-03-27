@@ -44,10 +44,13 @@ public sealed class ChatWithProspect
         }
     }
 
-    public async Task<ChatResponseDto> Handle(Guid prospectId, ChatRequestDto req, CancellationToken ct = default)
+    public async Task<ChatResponseDto> Handle(Guid prospectId, string userId, ChatRequestDto req, CancellationToken ct = default)
     {
         var prospect = await _repo.GetByIdAsync(prospectId, ct)
             ?? throw new InvalidOperationException("Prospect not found");
+
+        if (prospect.OwnerId != userId)
+            throw new UnauthorizedAccessException("You don't have permission to access this prospect");
 
         var hasDraft = !string.IsNullOrWhiteSpace(prospect.MailBodyPlain) ||
                             !string.IsNullOrWhiteSpace(prospect.MailBodyHTML);

@@ -1,4 +1,4 @@
-.PHONY: build test coverage db-up db-down run clean
+.PHONY: build test coverage coverage-summary coverage-report db-up db-down run dev clean
 
 # Backend Makefile
 
@@ -10,9 +10,26 @@ test:
 	@echo "Running Unit Tests..."
 	dotnet test
 
+# Quick coverage — generates raw XML (used by VS Code Coverage Gutters extension)
 coverage:
 	@echo "Running Tests with XPlat Code Coverage..."
 	dotnet test Esatto.Outreach.UnitTests --collect:"XPlat Code Coverage"
+
+# Terminal summary — prints a coverage table directly in the terminal
+coverage-summary:
+	@echo "Running Tests with coverage summary..."
+	dotnet test Esatto.Outreach.UnitTests -p:CollectCoverage=true
+
+# Full coverage — generates HTML report and opens it in the browser
+coverage-report:
+	@echo "Running Tests and generating HTML Coverage Report..."
+	dotnet test Esatto.Outreach.UnitTests --collect:"XPlat Code Coverage"
+	~/.dotnet/tools/reportgenerator \
+		"-reports:Esatto.Outreach.UnitTests/TestResults/*/coverage.cobertura.xml" \
+		-targetdir:coveragereport \
+		-reporttypes:Html
+	@echo "Opening coverage report..."
+	open coveragereport/index.html
 
 db-up:
 	@echo "Starting PostgreSQL database in Docker..."

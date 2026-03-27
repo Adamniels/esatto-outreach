@@ -36,11 +36,14 @@ public sealed class GenerateEntityIntelligence
         _logger = logger;
     }
 
-    public async Task<EntityIntelligenceDto> Handle(Guid prospectId, CancellationToken ct = default)
+    public async Task<EntityIntelligenceDto> Handle(Guid prospectId, string userId, CancellationToken ct = default)
     {
         // 1. Fetch Prospect (ReadOnly for scraping context)
         var prospect = await _prospectRepo.GetByIdReadOnlyAsync(prospectId, ct)
             ?? throw new KeyNotFoundException($"Prospect {prospectId} not found.");
+
+        if (prospect.OwnerId != userId)
+            throw new UnauthorizedAccessException("You don't have permission to access this prospect");
 
         _logger.LogInformation("Starting Entity Intelligence Enrichment for {Company}", prospect.Name);
 

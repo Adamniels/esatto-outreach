@@ -286,19 +286,19 @@
       "Esatto.Outreach.Domain.ValueObjects.Website": {
         "System.String Esatto.Outreach.Domain.ValueObjects.Website::get_Url()": {
           "Lines": {
-            "12": 1
+            "12": 2
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.ValueObjects.Website::get_Service()": {
           "Lines": {
-            "13": 1
+            "13": 2
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.ValueObjects.Website::get_Type()": {
           "Lines": {
-            "14": 5
+            "14": 14
           },
           "Branches": []
         },
@@ -331,7 +331,7 @@
         },
         "System.Void Esatto.Outreach.Domain.ValueObjects.Website::.ctor(System.String,System.String,System.String)": {
           "Lines": {
-            "11": 4
+            "11": 12
           },
           "Branches": []
         }
@@ -460,13 +460,13 @@
       "Esatto.Outreach.Domain.Entities.ApplicationUser": {
         "System.String Esatto.Outreach.Domain.Entities.ApplicationUser::get_FullName()": {
           "Lines": {
-            "13": 0
+            "13": 5
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Entities.ApplicationUser::get_CreatedUtc()": {
           "Lines": {
-            "18": 0
+            "18": 6
           },
           "Branches": []
         },
@@ -478,7 +478,7 @@
         },
         "System.Nullable`1<System.Guid> Esatto.Outreach.Domain.Entities.ApplicationUser::get_CompanyId()": {
           "Lines": {
-            "28": 0
+            "28": 2
           },
           "Branches": []
         },
@@ -1009,49 +1009,49 @@
       "Esatto.Outreach.Domain.Entities.Invitation": {
         "System.Guid Esatto.Outreach.Domain.Entities.Invitation::get_CompanyId()": {
           "Lines": {
-            "10": 0
+            "10": 8
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.Company Esatto.Outreach.Domain.Entities.Invitation::get_Company()": {
           "Lines": {
-            "11": 0
+            "11": 6
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Invitation::get_Email()": {
           "Lines": {
-            "13": 0
+            "13": 23
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Invitation::get_TokenHash()": {
           "Lines": {
-            "14": 0
+            "14": 12
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Invitation::get_CreatedById()": {
           "Lines": {
-            "16": 0
+            "16": 12
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.ApplicationUser Esatto.Outreach.Domain.Entities.Invitation::get_CreatedBy()": {
           "Lines": {
-            "17": 0
+            "17": 6
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Entities.Invitation::get_ExpiresAt()": {
           "Lines": {
-            "19": 0
+            "19": 12
           },
           "Branches": []
         },
         "System.Nullable`1<System.DateTime> Esatto.Outreach.Domain.Entities.Invitation::get_UsedAt()": {
           "Lines": {
-            "20": 0
+            "20": 7
           },
           "Branches": []
         }
@@ -1061,70 +1061,70 @@
       "Esatto.Outreach.Domain.Entities.OutreachPrompt": {
         "System.Guid Esatto.Outreach.Domain.Entities.OutreachPrompt::get_Id()": {
           "Lines": {
-            "8": 0
+            "8": 3
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.OutreachPrompt::get_Instructions()": {
           "Lines": {
-            "9": 0
+            "9": 6
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Enums.PromptType Esatto.Outreach.Domain.Entities.OutreachPrompt::get_Type()": {
           "Lines": {
-            "10": 0
+            "10": 3
           },
           "Branches": []
         },
         "System.Boolean Esatto.Outreach.Domain.Entities.OutreachPrompt::get_IsActive()": {
           "Lines": {
-            "11": 0
+            "11": 3
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.OutreachPrompt::get_UserId()": {
           "Lines": {
-            "12": 0
+            "12": 6
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Entities.OutreachPrompt::get_CreatedUtc()": {
           "Lines": {
-            "13": 0
+            "13": 3
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Entities.OutreachPrompt::get_UpdatedUtc()": {
           "Lines": {
-            "14": 0
+            "14": 3
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.ApplicationUser Esatto.Outreach.Domain.Entities.OutreachPrompt::get_User()": {
           "Lines": {
-            "17": 0
+            "17": 3
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.OutreachPrompt Esatto.Outreach.Domain.Entities.OutreachPrompt::Create(System.String,System.String,Esatto.Outreach.Domain.Enums.PromptType,System.Boolean)": {
           "Lines": {
-            "22": 0,
-            "23": 0,
+            "22": 3,
+            "23": 3,
             "24": 0,
-            "26": 0,
+            "26": 3,
             "27": 0,
-            "29": 0,
-            "30": 0,
-            "31": 0,
-            "32": 0,
-            "33": 0,
-            "34": 0,
-            "35": 0,
-            "36": 0,
-            "37": 0,
-            "38": 0,
-            "39": 0
+            "29": 3,
+            "30": 3,
+            "31": 3,
+            "32": 3,
+            "33": 3,
+            "34": 3,
+            "35": 3,
+            "36": 3,
+            "37": 3,
+            "38": 3,
+            "39": 3
           },
           "Branches": [
             {
@@ -1141,7 +1141,7 @@
               "EndOffset": 27,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 3
             },
             {
               "Line": 26,
@@ -1157,7 +1157,7 @@
               "EndOffset": 53,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 3
             }
           ]
         },
@@ -1209,7 +1209,7 @@
         },
         "System.Void Esatto.Outreach.Domain.Entities.OutreachPrompt::.ctor()": {
           "Lines": {
-            "19": 0
+            "19": 9
           },
           "Branches": []
         }
@@ -1253,139 +1253,139 @@
       "Esatto.Outreach.Domain.Entities.Prospect": {
         "Esatto.Outreach.Domain.Enums.CrmProvider Esatto.Outreach.Domain.Entities.Prospect::get_CrmSource()": {
           "Lines": {
-            "10": 20
+            "10": 37
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_ExternalCrmId()": {
           "Lines": {
-            "11": 9
+            "11": 18
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_Name()": {
           "Lines": {
-            "14": 17
+            "14": 35
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_About()": {
           "Lines": {
-            "15": 3
+            "15": 4
           },
           "Branches": []
         },
         "System.Nullable`1<System.DateTime> Esatto.Outreach.Domain.Entities.Prospect::get_CrmCreatedAt()": {
           "Lines": {
-            "16": 3
+            "16": 4
           },
           "Branches": []
         },
         "System.Nullable`1<System.DateTime> Esatto.Outreach.Domain.Entities.Prospect::get_CrmUpdatedAt()": {
           "Lines": {
-            "17": 3
+            "17": 4
           },
           "Branches": []
         },
         "System.Nullable`1<System.DateTime> Esatto.Outreach.Domain.Entities.Prospect::get_LastContactedAt()": {
           "Lines": {
-            "18": 3
+            "18": 4
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_PictureURL()": {
           "Lines": {
-            "19": 3
+            "19": 4
           },
           "Branches": []
         },
         "System.Boolean Esatto.Outreach.Domain.Entities.Prospect::get_IsPending()": {
           "Lines": {
-            "20": 21
+            "20": 38
           },
           "Branches": []
         },
         "System.Collections.Generic.List`1<Esatto.Outreach.Domain.ValueObjects.Website> Esatto.Outreach.Domain.Entities.Prospect::get_Websites()": {
           "Lines": {
-            "23": 15
+            "23": 32
           },
           "Branches": []
         },
         "System.Collections.Generic.List`1<Esatto.Outreach.Domain.ValueObjects.Tag> Esatto.Outreach.Domain.Entities.Prospect::get_Tags()": {
           "Lines": {
-            "24": 10
+            "24": 19
           },
           "Branches": []
         },
         "System.Collections.Generic.List`1<Esatto.Outreach.Domain.ValueObjects.CustomField> Esatto.Outreach.Domain.Entities.Prospect::get_CustomFields()": {
           "Lines": {
-            "25": 10
+            "25": 19
           },
           "Branches": []
         },
         "System.Collections.Generic.List`1<Esatto.Outreach.Domain.Entities.ContactPerson> Esatto.Outreach.Domain.Entities.Prospect::get_ContactPersons()": {
           "Lines": {
-            "27": 27
+            "27": 36
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_Notes()": {
           "Lines": {
-            "29": 6
+            "29": 15
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_MailTitle()": {
           "Lines": {
-            "30": 3
+            "30": 4
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_MailBodyPlain()": {
           "Lines": {
-            "31": 3
+            "31": 5
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_MailBodyHTML()": {
           "Lines": {
-            "32": 2
+            "32": 4
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_LinkedInMessage()": {
           "Lines": {
-            "33": 1
+            "33": 2
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_LastOpenAIResponseId()": {
           "Lines": {
-            "34": 0
+            "34": 2
           },
           "Branches": []
         },
         "System.Nullable`1<System.Guid> Esatto.Outreach.Domain.Entities.Prospect::get_EntityIntelligenceId()": {
           "Lines": {
-            "37": 0
+            "37": 1
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.EntityIntelligence Esatto.Outreach.Domain.Entities.Prospect::get_EntityIntelligence()": {
           "Lines": {
-            "40": 1
+            "40": 2
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Enums.ProspectStatus Esatto.Outreach.Domain.Entities.Prospect::get_Status()": {
           "Lines": {
-            "42": 9
+            "42": 18
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.Prospect::get_OwnerId()": {
           "Lines": {
-            "44": 12
+            "44": 29
           },
           "Branches": []
         },
@@ -1431,25 +1431,25 @@
         },
         "Esatto.Outreach.Domain.Entities.Prospect Esatto.Outreach.Domain.Entities.Prospect::CreateManual(System.String,System.String,System.Collections.Generic.List`1<System.String>,System.String)": {
           "Lines": {
-            "77": 8,
-            "78": 8,
+            "77": 16,
+            "78": 16,
             "79": 3,
-            "81": 5,
+            "81": 13,
             "82": 0,
-            "84": 5,
-            "85": 5,
-            "86": 5,
-            "87": 5,
-            "88": 5,
-            "89": 5,
-            "90": 5,
-            "91": 5,
-            "92": 5,
-            "93": 5,
-            "94": 4,
-            "95": 5,
-            "97": 5,
-            "98": 5
+            "84": 13,
+            "85": 13,
+            "86": 13,
+            "87": 13,
+            "88": 13,
+            "89": 13,
+            "90": 13,
+            "91": 13,
+            "92": 13,
+            "93": 13,
+            "94": 12,
+            "95": 13,
+            "97": 13,
+            "98": 13
           },
           "Branches": [
             {
@@ -1466,7 +1466,7 @@
               "EndOffset": 27,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 5
+              "Hits": 13
             },
             {
               "Line": 81,
@@ -1482,7 +1482,7 @@
               "EndOffset": 53,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 5
+              "Hits": 13
             },
             {
               "Line": 84,
@@ -1498,7 +1498,7 @@
               "EndOffset": 118,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 4
+              "Hits": 12
             },
             {
               "Line": 84,
@@ -1514,7 +1514,7 @@
               "EndOffset": 169,
               "Path": 1,
               "Ordinal": 7,
-              "Hits": 5
+              "Hits": 13
             }
           ]
         },
@@ -1831,22 +1831,22 @@
         },
         "System.Void Esatto.Outreach.Domain.Entities.Prospect::UpdateBasics(System.String,System.Collections.Generic.List`1<System.String>,System.String,System.String,System.String,System.String,System.String)": {
           "Lines": {
-            "195": 1,
-            "196": 1,
-            "197": 0,
-            "198": 0,
+            "195": 2,
+            "196": 2,
+            "197": 1,
+            "198": 1,
             "199": 0,
-            "200": 0,
-            "201": 0,
-            "204": 1,
+            "200": 1,
+            "201": 1,
+            "204": 2,
             "205": 0,
-            "208": 1,
-            "210": 2,
-            "211": 2,
-            "212": 2,
-            "213": 1,
-            "215": 1,
-            "216": 1
+            "208": 2,
+            "210": 3,
+            "211": 3,
+            "212": 3,
+            "213": 2,
+            "215": 2,
+            "216": 2
           },
           "Branches": [
             {
@@ -1855,7 +1855,7 @@
               "EndOffset": 9,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 198,
@@ -1871,7 +1871,7 @@
               "EndOffset": 36,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 196,
@@ -1879,7 +1879,7 @@
               "EndOffset": 50,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 204,
@@ -1895,7 +1895,7 @@
               "EndOffset": 107,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 208,
@@ -1911,7 +1911,7 @@
               "EndOffset": 123,
               "Path": 1,
               "Ordinal": 7,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 210,
@@ -1927,7 +1927,7 @@
               "EndOffset": 143,
               "Path": 1,
               "Ordinal": 9,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 211,
@@ -1943,7 +1943,7 @@
               "EndOffset": 163,
               "Path": 1,
               "Ordinal": 11,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 212,
@@ -1959,7 +1959,7 @@
               "EndOffset": 183,
               "Path": 1,
               "Ordinal": 13,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 213,
@@ -1975,7 +1975,7 @@
               "EndOffset": 203,
               "Path": 1,
               "Ordinal": 15,
-              "Hits": 1
+              "Hits": 2
             }
           ]
         },
@@ -2274,10 +2274,10 @@
         },
         "System.Void Esatto.Outreach.Domain.Entities.Prospect::SetLastOpenAIResponseId(System.String)": {
           "Lines": {
-            "281": 0,
-            "282": 0,
-            "283": 0,
-            "284": 0
+            "281": 1,
+            "282": 1,
+            "283": 1,
+            "284": 1
           },
           "Branches": [
             {
@@ -2286,7 +2286,7 @@
               "EndOffset": 10,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 282,
@@ -2434,7 +2434,7 @@
         },
         "System.Void Esatto.Outreach.Domain.Entities.Prospect::.ctor()": {
           "Lines": {
-            "65": 21
+            "65": 45
           },
           "Branches": []
         }
@@ -2444,31 +2444,31 @@
       "Esatto.Outreach.Domain.Entities.RefreshToken": {
         "System.String Esatto.Outreach.Domain.Entities.RefreshToken::get_Token()": {
           "Lines": {
-            "13": 0
+            "13": 12
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Domain.Entities.RefreshToken::get_UserId()": {
           "Lines": {
-            "18": 0
+            "18": 10
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Entities.RefreshToken::get_ExpiresAt()": {
           "Lines": {
-            "23": 0
+            "23": 6
           },
           "Branches": []
         },
         "System.Boolean Esatto.Outreach.Domain.Entities.RefreshToken::get_IsRevoked()": {
           "Lines": {
-            "28": 0
+            "28": 8
           },
           "Branches": []
         },
         "Esatto.Outreach.Domain.Entities.ApplicationUser Esatto.Outreach.Domain.Entities.RefreshToken::get_User()": {
           "Lines": {
-            "33": 0
+            "33": 10
           },
           "Branches": []
         }
@@ -3830,25 +3830,25 @@
       "Esatto.Outreach.Domain.Common.Entity": {
         "System.Guid Esatto.Outreach.Domain.Common.Entity::get_Id()": {
           "Lines": {
-            "5": 38
+            "5": 77
           },
           "Branches": []
         },
         "System.DateTime Esatto.Outreach.Domain.Common.Entity::get_CreatedUtc()": {
           "Lines": {
-            "6": 23
+            "6": 43
           },
           "Branches": []
         },
         "System.Nullable`1<System.DateTime> Esatto.Outreach.Domain.Common.Entity::get_UpdatedUtc()": {
           "Lines": {
-            "7": 15
+            "7": 18
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Domain.Common.Entity::Touch()": {
           "Lines": {
-            "9": 14
+            "9": 16
           },
           "Branches": []
         }
@@ -7016,7 +7016,7 @@
       "Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect": {
         "System.Void Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect::.ctor(Esatto.Outreach.Application.Abstractions.Repositories.IProspectRepository)": {
           "Lines": {
-            "18": 0
+            "18": 8
           },
           "Branches": []
         }
@@ -7024,25 +7024,25 @@
       "Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect/<Handle>d__2": {
         "System.Void Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect/<Handle>d__2::MoveNext()": {
           "Lines": {
-            "21": 0,
-            "22": 0,
-            "23": 0,
-            "26": 0,
-            "27": 0,
-            "31": 0,
-            "32": 0,
-            "33": 0,
-            "34": 0,
-            "35": 0,
-            "36": 0,
-            "37": 0,
-            "38": 0,
-            "39": 0,
-            "41": 0,
+            "21": 4,
+            "22": 4,
+            "23": 5,
+            "26": 3,
+            "27": 2,
+            "31": 1,
+            "32": 1,
+            "33": 1,
+            "34": 1,
+            "35": 1,
+            "36": 1,
+            "37": 1,
+            "38": 1,
+            "39": 1,
+            "41": 1,
             "42": 0,
-            "44": 0,
-            "45": 0,
-            "46": 0
+            "44": 1,
+            "45": 1,
+            "46": 2
           },
           "Branches": [
             {
@@ -7051,7 +7051,7 @@
               "EndOffset": 183,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 23,
@@ -7059,7 +7059,7 @@
               "EndOffset": 190,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 3
             },
             {
               "Line": 26,
@@ -7067,7 +7067,7 @@
               "EndOffset": 218,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 2
             },
             {
               "Line": 26,
@@ -7075,7 +7075,7 @@
               "EndOffset": 229,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 41,
@@ -7091,7 +7091,7 @@
               "EndOffset": 376,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 0
+              "Hits": 1
             }
           ]
         }
@@ -7897,228 +7897,181 @@
       "Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect": {
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::LoadEsattoCompanyInfo()": {
           "Lines": {
-            "40": 0,
-            "41": 0,
-            "43": 0,
-            "44": 0,
-            "45": 0,
-            "48": 0,
-            "49": 0,
-            "50": 0,
-            "51": 0,
-            "52": 0,
-            "53": 0,
-            "55": 0,
-            "56": 0,
-            "57": 0,
-            "58": 0,
-            "59": 0,
-            "60": 0,
-            "61": 0,
-            "62": 0,
-            "63": 0,
-            "64": 0
+            "40": 4,
+            "41": 4,
+            "42": 1,
+            "43": 1,
+            "44": 1,
+            "45": 4
           },
           "Branches": [
             {
               "Line": 41,
               "Offset": 11,
-              "EndOffset": 18,
-              "Path": 1,
-              "Ordinal": 1,
-              "Hits": 0
-            },
-            {
-              "Line": 45,
-              "Offset": 46,
-              "EndOffset": 48,
+              "EndOffset": 13,
               "Path": 0,
-              "Ordinal": 2,
-              "Hits": 0
-            },
-            {
-              "Line": 45,
-              "Offset": 46,
-              "EndOffset": 50,
-              "Path": 1,
-              "Ordinal": 3,
-              "Hits": 0
-            },
-            {
-              "Line": 50,
-              "Offset": 85,
-              "EndOffset": 87,
-              "Path": 0,
-              "Ordinal": 4,
-              "Hits": 0
-            },
-            {
-              "Line": 50,
-              "Offset": 85,
-              "EndOffset": 103,
-              "Path": 1,
-              "Ordinal": 5,
-              "Hits": 0
+              "Ordinal": 0,
+              "Hits": 1
             },
             {
               "Line": 41,
               "Offset": 11,
-              "EndOffset": 147,
-              "Path": 0,
-              "Ordinal": 0,
-              "Hits": 0
+              "EndOffset": 25,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 4
             }
           ]
         },
         "System.String Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::BuildInitialMailContext(System.String,System.String)": {
           "Lines": {
-            "116": 0,
-            "118": 0,
-            "119": 0,
-            "120": 0,
-            "121": 0,
-            "122": 0,
-            "123": 0,
-            "124": 0,
-            "125": 0,
-            "126": 0
+            "100": 1,
+            "102": 1,
+            "103": 1,
+            "104": 1,
+            "105": 1,
+            "106": 1,
+            "107": 1,
+            "108": 1,
+            "109": 1,
+            "110": 1
           },
           "Branches": [
             {
-              "Line": 118,
+              "Line": 102,
               "Offset": 28,
               "EndOffset": 30,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 118,
+              "Line": 102,
               "Offset": 28,
               "EndOffset": 36,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 118,
+              "Line": 102,
               "Offset": 59,
               "EndOffset": 61,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 118,
+              "Line": 102,
               "Offset": 59,
               "EndOffset": 67,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 1
             }
           ]
         },
         "System.String Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::GetJsonFormatReminder()": {
           "Lines": {
-            "129": 0,
-            "130": 0,
-            "131": 0,
-            "132": 0,
-            "133": 0,
-            "134": 0,
-            "135": 0,
-            "136": 0,
-            "137": 0,
-            "138": 0,
-            "139": 0,
-            "140": 0,
-            "141": 0,
-            "142": 0
+            "113": 1,
+            "114": 1,
+            "115": 1,
+            "116": 1,
+            "117": 1,
+            "118": 1,
+            "119": 1,
+            "120": 1,
+            "121": 1,
+            "122": 1,
+            "123": 1,
+            "124": 1,
+            "125": 1,
+            "126": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::GetSystemPrompt(System.String)": {
           "Lines": {
-            "145": 0,
-            "146": 0,
-            "147": 0,
-            "148": 0,
-            "149": 0,
-            "150": 0,
-            "151": 0,
-            "152": 0,
-            "153": 0,
-            "154": 0,
-            "156": 0,
-            "157": 0,
-            "158": 0,
-            "159": 0,
-            "160": 0,
-            "161": 0,
-            "162": 0,
-            "163": 0,
-            "164": 0,
-            "165": 0,
-            "166": 0,
-            "167": 0,
-            "168": 0,
-            "169": 0,
-            "170": 0,
-            "171": 0,
-            "172": 0,
-            "173": 0,
-            "174": 0,
-            "175": 0,
-            "176": 0,
-            "177": 0,
-            "178": 0,
-            "179": 0,
-            "180": 0,
-            "181": 0,
-            "182": 0,
-            "183": 0,
-            "184": 0
+            "129": 1,
+            "130": 1,
+            "131": 1,
+            "132": 1,
+            "133": 1,
+            "134": 1,
+            "135": 1,
+            "136": 1,
+            "137": 1,
+            "138": 1,
+            "140": 1,
+            "141": 1,
+            "142": 1,
+            "143": 1,
+            "144": 1,
+            "145": 1,
+            "146": 1,
+            "147": 1,
+            "148": 1,
+            "149": 1,
+            "150": 1,
+            "151": 1,
+            "152": 1,
+            "153": 1,
+            "154": 1,
+            "155": 1,
+            "156": 1,
+            "157": 1,
+            "158": 1,
+            "159": 1,
+            "160": 1,
+            "161": 1,
+            "162": 1,
+            "163": 1,
+            "164": 1,
+            "165": 1,
+            "166": 1,
+            "167": 1,
+            "168": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::FormatEntityContext(Esatto.Outreach.Application.DTOs.Intelligence.EntityIntelligenceDto)": {
           "Lines": {
-            "187": 0,
-            "188": 0,
+            "171": 0,
+            "172": 0,
+            "175": 0,
+            "176": 0,
+            "177": 0,
+            "178": 0,
+            "181": 0,
+            "182": 0,
+            "183": 0,
+            "186": 0,
+            "189": 0,
+            "190": 0,
             "191": 0,
             "192": 0,
             "193": 0,
-            "194": 0,
+            "196": 0,
             "197": 0,
             "198": 0,
             "199": 0,
+            "200": 0,
+            "201": 0,
             "202": 0,
-            "205": 0,
+            "203": 0,
             "206": 0,
             "207": 0,
             "208": 0,
             "209": 0,
+            "210": 0,
+            "211": 0,
             "212": 0,
-            "213": 0,
             "214": 0,
-            "215": 0,
-            "216": 0,
-            "217": 0,
-            "218": 0,
-            "219": 0,
-            "222": 0,
-            "223": 0,
-            "224": 0,
-            "225": 0,
-            "226": 0,
-            "227": 0,
-            "228": 0,
-            "230": 0,
-            "231": 0
+            "215": 0
           },
           "Branches": [
             {
-              "Line": 191,
+              "Line": 175,
               "Offset": 23,
               "EndOffset": 25,
               "Path": 0,
@@ -8126,7 +8079,7 @@
               "Hits": 0
             },
             {
-              "Line": 191,
+              "Line": 175,
               "Offset": 23,
               "EndOffset": 76,
               "Path": 1,
@@ -8134,7 +8087,7 @@
               "Hits": 0
             },
             {
-              "Line": 197,
+              "Line": 181,
               "Offset": 89,
               "EndOffset": 94,
               "Path": 0,
@@ -8142,7 +8095,7 @@
               "Hits": 0
             },
             {
-              "Line": 212,
+              "Line": 196,
               "Offset": 486,
               "EndOffset": 488,
               "Path": 0,
@@ -8150,7 +8103,7 @@
               "Hits": 0
             },
             {
-              "Line": 212,
+              "Line": 196,
               "Offset": 486,
               "EndOffset": 507,
               "Path": 1,
@@ -8158,7 +8111,7 @@
               "Hits": 0
             },
             {
-              "Line": 212,
+              "Line": 196,
               "Offset": 512,
               "EndOffset": 517,
               "Path": 0,
@@ -8166,7 +8119,7 @@
               "Hits": 0
             },
             {
-              "Line": 215,
+              "Line": 199,
               "Offset": 658,
               "EndOffset": 552,
               "Path": 1,
@@ -8174,7 +8127,7 @@
               "Hits": 0
             },
             {
-              "Line": 215,
+              "Line": 199,
               "Offset": 658,
               "EndOffset": 660,
               "Path": 0,
@@ -8182,7 +8135,7 @@
               "Hits": 0
             },
             {
-              "Line": 217,
+              "Line": 201,
               "Offset": 805,
               "EndOffset": 699,
               "Path": 1,
@@ -8190,7 +8143,7 @@
               "Hits": 0
             },
             {
-              "Line": 217,
+              "Line": 201,
               "Offset": 805,
               "EndOffset": 807,
               "Path": 0,
@@ -8198,7 +8151,7 @@
               "Hits": 0
             },
             {
-              "Line": 212,
+              "Line": 196,
               "Offset": 512,
               "EndOffset": 825,
               "Path": 1,
@@ -8206,7 +8159,7 @@
               "Hits": 0
             },
             {
-              "Line": 222,
+              "Line": 206,
               "Offset": 841,
               "EndOffset": 846,
               "Path": 0,
@@ -8214,7 +8167,7 @@
               "Hits": 0
             },
             {
-              "Line": 225,
+              "Line": 209,
               "Offset": 1010,
               "EndOffset": 876,
               "Path": 1,
@@ -8222,7 +8175,7 @@
               "Hits": 0
             },
             {
-              "Line": 225,
+              "Line": 209,
               "Offset": 1010,
               "EndOffset": 1015,
               "Path": 0,
@@ -8230,7 +8183,7 @@
               "Hits": 0
             },
             {
-              "Line": 222,
+              "Line": 206,
               "Offset": 841,
               "EndOffset": 1033,
               "Path": 1,
@@ -8238,7 +8191,7 @@
               "Hits": 0
             },
             {
-              "Line": 197,
+              "Line": 181,
               "Offset": 89,
               "EndOffset": 1034,
               "Path": 1,
@@ -8249,24 +8202,24 @@
         },
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::.ctor(Esatto.Outreach.Application.Abstractions.Repositories.IProspectRepository,Esatto.Outreach.Application.Abstractions.Repositories.IEntityIntelligenceRepository,Esatto.Outreach.Application.Abstractions.Clients.IOpenAIChatClient,Microsoft.Extensions.Logging.ILogger`1<Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect>)": {
           "Lines": {
-            "26": 0,
-            "27": 0,
-            "28": 0,
-            "29": 0,
-            "30": 0,
-            "31": 0,
-            "32": 0,
-            "33": 0,
-            "34": 0,
-            "35": 0,
-            "36": 0,
-            "37": 0
+            "26": 4,
+            "27": 4,
+            "28": 4,
+            "29": 4,
+            "30": 4,
+            "31": 4,
+            "32": 4,
+            "33": 4,
+            "34": 4,
+            "35": 4,
+            "36": 4,
+            "37": 4
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect::.cctor()": {
           "Lines": {
-            "24": 0
+            "24": 1
           },
           "Branches": []
         }
@@ -8274,123 +8227,141 @@
       "Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect/<Handle>d__8": {
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect/<Handle>d__8::MoveNext()": {
           "Lines": {
+            "48": 4,
+            "49": 4,
+            "50": 4,
+            "52": 3,
+            "53": 2,
+            "55": 1,
+            "56": 1,
+            "57": 1,
+            "59": 1,
+            "60": 1,
+            "63": 1,
+            "64": 1,
+            "65": 0,
+            "66": 0,
             "67": 0,
             "68": 0,
             "69": 0,
+            "70": 0,
             "71": 0,
             "72": 0,
-            "73": 0,
-            "75": 0,
-            "76": 0,
-            "79": 0,
-            "80": 0,
-            "81": 0,
-            "82": 0,
-            "83": 0,
-            "84": 0,
-            "85": 0,
-            "86": 0,
-            "87": 0,
-            "88": 0,
-            "90": 0,
-            "91": 0,
-            "94": 0,
-            "96": 0,
-            "98": 0,
-            "99": 0,
-            "100": 0,
-            "101": 0,
-            "102": 0,
-            "103": 0,
-            "104": 0,
-            "105": 0,
-            "106": 0,
-            "107": 0,
-            "109": 0,
-            "110": 0,
-            "112": 0,
-            "113": 0
+            "74": 1,
+            "75": 1,
+            "78": 1,
+            "80": 1,
+            "82": 1,
+            "83": 1,
+            "84": 1,
+            "85": 1,
+            "86": 1,
+            "87": 1,
+            "88": 1,
+            "89": 1,
+            "90": 1,
+            "91": 1,
+            "93": 1,
+            "94": 1,
+            "96": 1,
+            "97": 1
           },
           "Branches": [
             {
-              "Line": 68,
+              "Line": 49,
               "Offset": 180,
               "EndOffset": 182,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 68,
+              "Line": 49,
               "Offset": 180,
               "EndOffset": 194,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 3
             },
             {
-              "Line": 71,
-              "Offset": 223,
-              "EndOffset": 225,
+              "Line": 52,
+              "Offset": 232,
+              "EndOffset": 234,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 2
             },
             {
-              "Line": 71,
-              "Offset": 223,
-              "EndOffset": 246,
+              "Line": 52,
+              "Offset": 232,
+              "EndOffset": 245,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 80,
-              "Offset": 388,
-              "EndOffset": 393,
+              "Line": 55,
+              "Offset": 262,
+              "EndOffset": 264,
               "Path": 0,
               "Ordinal": 4,
-              "Hits": 0
+              "Hits": 1
             },
             {
-              "Line": 83,
-              "Offset": 566,
-              "EndOffset": 568,
-              "Path": 0,
-              "Ordinal": 6,
-              "Hits": 0
-            },
-            {
-              "Line": 83,
-              "Offset": 566,
-              "EndOffset": 617,
-              "Path": 1,
-              "Ordinal": 7,
-              "Hits": 0
-            },
-            {
-              "Line": 80,
-              "Offset": 388,
-              "EndOffset": 625,
+              "Line": 55,
+              "Offset": 262,
+              "EndOffset": 285,
               "Path": 1,
               "Ordinal": 5,
               "Hits": 0
             },
             {
-              "Line": 94,
-              "Offset": 682,
-              "EndOffset": 684,
+              "Line": 64,
+              "Offset": 427,
+              "EndOffset": 432,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 0
+            },
+            {
+              "Line": 67,
+              "Offset": 605,
+              "EndOffset": 607,
               "Path": 0,
               "Ordinal": 8,
               "Hits": 0
             },
             {
-              "Line": 94,
-              "Offset": 682,
-              "EndOffset": 687,
+              "Line": 67,
+              "Offset": 605,
+              "EndOffset": 656,
               "Path": 1,
               "Ordinal": 9,
               "Hits": 0
+            },
+            {
+              "Line": 64,
+              "Offset": 427,
+              "EndOffset": 664,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 1
+            },
+            {
+              "Line": 78,
+              "Offset": 721,
+              "EndOffset": 723,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 0
+            },
+            {
+              "Line": 78,
+              "Offset": 721,
+              "EndOffset": 726,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 1
             }
           ]
         }
@@ -8981,19 +8952,19 @@
       "Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence": {
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence::.ctor(Esatto.Outreach.Application.Abstractions.Repositories.IEntityIntelligenceRepository,Esatto.Outreach.Application.Abstractions.Repositories.IProspectRepository,Esatto.Outreach.Application.Abstractions.Services.IContactDiscoveryProvider,Esatto.Outreach.Application.Abstractions.Services.ICompanyEnrichmentService,Microsoft.Extensions.Logging.ILogger`1<Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence>)": {
           "Lines": {
-            "25": 0,
-            "26": 0,
-            "27": 0,
-            "28": 0,
-            "29": 0,
-            "30": 0,
-            "31": 0,
-            "32": 0,
-            "33": 0,
-            "34": 0,
-            "35": 0,
-            "36": 0,
-            "37": 0
+            "25": 3,
+            "26": 3,
+            "27": 3,
+            "28": 3,
+            "29": 3,
+            "30": 3,
+            "31": 3,
+            "32": 3,
+            "33": 3,
+            "34": 3,
+            "35": 3,
+            "36": 3,
+            "37": 3
           },
           "Branches": []
         }
@@ -9001,7 +8972,7 @@
       "Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence/<>c__DisplayClass6_0": {
         "System.Boolean Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence/<>c__DisplayClass6_0::<Handle>b__0(Esatto.Outreach.Domain.Entities.ContactPerson)": {
           "Lines": {
-            "73": 0
+            "76": 0
           },
           "Branches": []
         }
@@ -9009,32 +8980,31 @@
       "Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence/<Handle>d__6": {
         "System.Void Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence/<Handle>d__6::MoveNext()": {
           "Lines": {
-            "40": 0,
-            "42": 0,
-            "43": 0,
-            "45": 0,
+            "40": 3,
+            "42": 3,
+            "43": 3,
+            "45": 2,
+            "46": 2,
             "48": 0,
-            "49": 0,
-            "53": 0,
-            "57": 0,
-            "58": 0,
+            "51": 0,
+            "52": 0,
+            "56": 0,
             "60": 0,
+            "61": 0,
             "63": 0,
-            "64": 0,
-            "65": 0,
             "66": 0,
             "67": 0,
+            "68": 0,
+            "69": 0,
             "70": 0,
-            "72": 0,
+            "73": 0,
             "75": 0,
-            "76": 0,
-            "77": 0,
             "78": 0,
             "79": 0,
             "80": 0,
+            "81": 0,
             "82": 0,
             "83": 0,
-            "84": 0,
             "85": 0,
             "86": 0,
             "87": 0,
@@ -9042,30 +9012,33 @@
             "89": 0,
             "90": 0,
             "91": 0,
+            "92": 0,
+            "93": 0,
             "94": 0,
-            "95": 0,
-            "96": 0,
             "97": 0,
             "98": 0,
             "99": 0,
             "100": 0,
             "101": 0,
+            "102": 0,
             "103": 0,
             "104": 0,
             "106": 0,
             "107": 0,
-            "108": 0,
             "109": 0,
             "110": 0,
             "111": 0,
+            "112": 0,
+            "113": 0,
             "114": 0,
-            "118": 0,
-            "119": 0,
-            "120": 0,
+            "117": 0,
             "121": 0,
+            "122": 0,
+            "123": 0,
             "124": 0,
-            "126": 0,
-            "127": 0
+            "127": 0,
+            "129": 0,
+            "130": 0
           },
           "Branches": [
             {
@@ -9074,7 +9047,7 @@
               "EndOffset": 218,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 42,
@@ -9082,150 +9055,166 @@
               "EndOffset": 282,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 2
             },
             {
-              "Line": 48,
-              "Offset": 349,
-              "EndOffset": 351,
+              "Line": 45,
+              "Offset": 320,
+              "EndOffset": 322,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 2
             },
             {
-              "Line": 48,
-              "Offset": 349,
-              "EndOffset": 373,
+              "Line": 45,
+              "Offset": 320,
+              "EndOffset": 333,
               "Path": 1,
               "Ordinal": 3,
               "Hits": 0
             },
             {
-              "Line": 53,
-              "Offset": 568,
-              "EndOffset": 570,
+              "Line": 51,
+              "Offset": 388,
+              "EndOffset": 390,
               "Path": 0,
               "Ordinal": 4,
               "Hits": 0
             },
             {
-              "Line": 53,
-              "Offset": 568,
-              "EndOffset": 576,
+              "Line": 51,
+              "Offset": 388,
+              "EndOffset": 412,
               "Path": 1,
               "Ordinal": 5,
               "Hits": 0
             },
             {
-              "Line": 57,
-              "Offset": 838,
-              "EndOffset": 840,
+              "Line": 56,
+              "Offset": 607,
+              "EndOffset": 609,
               "Path": 0,
               "Ordinal": 6,
               "Hits": 0
             },
             {
-              "Line": 57,
-              "Offset": 838,
-              "EndOffset": 904,
+              "Line": 56,
+              "Offset": 607,
+              "EndOffset": 615,
               "Path": 1,
               "Ordinal": 7,
               "Hits": 0
             },
             {
-              "Line": 63,
-              "Offset": 1076,
-              "EndOffset": 1081,
+              "Line": 60,
+              "Offset": 877,
+              "EndOffset": 879,
               "Path": 0,
               "Ordinal": 8,
               "Hits": 0
             },
             {
-              "Line": 65,
-              "Offset": 1674,
-              "EndOffset": 1114,
-              "Path": 1,
-              "Ordinal": 13,
-              "Hits": 0
-            },
-            {
-              "Line": 75,
-              "Offset": 1279,
-              "EndOffset": 1284,
-              "Path": 0,
-              "Ordinal": 10,
-              "Hits": 0
-            },
-            {
-              "Line": 75,
-              "Offset": 1279,
-              "EndOffset": 1529,
-              "Path": 1,
-              "Ordinal": 11,
-              "Hits": 0
-            },
-            {
-              "Line": 65,
-              "Offset": 1674,
-              "EndOffset": 1679,
-              "Path": 0,
-              "Ordinal": 12,
-              "Hits": 0
-            },
-            {
-              "Line": 63,
-              "Offset": 1076,
-              "EndOffset": 1717,
+              "Line": 60,
+              "Offset": 877,
+              "EndOffset": 943,
               "Path": 1,
               "Ordinal": 9,
               "Hits": 0
             },
             {
-              "Line": 94,
-              "Offset": 1730,
-              "EndOffset": 1735,
+              "Line": 66,
+              "Offset": 1115,
+              "EndOffset": 1120,
               "Path": 0,
-              "Ordinal": 14,
+              "Ordinal": 10,
               "Hits": 0
             },
             {
-              "Line": 94,
-              "Offset": 1730,
-              "EndOffset": 1930,
+              "Line": 68,
+              "Offset": 1713,
+              "EndOffset": 1153,
               "Path": 1,
               "Ordinal": 15,
               "Hits": 0
             },
             {
-              "Line": 118,
-              "Offset": 2030,
-              "EndOffset": 2032,
+              "Line": 78,
+              "Offset": 1318,
+              "EndOffset": 1323,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 0
+            },
+            {
+              "Line": 78,
+              "Offset": 1318,
+              "EndOffset": 1568,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 0
+            },
+            {
+              "Line": 68,
+              "Offset": 1713,
+              "EndOffset": 1718,
+              "Path": 0,
+              "Ordinal": 14,
+              "Hits": 0
+            },
+            {
+              "Line": 66,
+              "Offset": 1115,
+              "EndOffset": 1756,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 0
+            },
+            {
+              "Line": 97,
+              "Offset": 1769,
+              "EndOffset": 1774,
               "Path": 0,
               "Ordinal": 16,
               "Hits": 0
             },
             {
-              "Line": 118,
-              "Offset": 2030,
-              "EndOffset": 2035,
+              "Line": 97,
+              "Offset": 1769,
+              "EndOffset": 1969,
               "Path": 1,
               "Ordinal": 17,
               "Hits": 0
             },
             {
-              "Line": 118,
-              "Offset": 2053,
-              "EndOffset": 2055,
+              "Line": 121,
+              "Offset": 2069,
+              "EndOffset": 2071,
               "Path": 0,
               "Ordinal": 18,
               "Hits": 0
             },
             {
-              "Line": 118,
-              "Offset": 2053,
-              "EndOffset": 2085,
+              "Line": 121,
+              "Offset": 2069,
+              "EndOffset": 2074,
               "Path": 1,
               "Ordinal": 19,
+              "Hits": 0
+            },
+            {
+              "Line": 121,
+              "Offset": 2092,
+              "EndOffset": 2094,
+              "Path": 0,
+              "Ordinal": 20,
+              "Hits": 0
+            },
+            {
+              "Line": 121,
+              "Offset": 2092,
+              "EndOffset": 2124,
+              "Path": 1,
+              "Ordinal": 21,
               "Hits": 0
             }
           ]
@@ -9441,29 +9430,29 @@
       "Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation": {
         "System.String Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation::ComputeSha256(System.String)": {
           "Lines": {
-            "132": 0,
-            "133": 0,
-            "134": 0,
-            "135": 0,
-            "136": 0
+            "132": 7,
+            "133": 7,
+            "134": 7,
+            "135": 7,
+            "136": 7
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation::.ctor(Esatto.Outreach.Application.Abstractions.Repositories.IInvitationRepository,Microsoft.AspNetCore.Identity.UserManager`1<Esatto.Outreach.Domain.Entities.ApplicationUser>,Esatto.Outreach.Application.Abstractions.Services.IJwtTokenService,Esatto.Outreach.Application.Abstractions.Repositories.IRefreshTokenRepository,Esatto.Outreach.Application.Abstractions.Repositories.IOutreachPromptRepository)": {
           "Lines": {
-            "43": 0,
-            "44": 0,
-            "45": 0,
-            "46": 0,
-            "47": 0,
-            "48": 0,
-            "49": 0,
-            "50": 0,
-            "51": 0,
-            "52": 0,
-            "53": 0,
-            "54": 0,
-            "55": 0
+            "43": 10,
+            "44": 10,
+            "45": 10,
+            "46": 10,
+            "47": 10,
+            "48": 10,
+            "49": 10,
+            "50": 10,
+            "51": 10,
+            "52": 10,
+            "53": 10,
+            "54": 10,
+            "55": 10
           },
           "Branches": []
         }
@@ -9471,7 +9460,7 @@
       "Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation/<>c": {
         "System.String Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation/<>c::<Handle>b__7_0(Microsoft.AspNetCore.Identity.IdentityError)": {
           "Lines": {
-            "95": 0
+            "95": 2
           },
           "Branches": []
         }
@@ -9479,59 +9468,59 @@
       "Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation/<Handle>d__7": {
         "System.Void Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation/<Handle>d__7::MoveNext()": {
           "Lines": {
-            "60": 0,
-            "61": 0,
-            "62": 0,
-            "64": 0,
-            "66": 0,
-            "67": 0,
-            "68": 0,
-            "69": 0,
-            "70": 0,
-            "71": 0,
-            "72": 0,
-            "74": 0,
-            "75": 0,
-            "77": 0,
-            "78": 0,
-            "79": 0,
-            "83": 0,
-            "84": 0,
-            "85": 0,
-            "86": 0,
-            "87": 0,
-            "88": 0,
-            "89": 0,
-            "90": 0,
-            "92": 0,
-            "93": 0,
-            "94": 0,
-            "96": 0,
-            "99": 0,
-            "100": 0,
-            "101": 0,
-            "102": 0,
-            "103": 0,
-            "104": 0,
-            "106": 0,
+            "60": 10,
+            "61": 10,
+            "62": 3,
+            "64": 7,
+            "66": 7,
+            "67": 7,
+            "68": 1,
+            "69": 6,
+            "70": 1,
+            "71": 5,
+            "72": 1,
+            "74": 4,
+            "75": 1,
+            "77": 3,
+            "78": 3,
+            "79": 1,
+            "83": 2,
+            "84": 2,
+            "85": 2,
+            "86": 2,
+            "87": 2,
+            "88": 2,
+            "89": 2,
+            "90": 2,
+            "92": 2,
+            "93": 2,
+            "94": 1,
+            "96": 1,
+            "99": 1,
+            "100": 1,
+            "101": 1,
+            "102": 1,
+            "103": 1,
+            "104": 1,
+            "106": 1,
             "107": 0,
             "108": 0,
-            "111": 0,
-            "112": 0,
-            "114": 0,
-            "115": 0,
-            "116": 0,
-            "117": 0,
-            "118": 0,
-            "119": 0,
-            "121": 0,
-            "122": 0,
-            "123": 0,
-            "124": 0,
-            "125": 0,
-            "126": 0,
-            "128": 0,
-            "129": 0
+            "111": 1,
+            "112": 1,
+            "114": 1,
+            "115": 1,
+            "116": 1,
+            "117": 1,
+            "118": 1,
+            "119": 1,
+            "121": 1,
+            "122": 1,
+            "123": 1,
+            "124": 1,
+            "125": 1,
+            "126": 1,
+            "128": 1,
+            "129": 10
           },
           "Branches": [
             {
@@ -9540,7 +9529,7 @@
               "EndOffset": 108,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 3
             },
             {
               "Line": 61,
@@ -9548,7 +9537,7 @@
               "EndOffset": 126,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 7
             },
             {
               "Line": 67,
@@ -9556,7 +9545,7 @@
               "EndOffset": 311,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 67,
@@ -9564,7 +9553,7 @@
               "EndOffset": 329,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 6
             },
             {
               "Line": 69,
@@ -9572,7 +9561,7 @@
               "EndOffset": 355,
               "Path": 0,
               "Ordinal": 4,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 69,
@@ -9580,7 +9569,7 @@
               "EndOffset": 373,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 0
+              "Hits": 5
             },
             {
               "Line": 71,
@@ -9588,7 +9577,7 @@
               "EndOffset": 400,
               "Path": 0,
               "Ordinal": 6,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 71,
@@ -9596,7 +9585,7 @@
               "EndOffset": 418,
               "Path": 1,
               "Ordinal": 7,
-              "Hits": 0
+              "Hits": 4
             },
             {
               "Line": 74,
@@ -9604,7 +9593,7 @@
               "EndOffset": 455,
               "Path": 0,
               "Ordinal": 8,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 74,
@@ -9612,7 +9601,7 @@
               "EndOffset": 473,
               "Path": 1,
               "Ordinal": 9,
-              "Hits": 0
+              "Hits": 3
             },
             {
               "Line": 78,
@@ -9620,7 +9609,7 @@
               "EndOffset": 633,
               "Path": 0,
               "Ordinal": 10,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 78,
@@ -9628,7 +9617,7 @@
               "EndOffset": 651,
               "Path": 1,
               "Ordinal": 11,
-              "Hits": 0
+              "Hits": 2
             },
             {
               "Line": 93,
@@ -9636,7 +9625,7 @@
               "EndOffset": 922,
               "Path": 0,
               "Ordinal": 12,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 93,
@@ -9644,7 +9633,7 @@
               "EndOffset": 1015,
               "Path": 1,
               "Ordinal": 13,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 106,
@@ -9660,7 +9649,7 @@
               "EndOffset": 1634,
               "Path": 1,
               "Ordinal": 15,
-              "Hits": 0
+              "Hits": 1
             }
           ]
         }
@@ -9900,15 +9889,15 @@
       "Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken": {
         "System.Void Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken::.ctor(Microsoft.AspNetCore.Identity.UserManager`1<Esatto.Outreach.Domain.Entities.ApplicationUser>,Esatto.Outreach.Application.Abstractions.Services.IJwtTokenService,Esatto.Outreach.Application.Abstractions.Repositories.IRefreshTokenRepository)": {
           "Lines": {
-            "19": 0,
-            "20": 0,
-            "21": 0,
-            "22": 0,
-            "23": 0,
-            "24": 0,
-            "25": 0,
-            "26": 0,
-            "27": 0
+            "19": 4,
+            "20": 4,
+            "21": 4,
+            "22": 4,
+            "23": 4,
+            "24": 4,
+            "25": 4,
+            "26": 4,
+            "27": 4
           },
           "Branches": []
         }
@@ -9916,32 +9905,32 @@
       "Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken/<Handle>d__4": {
         "System.Void Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken/<Handle>d__4::MoveNext()": {
           "Lines": {
-            "32": 0,
-            "34": 0,
-            "36": 0,
-            "37": 0,
-            "39": 0,
-            "40": 0,
-            "42": 0,
-            "43": 0,
-            "46": 0,
-            "47": 0,
-            "50": 0,
-            "51": 0,
-            "54": 0,
-            "55": 0,
-            "56": 0,
-            "57": 0,
-            "58": 0,
-            "59": 0,
-            "61": 0,
-            "62": 0,
-            "63": 0,
-            "64": 0,
-            "65": 0,
-            "66": 0,
-            "68": 0,
-            "69": 0
+            "32": 4,
+            "34": 4,
+            "36": 4,
+            "37": 1,
+            "39": 3,
+            "40": 1,
+            "42": 2,
+            "43": 1,
+            "46": 1,
+            "47": 1,
+            "50": 1,
+            "51": 1,
+            "54": 1,
+            "55": 1,
+            "56": 1,
+            "57": 1,
+            "58": 1,
+            "59": 1,
+            "61": 1,
+            "62": 1,
+            "63": 1,
+            "64": 1,
+            "65": 1,
+            "66": 1,
+            "68": 1,
+            "69": 4
           },
           "Branches": [
             {
@@ -9950,7 +9939,7 @@
               "EndOffset": 202,
               "Path": 0,
               "Ordinal": 0,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 36,
@@ -9958,7 +9947,7 @@
               "EndOffset": 220,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 0
+              "Hits": 3
             },
             {
               "Line": 39,
@@ -9966,7 +9955,7 @@
               "EndOffset": 237,
               "Path": 0,
               "Ordinal": 2,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 39,
@@ -9974,7 +9963,7 @@
               "EndOffset": 255,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 0
+              "Hits": 2
             },
             {
               "Line": 42,
@@ -9982,7 +9971,7 @@
               "EndOffset": 282,
               "Path": 0,
               "Ordinal": 4,
-              "Hits": 0
+              "Hits": 1
             },
             {
               "Line": 42,
@@ -9990,7 +9979,7 @@
               "EndOffset": 300,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 0
+              "Hits": 1
             }
           ]
         }
@@ -11158,7 +11147,7 @@
       "Esatto.Outreach.Application.DTOs.Prospects.WebsiteDto": {
         "System.String Esatto.Outreach.Application.DTOs.Prospects.WebsiteDto::get_Url()": {
           "Lines": {
-            "3": 1
+            "3": 2
           },
           "Branches": []
         }
@@ -11184,55 +11173,55 @@
       "Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto": {
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_Name()": {
           "Lines": {
-            "6": 0
+            "6": 1
           },
           "Branches": []
         },
         "System.Collections.Generic.List`1<System.String> Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_Websites()": {
           "Lines": {
-            "7": 0
+            "7": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_Notes()": {
           "Lines": {
-            "8": 0
+            "8": 1
           },
           "Branches": []
         },
         "System.Nullable`1<Esatto.Outreach.Domain.Enums.ProspectStatus> Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_Status()": {
           "Lines": {
-            "9": 0
+            "9": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_MailTitle()": {
           "Lines": {
-            "10": 0
+            "10": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_MailBodyPlain()": {
           "Lines": {
-            "11": 0
+            "11": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_MailBodyHTML()": {
           "Lines": {
-            "12": 0
+            "12": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::get_LinkedInMessage()": {
           "Lines": {
-            "13": 0
+            "13": 5
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Application.DTOs.Prospects.ProspectUpdateDto::.ctor(System.String,System.Collections.Generic.List`1<System.String>,System.String,System.Nullable`1<Esatto.Outreach.Domain.Enums.ProspectStatus>,System.String,System.String,System.String,System.String)": {
           "Lines": {
-            "5": 0
+            "5": 4
           },
           "Branches": []
         }
@@ -11380,37 +11369,37 @@
         },
         "System.Collections.Generic.List`1<Esatto.Outreach.Application.DTOs.Prospects.ContactPersonDto> Esatto.Outreach.Application.DTOs.Prospects.ProspectViewDto::get_ContactPersons()": {
           "Lines": {
-            "34": 1
+            "34": 2
           },
           "Branches": []
         },
         "Esatto.Outreach.Application.DTOs.Prospects.ProspectViewDto Esatto.Outreach.Application.DTOs.Prospects.ProspectViewDto::FromEntity(Esatto.Outreach.Domain.Entities.Prospect)": {
           "Lines": {
-            "37": 1,
-            "38": 1,
-            "39": 1,
-            "40": 1,
-            "41": 1,
-            "42": 1,
-            "43": 1,
-            "44": 1,
+            "37": 2,
+            "38": 2,
+            "39": 2,
+            "40": 2,
+            "41": 2,
+            "42": 2,
+            "43": 2,
+            "44": 2,
             "45": 0,
             "46": 0,
-            "47": 1,
-            "48": 1,
-            "49": 1,
-            "50": 1,
-            "51": 1,
-            "52": 1,
-            "53": 1,
-            "54": 1,
-            "55": 1,
-            "56": 1,
-            "57": 1,
-            "58": 1,
-            "59": 1,
-            "60": 1,
-            "61": 1
+            "47": 2,
+            "48": 2,
+            "49": 2,
+            "50": 2,
+            "51": 2,
+            "52": 2,
+            "53": 2,
+            "54": 2,
+            "55": 2,
+            "56": 2,
+            "57": 2,
+            "58": 2,
+            "59": 2,
+            "60": 2,
+            "61": 2
           },
           "Branches": [
             {
@@ -11427,7 +11416,7 @@
               "EndOffset": 49,
               "Path": 1,
               "Ordinal": 1,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11443,7 +11432,7 @@
               "EndOffset": 99,
               "Path": 1,
               "Ordinal": 3,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11459,7 +11448,7 @@
               "EndOffset": 112,
               "Path": 1,
               "Ordinal": 5,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11475,7 +11464,7 @@
               "EndOffset": 162,
               "Path": 1,
               "Ordinal": 7,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11491,7 +11480,7 @@
               "EndOffset": 175,
               "Path": 1,
               "Ordinal": 9,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11507,7 +11496,7 @@
               "EndOffset": 225,
               "Path": 1,
               "Ordinal": 11,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11515,7 +11504,7 @@
               "EndOffset": 311,
               "Path": 0,
               "Ordinal": 12,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11539,7 +11528,7 @@
               "EndOffset": 338,
               "Path": 1,
               "Ordinal": 15,
-              "Hits": 1
+              "Hits": 2
             },
             {
               "Line": 37,
@@ -11555,16 +11544,16 @@
               "EndOffset": 384,
               "Path": 1,
               "Ordinal": 17,
-              "Hits": 1
+              "Hits": 2
             }
           ]
         },
         "System.Void Esatto.Outreach.Application.DTOs.Prospects.ProspectViewDto::.ctor(System.Guid,System.String,Esatto.Outreach.Domain.Enums.CrmProvider,System.String,System.Boolean,System.String,System.Collections.Generic.List`1<Esatto.Outreach.Application.DTOs.Prospects.WebsiteDto>,System.Collections.Generic.List`1<Esatto.Outreach.Application.DTOs.Prospects.TagDto>,System.Collections.Generic.List`1<Esatto.Outreach.Application.DTOs.Prospects.CustomFieldDto>,System.String,System.Nullable`1<System.DateTime>,System.Nullable`1<System.DateTime>,System.Nullable`1<System.DateTime>,System.String,Esatto.Outreach.Domain.Enums.ProspectStatus,System.DateTime,System.Nullable`1<System.DateTime>,System.String,System.String,System.String,System.String,System.String,Esatto.Outreach.Application.DTOs.Intelligence.EntityIntelligenceDto,System.Collections.Generic.List`1<Esatto.Outreach.Application.DTOs.Prospects.ContactPersonDto>)": {
           "Lines": {
-            "7": 1,
-            "18": 1,
-            "19": 1,
-            "23": 1
+            "7": 2,
+            "18": 2,
+            "19": 2,
+            "23": 2
           },
           "Branches": []
         }
@@ -11915,44 +11904,44 @@
       "Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto": {
         "System.String Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_UserInput()": {
           "Lines": {
-            "5": 0
+            "5": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_MailTitle()": {
           "Lines": {
-            "6": 0
+            "6": 1
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_MailBodyPlain()": {
           "Lines": {
-            "7": 0
+            "7": 1
           },
           "Branches": []
         },
         "System.Nullable`1<System.Boolean> Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_UseWebSearch()": {
           "Lines": {
-            "8": 0
+            "8": 2
           },
           "Branches": []
         },
         "System.Double Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_Temperature()": {
           "Lines": {
-            "9": 0
+            "9": 1
           },
           "Branches": []
         },
         "System.Int32 Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::get_MaxOutputTokens()": {
           "Lines": {
-            "10": 0
+            "10": 1
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Application.DTOs.Intelligence.ChatRequestDto::.ctor(System.String,System.String,System.String,System.Nullable`1<System.Boolean>,System.Double,System.Int32)": {
           "Lines": {
-            "4": 0,
-            "11": 0
+            "4": 4,
+            "11": 4
           },
           "Branches": []
         }
@@ -11960,7 +11949,7 @@
       "Esatto.Outreach.Application.DTOs.Intelligence.ChatResponseDto": {
         "System.String Esatto.Outreach.Application.DTOs.Intelligence.ChatResponseDto::get_AiMessage()": {
           "Lines": {
-            "14": 0
+            "14": 1
           },
           "Branches": []
         },
@@ -11990,8 +11979,8 @@
         },
         "System.Void Esatto.Outreach.Application.DTOs.Intelligence.ChatResponseDto::.ctor(System.String,System.Boolean,System.String,System.String,System.String)": {
           "Lines": {
-            "13": 0,
-            "19": 0
+            "13": 1,
+            "19": 1
           },
           "Branches": []
         }
@@ -12309,14 +12298,14 @@
       "Esatto.Outreach.Application.DTOs.Auth.RefreshTokenRequestDto": {
         "System.String Esatto.Outreach.Application.DTOs.Auth.RefreshTokenRequestDto::get_RefreshToken()": {
           "Lines": {
-            "16": 0
+            "16": 8
           },
           "Branches": []
         },
         "System.Void Esatto.Outreach.Application.DTOs.Auth.RefreshTokenRequestDto::.ctor(System.String)": {
           "Lines": {
-            "15": 0,
-            "17": 0
+            "15": 4,
+            "17": 4
           },
           "Branches": []
         }
@@ -12324,13 +12313,13 @@
       "Esatto.Outreach.Application.DTOs.Auth.AuthResponseDto": {
         "System.String Esatto.Outreach.Application.DTOs.Auth.AuthResponseDto::get_AccessToken()": {
           "Lines": {
-            "20": 0
+            "20": 2
           },
           "Branches": []
         },
         "System.String Esatto.Outreach.Application.DTOs.Auth.AuthResponseDto::get_RefreshToken()": {
           "Lines": {
-            "21": 0
+            "21": 2
           },
           "Branches": []
         },
@@ -12348,8 +12337,8 @@
         },
         "System.Void Esatto.Outreach.Application.DTOs.Auth.AuthResponseDto::.ctor(System.String,System.String,System.DateTime,Esatto.Outreach.Application.DTOs.Auth.UserDto)": {
           "Lines": {
-            "19": 0,
-            "24": 0
+            "19": 2,
+            "24": 2
           },
           "Branches": []
         }
@@ -12375,8 +12364,8 @@
         },
         "System.Void Esatto.Outreach.Application.DTOs.Auth.UserDto::.ctor(System.String,System.String,System.String)": {
           "Lines": {
-            "26": 0,
-            "30": 0
+            "26": 2,
+            "30": 2
           },
           "Branches": []
         }
@@ -12394,7 +12383,7 @@
       "Esatto.Outreach.Application.DTOs.Auth.AcceptInvitationDto": {
         "System.String Esatto.Outreach.Application.DTOs.Auth.AcceptInvitationDto::get_Token()": {
           "Lines": {
-            "11": 0
+            "11": 35
           },
           "Branches": []
         }

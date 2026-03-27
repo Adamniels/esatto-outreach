@@ -285,18 +285,25 @@ public static class ProspectEndpoints
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
             try
             {
-                var res = await useCase.Handle(id, dto, ct);
+                var res = await useCase.Handle(id, userId, dto, ct);
                 return Results.Ok(res);
             }
             catch (InvalidOperationException ex)
             {
                 return Results.NotFound(new { error = ex.Message });
             }
-        });
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
+        }).RequireAuthorization();
 
         app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat useCase, CancellationToken ct) =>
         {
@@ -311,12 +318,20 @@ public static class ProspectEndpoints
             Guid id,
             GenerateEntityIntelligence useCase,
             ILogger<Program> logger,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
             try
             {
-                var softData = await useCase.Handle(id, ct);
+                var softData = await useCase.Handle(id, userId, ct);
                 return Results.Ok(softData);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
             }
             catch (KeyNotFoundException ex)
             {
@@ -338,6 +353,6 @@ public static class ProspectEndpoints
                 logger.LogError(ex, "Failed to enrich prospect {Id}", id);
                 return Results.Json(new { error = ex.Message }, statusCode: 500);
             }
-        });
+        }).RequireAuthorization();
     }
 }
