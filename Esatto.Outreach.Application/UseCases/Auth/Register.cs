@@ -1,6 +1,5 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
@@ -54,16 +53,16 @@ Krav:
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(bool Success, AuthResponseDto? Data, string? Error)> Handle(
+    public async Task<AuthResponseDto> Handle(
         RegisterRequestDto request,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.CompanyName))
-            return (false, null, "Company name is required");
+            throw new ArgumentException("Company name is required");
 
         var existingCompany = await _companyRepo.GetByNameAsync(request.CompanyName.Trim());
         if (existingCompany != null)
-            return (false, null, "Company name already exists");
+            throw new InvalidOperationException("Company name already exists");
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
         try
@@ -82,7 +81,7 @@ Krav:
 
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-                return (false, null, "Email already registered");
+                throw new InvalidOperationException("Email already registered");
 
             // Create user
             var user = new ApplicationUser
@@ -94,12 +93,11 @@ Krav:
                 CompanyId = company.Id,
             };
 
-
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return (false, null, $"Registration failed: {errors}");
+                throw new InvalidOperationException($"Registration failed: {errors}");
             }
             
             await _unitOfWork.CommitTransactionAsync(ct);
@@ -124,20 +122,17 @@ Krav:
                 ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
             }, ct);
 
-            var response = new AuthResponseDto(
+            return new AuthResponseDto(
                 accessToken,
                 refreshToken,
                 expiresAt,
                 new UserDto(user.Id, user.Email!, user.FullName)
             );
-
-            return (true, response, null);
         }
         catch
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             throw;
         }
-
     }
 }

@@ -53,3 +53,22 @@ public record WorkflowStepDto(
     string? FailureReason,
     int RetryCount
 );
+
+/// <summary>
+/// Input DTO for defining steps when creating/updating workflow templates.
+/// Used by use cases (replaces the old WorkflowTemplateStepDTO that lived in the service file).
+/// </summary>
+public record WorkflowTemplateStepInputDto(
+    WorkflowStepType Type,
+    int DayOffset,
+    TimeSpan TimeOfDay,
+    ContentGenerationStrategy? GenerationStrategy
+);
+
+// Endpoint request records (moved from WorkflowEndpoints.cs)
+public record AddStepRequest(WorkflowStepType Type, int DayOffset, string TimeOfDay, ContentGenerationStrategy? GenerationStrategy);
+public record UpdateStepContentRequest(string? Subject, string? Body);
+public record UpdateStepConfigRequest(WorkflowStepType Type, int DayOffset, string TimeOfDay, ContentGenerationStrategy? GenerationStrategy);
+public record UpdateTemplateStepRequest(WorkflowStepType Type, int DayOffset, string TimeOfDay, ContentGenerationStrategy? GenerationStrategy);
+public record ActivateWorkflowRequest(string TimeZoneId = "UTC");
+

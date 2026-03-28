@@ -1,5 +1,4 @@
 using Esatto.Outreach.Domain.Entities;
-using System.Text.Json;
 
 namespace Esatto.Outreach.Application.DTOs.Prospects;
 

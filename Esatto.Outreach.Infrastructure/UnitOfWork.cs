@@ -1,6 +1,4 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Esatto.Outreach.Infrastructure;

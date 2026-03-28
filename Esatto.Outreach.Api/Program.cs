@@ -89,6 +89,29 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.RejectP
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.ListPendingProspects>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.HandleCapsuleWebhook>();
 
+// Workflow Use Cases
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.CreateWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.GetWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ListWorkflowTemplates>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.SetDefaultWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowTemplateStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.CreateWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ActivateWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ListWorkflowInstances>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.RegenerateWorkflowStepDraft>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.AddWorkflowStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowStepContent>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowStepConfig>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ValidateWorkflowActivation>();
+
+// Application Services (internal services used by use cases and workers)
+builder.Services.AddScoped<Esatto.Outreach.Application.Services.WorkflowDraftGenerator>();
+builder.Services.AddScoped<Esatto.Outreach.Application.Services.WorkflowStepExecutor>();
+
 // Workflow Worker
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowExecutionWorker>();
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowCleanupWorker>();

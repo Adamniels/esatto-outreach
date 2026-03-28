@@ -1,6 +1,4 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 
 namespace Esatto.Outreach.Application.UseCases.Intelligence;
 
@@ -13,7 +11,7 @@ public class ResetProspectChat
         _repository = repository;
     }
 
-    public async Task<bool> ExecuteAsync(Guid prospectId, CancellationToken ct = default)
+    public async Task<bool> Handle(Guid prospectId, CancellationToken ct = default)
     {
         var prospect = await _repository.GetByIdAsync(prospectId, ct);
         if (prospect == null)

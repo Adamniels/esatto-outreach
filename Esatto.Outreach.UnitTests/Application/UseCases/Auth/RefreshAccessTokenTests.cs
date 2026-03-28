@@ -1,15 +1,11 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.UseCases.Auth;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Exceptions;
 using FluentAssertions;
-using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using Xunit;
 
 namespace Esatto.Outreach.UnitTests.Application.UseCases.Auth;
 
@@ -30,24 +26,21 @@ public class RefreshAccessTokenTests
     }
 
     [Fact]
-    public async Task Handle_WithInvalidToken_ReturnsFalseAndError()
+    public async Task Handle_WithInvalidToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
         var req = new RefreshTokenRequestDto("invalid-token");
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
             .Returns((RefreshToken?)null);
 
-        // Act
-        var result = await _useCase.Handle(req);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid refresh token");
-        result.Data.Should().BeNull();
+        // Act & Assert
+        Func<Task> act = async () => await _useCase.Handle(req);
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid refresh token");
     }
 
     [Fact]
-    public async Task Handle_WithRevokedToken_ReturnsFalseAndError()
+    public async Task Handle_WithRevokedToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
         var req = new RefreshTokenRequestDto("revoked-token");
@@ -56,17 +49,14 @@ public class RefreshAccessTokenTests
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
             .Returns(token);
 
-        // Act
-        var result = await _useCase.Handle(req);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Refresh token has been revoked");
-        result.Data.Should().BeNull();
+        // Act & Assert
+        Func<Task> act = async () => await _useCase.Handle(req);
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Refresh token has been revoked");
     }
 
     [Fact]
-    public async Task Handle_WithExpiredToken_ReturnsFalseAndError()
+    public async Task Handle_WithExpiredToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
         var req = new RefreshTokenRequestDto("expired-token");
@@ -80,13 +70,10 @@ public class RefreshAccessTokenTests
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
             .Returns(token);
 
-        // Act
-        var result = await _useCase.Handle(req);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Refresh token has expired");
-        result.Data.Should().BeNull();
+        // Act & Assert
+        Func<Task> act = async () => await _useCase.Handle(req);
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Refresh token has expired");
     }
 
     [Fact]
@@ -117,11 +104,9 @@ public class RefreshAccessTokenTests
         var result = await _useCase.Handle(req);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Error.Should().BeNull();
-        result.Data.Should().NotBeNull();
-        result.Data!.AccessToken.Should().Be("new-access-token");
-        result.Data.RefreshToken.Should().Be("new-refresh-token");
+        result.Should().NotBeNull();
+        result.AccessToken.Should().Be("new-access-token");
+        result.RefreshToken.Should().Be("new-refresh-token");
         
         // Ensure old token was revoked
         oldToken.IsRevoked.Should().BeTrue();

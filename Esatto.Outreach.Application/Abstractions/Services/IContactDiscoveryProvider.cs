@@ -1,5 +1,3 @@
-using Esatto.Outreach.Domain.Entities;
-
 namespace Esatto.Outreach.Application.Abstractions.Services;
 
 public interface IContactDiscoveryProvider

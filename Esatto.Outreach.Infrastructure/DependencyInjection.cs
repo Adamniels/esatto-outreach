@@ -2,8 +2,6 @@ using Esatto.Outreach.Infrastructure.Services;
 using Esatto.Outreach.Infrastructure.Clients;
 using Esatto.Outreach.Infrastructure.Options;
 using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
-using Microsoft.Extensions.Http;
-using System.Net.Http;
 using System.Text;
 using Esatto.Outreach.Domain.Entities;
 
@@ -17,14 +15,12 @@ using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Infrastructure.Repositories;
-using Esatto.Outreach.Application.UseCases.Workflows;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Esatto.Outreach.Infrastructure;
@@ -154,20 +150,13 @@ public static class DependencyInjection
         services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
         services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
         services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
-        services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence>(); // Register UseCase
 
         // Workflow Mocks
         services.AddScoped<IEmailSender, MockEmailSender>();
         services.AddScoped<ILinkedInActionsClient, MockLinkedInClient>();
 
-
-        // Workflow Services
+        // Workflow Repository
         services.AddScoped<IWorkflowRepository, WorkflowRepository>();
-        services.AddScoped<WorkflowTemplateService>();
-
-        services.AddScoped<WorkflowInstanceService>();
-        services.AddScoped<GenerateDraftWorkflow>();
-        services.AddScoped<StepExecutionService>();
 
         return services;
 

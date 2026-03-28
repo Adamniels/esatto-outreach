@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.DTOs.Intelligence;
@@ -10,7 +7,6 @@ using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Xunit;
 
 namespace Esatto.Outreach.UnitTests.Application.UseCases.Intelligence;
 

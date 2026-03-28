@@ -1,10 +1,5 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.UseCases.Workflows;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Esatto.Outreach.Application.Services;
 
 namespace Esatto.Outreach.Api.Workers;
 
@@ -45,7 +40,7 @@ public class WorkflowExecutionWorker : BackgroundService
     {
         using var scope = _serviceProvider.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IWorkflowRepository>();
-        var executionService = scope.ServiceProvider.GetRequiredService<StepExecutionService>();
+        var executionService = scope.ServiceProvider.GetRequiredService<WorkflowStepExecutor>();
 
         // Fetch IDs to keep transaction short/light or avoid tracking issues
         var dueStepIds = await repo.GetDueStepsAsync(DateTime.UtcNow, 50, ct);

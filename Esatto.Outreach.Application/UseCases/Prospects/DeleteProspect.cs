@@ -1,6 +1,4 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 
 namespace Esatto.Outreach.Application.UseCases.Prospects;
 
@@ -13,7 +11,7 @@ public class DeleteProspect
         _repository = repository;
     }
 
-    public async Task<bool> ExecuteAsync(Guid id, string userId, CancellationToken ct = default)
+    public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
     {
         var prospect = await _repository.GetByIdAsync(id, ct);
         if (prospect == null)

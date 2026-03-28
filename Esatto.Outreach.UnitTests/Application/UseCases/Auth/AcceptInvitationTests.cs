@@ -1,18 +1,14 @@
-using System;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.UseCases.Auth;
 using Esatto.Outreach.Domain.Entities;
-using Esatto.Outreach.UnitTests.Helpers;
+using Esatto.Outreach.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
-using Xunit;
 
 namespace Esatto.Outreach.UnitTests.Application.UseCases.Auth;
 
@@ -66,83 +62,83 @@ public class AcceptInvitationTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task Handle_WithBlankToken_RejectsWithoutHittingDatabase(string? token)
+    public async Task Handle_WithBlankToken_ThrowsWithoutHittingDatabase(string? token)
     {
-        var result = await _useCase.Handle(Req(token!));
+        Func<Task> act = async () => await _useCase.Handle(Req(token!));
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid or expired invitation");
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid or expired invitation");
         await _invitationRepo.DidNotReceive().GetByTokenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_WithTokenNotInDatabase_ReturnsFalse()
+    public async Task Handle_WithTokenNotInDatabase_ThrowsAuthenticationFailedException()
     {
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>())
             .Returns((Invitation?)null);
 
-        var result = await _useCase.Handle(Req());
+        Func<Task> act = async () => await _useCase.Handle(Req());
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid or expired invitation");
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid or expired invitation");
     }
 
     [Fact]
-    public async Task Handle_WithAlreadyUsedInvitation_ReturnsFalse()
+    public async Task Handle_WithAlreadyUsedInvitation_ThrowsAuthenticationFailedException()
     {
         var invitation = ValidInvitation();
         invitation.UsedAt = DateTime.UtcNow.AddHours(-1); // already used
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>()).Returns(invitation);
 
-        var result = await _useCase.Handle(Req());
+        Func<Task> act = async () => await _useCase.Handle(Req());
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid or expired invitation");
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid or expired invitation");
     }
 
     [Fact]
-    public async Task Handle_WithExpiredInvitation_ReturnsFalse()
+    public async Task Handle_WithExpiredInvitation_ThrowsAuthenticationFailedException()
     {
         var invitation = ValidInvitation();
         invitation.ExpiresAt = DateTime.UtcNow.AddMinutes(-1); // expired
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>()).Returns(invitation);
 
-        var result = await _useCase.Handle(Req());
+        Func<Task> act = async () => await _useCase.Handle(Req());
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid or expired invitation");
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid or expired invitation");
     }
 
     [Fact]
-    public async Task Handle_WithMismatchedEmail_ReturnsFalse()
+    public async Task Handle_WithMismatchedEmail_ThrowsAuthenticationFailedException()
     {
         // Invitation is for user@esatto.se but request claims attacker@evil.com
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>())
             .Returns(ValidInvitation("user@esatto.se"));
 
-        var result = await _useCase.Handle(Req(email: "attacker@evil.com"));
+        Func<Task> act = async () => await _useCase.Handle(Req(email: "attacker@evil.com"));
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("Invalid or expired invitation");
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Invalid or expired invitation");
         // This is the critical security gate — an attacker cannot claim someone else's invite
     }
 
     [Fact]
-    public async Task Handle_WhenUserAlreadyExists_ReturnsFalse()
+    public async Task Handle_WhenUserAlreadyExists_ThrowsInvalidOperationException()
     {
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>())
             .Returns(ValidInvitation());
         _userManager.FindByEmailAsync("user@esatto.se")
             .Returns(new ApplicationUser { Email = "user@esatto.se" });
 
-        var result = await _useCase.Handle(Req());
+        Func<Task> act = async () => await _useCase.Handle(Req());
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Be("User already exists in the system.");
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("User already exists in the system.");
     }
 
     [Fact]
-    public async Task Handle_WhenIdentityCreateFails_ReturnsRegistrationErrors()
+    public async Task Handle_WhenIdentityCreateFails_ThrowsInvalidOperationException()
     {
         _invitationRepo.GetByTokenAsync(Hash("tok"), Arg.Any<CancellationToken>())
             .Returns(ValidInvitation());
@@ -150,10 +146,10 @@ public class AcceptInvitationTests
         _userManager.CreateAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>())
             .Returns(IdentityResult.Failed(new IdentityError { Description = "Password too weak" }));
 
-        var result = await _useCase.Handle(Req());
+        Func<Task> act = async () => await _useCase.Handle(Req());
 
-        result.Success.Should().BeFalse();
-        result.Error.Should().Contain("Password too weak");
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Password too weak*");
     }
 
     // --- Success path ---
@@ -176,10 +172,9 @@ public class AcceptInvitationTests
 
         var result = await _useCase.Handle(Req());
 
-        result.Success.Should().BeTrue();
-        result.Error.Should().BeNull();
-        result.Data!.AccessToken.Should().Be("access-token-xyz");
-        result.Data.RefreshToken.Should().Be("refresh-token-xyz");
+        result.Should().NotBeNull();
+        result.AccessToken.Should().Be("access-token-xyz");
+        result.RefreshToken.Should().Be("refresh-token-xyz");
 
         // Invitation must be marked as used — prevents replay
         await _invitationRepo.Received(1).MarkAsUsedAsync(invitationId, Arg.Any<CancellationToken>());

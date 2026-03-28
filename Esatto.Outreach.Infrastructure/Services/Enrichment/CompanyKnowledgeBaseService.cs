@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.Abstractions.Clients;
 using Microsoft.Extensions.Logging;

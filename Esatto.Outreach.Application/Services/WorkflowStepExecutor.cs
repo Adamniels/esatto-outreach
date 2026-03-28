@@ -1,26 +1,28 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore; // For exception types
 
-namespace Esatto.Outreach.Application.UseCases.Workflows;
+namespace Esatto.Outreach.Application.Services;
 
-public class StepExecutionService
+/// <summary>
+/// Internal service for executing workflow steps via background workers.
+/// Not exposed directly via endpoints.
+/// </summary>
+public class WorkflowStepExecutor
 {
     private readonly IWorkflowRepository _repo;
     private readonly IEmailSender _emailSender;
     private readonly ILinkedInActionsClient _linkedInClient;
-    private readonly ILogger<StepExecutionService> _logger;
+    private readonly ILogger<WorkflowStepExecutor> _logger;
 
-    public StepExecutionService(
+    public WorkflowStepExecutor(
         IWorkflowRepository repo,
         IEmailSender emailSender,
         ILinkedInActionsClient linkedInClient,
-        ILogger<StepExecutionService> logger)
+        ILogger<WorkflowStepExecutor> logger)
     {
         _repo = repo;
         _emailSender = emailSender;
@@ -34,7 +36,6 @@ public class StepExecutionService
         if (step == null) return;
         
         if (step.Status != WorkflowStepStatus.Pending) return;
-
 
         // CLAIM
         try 
@@ -64,9 +65,6 @@ public class StepExecutionService
         await _repo.UpdateStepAsync(step, ct);
         
         // CHECK COMPLETION
-        // Need to check other steps.
-        // Repo `GetInstancesByProspectIdAsync` gets all for prospect.
-        // Maybe I need `GetInstanceByIdAsync` to check its steps?
         var instance = await _repo.GetInstanceByIdAsync(step.WorkflowInstanceId, ct);
         if (instance != null)
         {
@@ -82,19 +80,9 @@ public class StepExecutionService
 
     private async Task PerformActionAsync(WorkflowStep step, CancellationToken ct)
     {
-        // Hydrate data (Instance and Prospect are loaded via Repo GetStepByIdAsync Includes?
-        // Let's check Repo implementation of GetStepByIdAsync.
-        // It includes WorkflowInstance -> Prospect.
-        // But does it include ContactPersons?
-        // Repo: .Include(s => s.WorkflowInstance).ThenInclude(i => i.Prospect)
-        // Does NOT include ContactPersons in GetStepByIdAsync default impl I wrote.
-        // I should fix Repo or Load here.
-        // I can use `GetInstanceByIdAsync` which DOES include ContactPersons.
-        
         var instance = await _repo.GetInstanceByIdAsync(step.WorkflowInstanceId, ct);
         if (instance == null || instance.Prospect == null) throw new Exception("Instance or Prospect not found");
         
-        // Ensure ContactPersons loaded (Repo GetInstanceByIdAsync includes them).
         var contact = instance.Prospect.GetActiveContact();
         if (contact == null) throw new Exception("No active contact for prospect");
 
@@ -110,7 +98,6 @@ public class StepExecutionService
                 break;
 
             case WorkflowStepType.LinkedInMessage:
-                 // Assuming Mock client handles url/logic
                 await _linkedInClient.SendMessageAsync(
                     "http://linkedin.com/placeholder", 
                     step.BodyContent ?? "", 

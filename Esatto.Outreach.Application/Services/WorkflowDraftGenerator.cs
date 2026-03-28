@@ -1,19 +1,19 @@
-using System.Text;
-using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.UseCases.Workflows;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
 
-namespace Esatto.Outreach.Application.UseCases.Workflows;
+namespace Esatto.Outreach.Application.Services;
 
-public class GenerateDraftWorkflow
+/// <summary>
+/// Internal service for generating email/LinkedIn drafts for workflow steps.
+/// Used by workflow use cases — not exposed directly via endpoints.
+/// </summary>
+public class WorkflowDraftGenerator
 {
     private readonly IOutreachContextBuilder _contextBuilder;
     private readonly IOutreachGeneratorFactory _factory;
 
-    public GenerateDraftWorkflow(IOutreachContextBuilder contextBuilder, IOutreachGeneratorFactory factory)
+    public WorkflowDraftGenerator(IOutreachContextBuilder contextBuilder, IOutreachGeneratorFactory factory)
     {
         _contextBuilder = contextBuilder;
         _factory = factory;
@@ -38,7 +38,6 @@ public class GenerateDraftWorkflow
 
         bool includeSoftData = strategy == ContentGenerationStrategy.UseCollectedData;
 
-
         var channel = type == WorkflowStepType.Email ? OutreachChannel.Email : OutreachChannel.LinkedIn;
 
         var context = await _contextBuilder.BuildContextAsync(prospectId, uid, channel, includeSoftData: includeSoftData, cancellationToken: ct);
@@ -49,11 +48,7 @@ public class GenerateDraftWorkflow
         // 3. Generate
         var draft = await generator.GenerateAsync(context, ct);
 
-        // 4. Return as tuple (Mapping CustomOutreachDraftDto to Subject/Body)
-        // If it's a LinkedIn message, we might ignore the title/subject or map it differently.
-        // But for consistency, we'll return what the generator produced.
-        // Typically Title map to Subject, BodyPlain/BodyHTML map to Body.
-
+        // 4. Return as tuple
         if (type == WorkflowStepType.Email)
         {
             return (draft.Title, draft.BodyPlain);
@@ -61,9 +56,6 @@ public class GenerateDraftWorkflow
         else
         {
             // For LinkedIn, usually no subject.
-            // If the generator returns a Title, we might just ignore it or append it?
-            // Usually LinkedIn messages just have body. 
-            // Let's assume BodyPlain is the message.
             return ("", draft.BodyPlain);
         }
     }

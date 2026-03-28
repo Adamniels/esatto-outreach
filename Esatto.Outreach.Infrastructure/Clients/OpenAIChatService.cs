@@ -1,22 +1,10 @@
-using Esatto.Outreach.Infrastructure.Services;
-using Esatto.Outreach.Infrastructure.Clients;
 using Esatto.Outreach.Infrastructure.Options;
-using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
 
 using Microsoft.Extensions.Options;
 

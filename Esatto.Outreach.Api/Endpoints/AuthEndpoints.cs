@@ -1,5 +1,6 @@
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -16,10 +17,19 @@ public static class AuthEndpoints
             Register useCase,
             CancellationToken ct) =>
         {
-            var (success, data, error) = await useCase.Handle(dto, ct);
-            return success
-                ? Results.Ok(data)
-                : Results.BadRequest(new { error });
+            try
+            {
+                var data = await useCase.Handle(dto, ct);
+                return Results.Ok(data);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         });
 
         auth.MapPost("/login", async (
@@ -27,10 +37,15 @@ public static class AuthEndpoints
             Login useCase,
             CancellationToken ct) =>
         {
-            var (success, data, error) = await useCase.Handle(dto, ct);
-            return success
-                ? Results.Ok(data)
-                : Results.BadRequest(new { error });
+            try
+            {
+                var data = await useCase.Handle(dto, ct);
+                return Results.Ok(data);
+            }
+            catch (AuthenticationFailedException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         });
 
         auth.MapPost("/refresh", async (
@@ -38,10 +53,15 @@ public static class AuthEndpoints
             RefreshAccessToken useCase,
             CancellationToken ct) =>
         {
-            var (success, data, error) = await useCase.Handle(dto, ct);
-            return success
-                ? Results.Ok(data)
-                : Results.Unauthorized();
+            try
+            {
+                var data = await useCase.Handle(dto, ct);
+                return Results.Ok(data);
+            }
+            catch (AuthenticationFailedException)
+            {
+                return Results.Unauthorized();
+            }
         });
     }
 }

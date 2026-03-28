@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.DTOs.Prospects;
 using Esatto.Outreach.Application.UseCases.Prospects;
@@ -8,7 +5,6 @@ using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
 using NSubstitute;
-using Xunit;
 
 namespace Esatto.Outreach.UnitTests.Application.UseCases.Prospects;
 

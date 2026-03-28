@@ -1,6 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Esatto.Outreach.Application.Abstractions.Clients;
 
 public interface IGenerativeAIClient

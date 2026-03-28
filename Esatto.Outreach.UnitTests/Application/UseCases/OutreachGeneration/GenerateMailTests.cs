@@ -2,7 +2,6 @@ using FluentAssertions;
 using NSubstitute;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.UseCases.OutreachGeneration;
 using Esatto.Outreach.Application.DTOs.Outreach;
 using Esatto.Outreach.Application.DTOs.Intelligence;

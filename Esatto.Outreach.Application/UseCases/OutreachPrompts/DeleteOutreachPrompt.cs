@@ -1,6 +1,4 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 
 namespace Esatto.Outreach.Application.UseCases.OutreachPrompts;
 

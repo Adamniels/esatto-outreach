@@ -1,7 +1,4 @@
-using Esatto.Outreach.Infrastructure.Services;
-using Esatto.Outreach.Infrastructure.Clients;
 using Esatto.Outreach.Infrastructure.Options;
-using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 
 
 namespace Esatto.Outreach.Infrastructure.Services.OutreachGeneration;

@@ -1,6 +1,4 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Esatto.Outreach.Domain.Exceptions;

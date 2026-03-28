@@ -1,13 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.DTOs.Prospects;
 using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -39,12 +34,19 @@ public static class InvitationEndpoints
             AcceptInvitation useCase,
             CancellationToken ct) =>
         {
-            var (success, data, error) = await useCase.Handle(dto, ct);
-            if (success)
+            try
+            {
+                var data = await useCase.Handle(dto, ct);
                 return Results.Ok(data);
-            
-            // Return generic 400 Bad Request to prevent enumeration, unless we want to leak specifically
-            return Results.BadRequest(new { error = "Invalid or expired invitation" });
+            }
+            catch (AuthenticationFailedException)
+            {
+                return Results.BadRequest(new { error = "Invalid or expired invitation" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         });
 
         app.MapPost("/company/invitations", async (
@@ -58,11 +60,20 @@ public static class InvitationEndpoints
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-            var (success, data, error) = await useCase.Handle(userId, dto.Email, frontendBaseUrl, ct);
-            if (!success)
-                return Results.BadRequest(new { error });
-            return Results.Ok(data);
+            try
+            {
+                var frontendBaseUrl = configuration["Frontend:BaseUrl"];
+                var data = await useCase.Handle(userId, dto.Email, frontendBaseUrl, ct);
+                return Results.Ok(data);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         })
         .RequireAuthorization();
     }

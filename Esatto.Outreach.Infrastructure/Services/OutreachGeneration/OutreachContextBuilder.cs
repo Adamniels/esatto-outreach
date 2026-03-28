@@ -1,13 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.DTOs.Intelligence;
 using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 

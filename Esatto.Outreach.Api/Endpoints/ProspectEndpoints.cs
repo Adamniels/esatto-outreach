@@ -1,14 +1,8 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs;
 using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Application.UseCases.Prospects;
 using Esatto.Outreach.Application.UseCases.OutreachGeneration;
-using Esatto.Outreach.Application.UseCases.Intelligence;
 using Esatto.Outreach.Application.UseCases.Intelligence;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -70,7 +64,7 @@ public static class ProspectEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var deleted = await useCase.ExecuteAsync(id, userId, ct);
+                var deleted = await useCase.Handle(id, userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (UnauthorizedAccessException)
@@ -307,7 +301,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat useCase, CancellationToken ct) =>
         {
-            var success = await useCase.ExecuteAsync(id, ct);
+            var success = await useCase.Handle(id, ct);
             return success ? Results.NoContent() : Results.NotFound();
         })
         .RequireAuthorization();

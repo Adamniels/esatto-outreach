@@ -1,6 +1,3 @@
-using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
-
 namespace Esatto.Outreach.Domain.ValueObjects;
 
 // Root Result

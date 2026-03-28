@@ -1,16 +1,9 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
-using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
+using Esatto.Outreach.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Application.UseCases.Auth;
@@ -54,33 +47,31 @@ Krav:
         _promptRepo = promptRepo;
     }
 
-    public async Task<(bool Success, AuthResponseDto? Data, string? Error)> Handle(
+    public async Task<AuthResponseDto> Handle(
         AcceptInvitationDto request,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Token))
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
 
         var hashedToken = ComputeSha256(request.Token.Trim());
 
         var invitation = await _invitationRepo.GetByTokenAsync(hashedToken, ct);
         if (invitation == null)
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
         if (invitation.UsedAt != null)
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
         if (invitation.ExpiresAt < DateTime.UtcNow)
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
 
         if (!string.Equals(request.Email, invitation.Email, StringComparison.OrdinalIgnoreCase))
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
 
         var existingUser = await _userManager.FindByEmailAsync(invitation.Email);
         if (existingUser != null)
-            return (false, null, "User already exists in the system.");
+            throw new InvalidOperationException("User already exists in the system.");
 
-        ApplicationUser user;
-
-        user = new ApplicationUser
+        var user = new ApplicationUser
         {
             UserName = invitation.Email,
             Email = invitation.Email,
@@ -93,7 +84,7 @@ Krav:
         if (!createResult.Succeeded)
         {
             var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
-            return (false, null, $"Registration failed: {errors}");
+            throw new InvalidOperationException($"Registration failed: {errors}");
         }
 
         var defaultGeneral = OutreachPrompt.Create(user.Id, DEFAULT_PROMPT, PromptType.General, isActive: true);
@@ -105,7 +96,7 @@ Krav:
 
         if (!await _invitationRepo.MarkAsUsedAsync(invitation.Id, ct))
         {
-            return (false, null, "Invalid or expired invitation");
+            throw new AuthenticationFailedException("Invalid or expired invitation");
         }
 
         var (accessToken, expiresAt) = _jwtService.GenerateAccessToken(user);
@@ -118,14 +109,12 @@ Krav:
             ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
         }, ct);
 
-        var response = new AuthResponseDto(
+        return new AuthResponseDto(
             accessToken,
             refreshToken,
             expiresAt,
             new UserDto(user.Id, user.Email!, user.FullName)
         );
-
-        return (true, response, null);
     }
 
     private static string ComputeSha256(string input)

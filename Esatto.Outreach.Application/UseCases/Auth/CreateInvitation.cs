@@ -1,14 +1,6 @@
 using System.Security.Cryptography;
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.DTOs.Prospects;
 using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.DTOs.Workflows;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -32,25 +24,25 @@ public sealed class CreateInvitation
         _userManager = userManager;
     }
 
-    public async Task<(bool Success, CreateInvitationResponseDto? Data, string? Error)> Handle(
+    public async Task<CreateInvitationResponseDto> Handle(
         string createdById,
         string email,
         string? frontendBaseUrl,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return (false, null, "Email is required");
+            throw new ArgumentException("Email is required");
 
         var creator = await _userManager.FindByIdAsync(createdById);
         if (creator == null)
-            return (false, null, "User not found");
+            throw new InvalidOperationException("User not found");
         if (creator.CompanyId == null)
-            return (false, null, "You must belong to a company to invite others");
+            throw new InvalidOperationException("You must belong to a company to invite others");
 
         // Make sure user with this email does not already exist
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null)
-            return (false, null, "User with this email already exists");
+            throw new InvalidOperationException("User with this email already exists");
 
         var tokenBytes = RandomNumberGenerator.GetBytes(32);
         var rawToken = Microsoft.AspNetCore.WebUtilities.Base64UrlTextEncoder.Encode(tokenBytes);
@@ -74,7 +66,7 @@ public sealed class CreateInvitation
             inviteLink = $"{baseUrl}/accept-invite?token={rawToken}";
         }
 
-        return (true, new CreateInvitationResponseDto(rawToken, inviteLink), null);
+        return new CreateInvitationResponseDto(rawToken, inviteLink);
     }
 
     private static string ComputeSha256(string input)

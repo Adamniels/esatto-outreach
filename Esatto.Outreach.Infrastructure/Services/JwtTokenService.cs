@@ -1,14 +1,9 @@
-using Esatto.Outreach.Infrastructure.Services;
-using Esatto.Outreach.Infrastructure.Clients;
 using Esatto.Outreach.Infrastructure.Options;
-using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Domain.Entities;
 
 using Microsoft.Extensions.Options;

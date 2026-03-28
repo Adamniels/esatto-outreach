@@ -1,8 +1,8 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Application.UseCases.Auth;
@@ -26,7 +26,7 @@ public sealed class RefreshAccessToken
         _refreshTokenRepo = refreshTokenRepo;
     }
 
-    public async Task<(bool Success, AuthResponseDto? Data, string? Error)> Handle(
+    public async Task<AuthResponseDto> Handle(
         RefreshTokenRequestDto request,
         CancellationToken ct = default)
     {
@@ -34,13 +34,13 @@ public sealed class RefreshAccessToken
         var refreshToken = await _refreshTokenRepo.GetByTokenAsync(request.RefreshToken, ct);
 
         if (refreshToken == null)
-            return (false, null, "Invalid refresh token");
+            throw new AuthenticationFailedException("Invalid refresh token");
 
         if (refreshToken.IsRevoked)
-            return (false, null, "Refresh token has been revoked");
+            throw new AuthenticationFailedException("Refresh token has been revoked");
 
         if (refreshToken.ExpiresAt < DateTime.UtcNow)
-            return (false, null, "Refresh token has expired");
+            throw new AuthenticationFailedException("Refresh token has expired");
 
         // Generate new tokens
         var (accessToken, expiresAt) = _jwtService.GenerateAccessToken(refreshToken.User);
@@ -58,13 +58,11 @@ public sealed class RefreshAccessToken
             ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
         }, ct);
 
-        var response = new AuthResponseDto(
+        return new AuthResponseDto(
             accessToken,
             newRefreshToken,
             expiresAt,
             new UserDto(refreshToken.User.Id, refreshToken.User.Email!, refreshToken.User.FullName)
         );
-
-        return (true, response, null);
     }
 }

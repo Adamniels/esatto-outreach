@@ -1,10 +1,5 @@
-using Esatto.Outreach.Infrastructure.Services;
-using Esatto.Outreach.Infrastructure.Clients;
 using Esatto.Outreach.Infrastructure.Options;
-using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
-using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Abstractions.Clients;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
