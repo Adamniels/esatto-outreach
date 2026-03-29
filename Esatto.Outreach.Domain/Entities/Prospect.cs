@@ -6,30 +6,31 @@ namespace Esatto.Outreach.Domain.Entities;
 
 public class Prospect : Entity
 {
-    // === CAPSULE CRM DATA (nullable - endast om från Capsule) ===
-    public long? CapsuleId { get; private set; }
-    public string Name { get; private set; } = default!;  // Ersätter CompanyName
+    // === CRM IDENTITY ===
+    public CrmProvider CrmSource { get; private set; } = CrmProvider.None;
+    public string? ExternalCrmId { get; private set; }
+
+    // === CORE DATA ===
+    public string Name { get; private set; } = default!;
     public string? About { get; private set; }
-    public DateTime? CapsuleCreatedAt { get; private set; }
-    public DateTime? CapsuleUpdatedAt { get; private set; }
+    public DateTime? CrmCreatedAt { get; private set; }
+    public DateTime? CrmUpdatedAt { get; private set; }
     public DateTime? LastContactedAt { get; private set; }
     public string? PictureURL { get; private set; }
-    public bool IsPending { get; private set; } = false;  // Default false for the ones that been added manually
+    public bool IsPending { get; private set; } = false;
 
-    // Nested collections (JSON columns) - empty list if manually added prospect
-    public List<CapsuleWebsite> Websites { get; private set; } = new();
-    public List<CapsuleAddress> Addresses { get; private set; } = new();
-    public List<CapsuleTag> Tags { get; private set; } = new();
-    public List<CapsuleCustomField> CustomFields { get; private set; } = new();
+    // === NESTED COLLECTIONS (JSON columns) ===
+    public List<Website> Websites { get; private set; } = new();
+    public List<Tag> Tags { get; private set; } = new();
+    public List<CustomField> CustomFields { get; private set; } = new();
 
-    // === NEW CONTACT PERSONS ===
     public List<ContactPerson> ContactPersons { get; private set; } = new();
 
-    // === ESATTO WORKFLOW ===
     public string? Notes { get; private set; }
     public string? MailTitle { get; private set; }
     public string? MailBodyPlain { get; private set; }
     public string? MailBodyHTML { get; private set; }
+    public string? LinkedInMessage { get; private set; }
     public string? LastOpenAIResponseId { get; private set; }
 
     // Foreign Key till EntityIntelligence (One-to-One, nullable)
@@ -40,29 +41,23 @@ public class Prospect : Entity
 
     public ProspectStatus Status { get; private set; } = ProspectStatus.New;
 
-    // ========== OWNERSHIP ==========
-    /// <summary>
-    /// User who owns this prospect. Nullable för pending Capsule prospects.
-    /// </summary>
     public string? OwnerId { get; private set; }
-
-    /// <summary>
-    /// Navigation property to owner.
-    /// </summary>
     public ApplicationUser? Owner { get; private set; }
+
     // ===============================
 
     // === HELPER PROPERTIES ===
-    public bool IsFromCapsule => CapsuleId.HasValue;
+    public bool IsFromCrm => CrmSource != CrmProvider.None;
 
-    // Alla fält KAN ändras manuellt, men CRM-fält kommer skrivas över vid webhook
-    public bool WillBeOverwrittenByCapsule(string fieldName)
+    /// <summary>
+    /// Checks if a field will be overwritten by CRM webhook updates.
+    /// </summary>
+    public bool WillBeOverwrittenByCrm(string fieldName)
     {
-        if (!IsFromCapsule) return false;
+        if (!IsFromCrm) return false;
 
         var crmFields = new[] { "Name", "About", "Websites",
-                                "Addresses", "PictureURL",
-                                "CapsuleUpdatedAt", "LastContactedAt" };
+                                "PictureURL", "CrmUpdatedAt", "LastContactedAt" };
         return crmFields.Contains(fieldName);
     }
 
@@ -72,7 +67,7 @@ public class Prospect : Entity
     // === FACTORY METHODS ===
 
     /// <summary>
-    /// Skapar en manuell prospect (ej från Capsule CRM).
+    /// Creates a manual prospect (not from any CRM).
     /// </summary>
     public static Prospect CreateManual(
         string name,
@@ -91,53 +86,58 @@ public class Prospect : Entity
             Name = name.Trim(),
             OwnerId = ownerId,
             Notes = notes,
-            IsPending = false,  // Manuella prospects är direkt godkända
-            CapsuleId = null,   // Inte från Capsule
+            IsPending = false,
+            CrmSource = CrmProvider.None,
+            ExternalCrmId = null,
 
-            // Konvertera enkla strängar till value objects
-            Websites = websiteUrls?.Select(url => new CapsuleWebsite(url, null, null)).ToList() ?? new()
+            // Convert simple strings to value objects
+            Websites = websiteUrls?.Select(url => new Website(url, null, null)).ToList() ?? new()
         };
 
         return prospect;
     }
 
     /// <summary>
-    /// Skapar en pending prospect från Capsule CRM webhook.
+    /// Creates a pending prospect from a CRM system.
+    /// The prospect must be claimed by a user before being fully activated.
     /// </summary>
-    public static Prospect CreatePendingFromCapsule(
-        long capsuleId,
+    public static Prospect CreatePendingFromCrm(
+        CrmProvider crmSource,
+        string externalCrmId,
         string name,
         string? about,
-        DateTime capsuleCreatedAt,
-        DateTime capsuleUpdatedAt,
+        DateTime crmCreatedAt,
+        DateTime crmUpdatedAt,
         DateTime? lastContactedAt,
         string? pictureURL,
-        List<CapsuleAddress>? addresses = null,
-        List<CapsuleWebsite>? websites = null,
-        List<CapsuleTag>? tags = null,
-        List<CapsuleCustomField>? customFields = null)
+        List<Website>? websites = null,
+        List<Tag>? tags = null,
+        List<CustomField>? customFields = null)
     {
-        if (capsuleId <= 0)
-            throw new ArgumentException("CapsuleId must be positive", nameof(capsuleId));
+        if (crmSource == CrmProvider.None)
+            throw new ArgumentException("CrmSource cannot be None for CRM-imported prospects", nameof(crmSource));
+
+        if (string.IsNullOrWhiteSpace(externalCrmId))
+            throw new ArgumentException("ExternalCrmId is required for CRM-imported prospects", nameof(externalCrmId));
 
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required", nameof(name));
 
         var prospect = new Prospect
         {
-            CapsuleId = capsuleId,
+            CrmSource = crmSource,
+            ExternalCrmId = externalCrmId,
             Name = name.Trim(),
             About = about,
-            CapsuleCreatedAt = capsuleCreatedAt,
-            CapsuleUpdatedAt = capsuleUpdatedAt,
+            CrmCreatedAt = crmCreatedAt,
+            CrmUpdatedAt = crmUpdatedAt,
             LastContactedAt = lastContactedAt,
             PictureURL = pictureURL,
-            Addresses = addresses ?? new(),
             Websites = websites ?? new(),
             Tags = tags ?? new(),
             CustomFields = customFields ?? new(),
-            IsPending = true,   // Väntar på att claimeas
-            OwnerId = null      // Ingen owner förrän claimed
+            IsPending = true,
+            OwnerId = null
         };
 
         return prospect;
@@ -146,21 +146,20 @@ public class Prospect : Entity
     // === UPDATE METHODS ===
 
     /// <summary>
-    /// Uppdaterar Capsule CRM-data från webhook (party/updated).
+    /// Updates CRM data from webhook (e.g. party/updated from Capsule).
     /// </summary>
-    public void UpdateFromCapsule(
+    public void UpdateFromCrm(
         string? name = null,
         string? about = null,
-        DateTime? capsuleUpdatedAt = null,
+        DateTime? crmUpdatedAt = null,
         DateTime? lastContactedAt = null,
         string? pictureURL = null,
-        List<CapsuleAddress>? addresses = null,
-        List<CapsuleWebsite>? websites = null,
-        List<CapsuleTag>? tags = null,
-        List<CapsuleCustomField>? customFields = null)
+        List<Website>? websites = null,
+        List<Tag>? tags = null,
+        List<CustomField>? customFields = null)
     {
-        if (!IsFromCapsule)
-            throw new InvalidOperationException("Cannot update non-Capsule prospect from Capsule data");
+        if (!IsFromCrm)
+            throw new InvalidOperationException("Cannot update non-CRM prospect from CRM data");
 
         if (name is not null)
         {
@@ -170,11 +169,10 @@ public class Prospect : Entity
         }
 
         if (about is not null) About = about;
-        if (capsuleUpdatedAt.HasValue) CapsuleUpdatedAt = capsuleUpdatedAt.Value;
+        if (crmUpdatedAt.HasValue) CrmUpdatedAt = crmUpdatedAt.Value;
         if (lastContactedAt.HasValue) LastContactedAt = lastContactedAt;
         if (pictureURL is not null) PictureURL = pictureURL;
 
-        if (addresses is not null) Addresses = addresses;
         if (websites is not null) Websites = websites;
         if (tags is not null) Tags = tags;
         if (customFields is not null) CustomFields = customFields;
@@ -183,8 +181,8 @@ public class Prospect : Entity
     }
 
     /// <summary>
-    /// Uppdaterar manuellt redigerbara fält (fungerar för både Capsule och manuella prospects).
-    /// OBS: För Capsule prospects kan CRM-fält skrivas över vid nästa webhook.
+    /// Updates manually editable fields (works for both CRM and manual prospects).
+    /// NOTE: For CRM prospects, CRM fields may be overwritten on next webhook.
     /// </summary>
     public void UpdateBasics(
         string? name = null,
@@ -192,7 +190,8 @@ public class Prospect : Entity
         string? notes = null,
         string? mailTitle = null,
         string? mailBodyPlain = null,
-        string? mailBodyHTML = null)
+        string? mailBodyHTML = null,
+        string? linkedInMessage = null)
     {
         if (name is not null)
         {
@@ -201,20 +200,32 @@ public class Prospect : Entity
             Name = name.Trim();
         }
 
-        // Konvertera enkla strängar till value objects
+        // Convert simple strings to value objects
         if (websiteUrls is not null)
-            Websites = websiteUrls.Select(url => new CapsuleWebsite(url, null, null)).ToList();
+            Websites = websiteUrls.Select(url => new Website(url, null, null)).ToList();
 
+        // BUG: This is probably why i cant save empty notes, which I would like to be able to do.
         if (notes is not null) Notes = notes;
+
         if (mailTitle is not null) MailTitle = mailTitle;
         if (mailBodyPlain is not null) MailBodyPlain = mailBodyPlain;
         if (mailBodyHTML is not null) MailBodyHTML = mailBodyHTML;
+        if (linkedInMessage is not null) LinkedInMessage = linkedInMessage;
 
         Touch();
     }
 
+    public void UpdateLinkedInMessage(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("LinkedIn Message cannot be empty", nameof(message));
+
+        LinkedInMessage = message;
+        Touch();
+    }
+
     /// <summary>
-    /// Claimar en pending Capsule prospect (först till kvarn).
+    /// Claims a pending CRM prospect (first come, first served).
     /// </summary>
     public void Claim(string ownerId)
     {
@@ -224,8 +235,8 @@ public class Prospect : Entity
         if (!IsPending)
             throw new InvalidOperationException("Cannot claim prospect that is not pending");
 
-        if (!IsFromCapsule)
-            throw new InvalidOperationException("Cannot claim non-Capsule prospect");
+        if (!IsFromCrm)
+            throw new InvalidOperationException("Cannot claim non-CRM prospect");
 
         OwnerId = ownerId;
         IsPending = false;
@@ -238,9 +249,9 @@ public class Prospect : Entity
     public void AddContactPerson(string name, string? title = null, string? email = null)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
-        
+
         ContactPersons ??= new List<ContactPerson>();
-        
+
         // Simple de-dupe by name for now, logic can be refined later
         if (ContactPersons.Any(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             return;
@@ -297,25 +308,25 @@ public class Prospect : Entity
         var contact = ContactPersons.FirstOrDefault(c => c.Id == contactPersonId);
         if (contact == null)
             throw new ArgumentException($"Contact person with ID {contactPersonId} not found for this prospect", nameof(contactPersonId));
-        
+
         // Deactivate all other contacts
         foreach (var c in ContactPersons.Where(c => c.IsActive && c.Id != contactPersonId))
         {
             c.Deactivate();
         }
-        
+
         // Activate the selected one
         contact.Activate();
         Touch();
     }
-    
+
     /// <summary>
     /// Gets the currently active contact for this prospect.
     /// </summary>
     /// <returns>The active ContactPerson, or null if no contact is active</returns>
-    public ContactPerson? GetActiveContact() 
+    public ContactPerson? GetActiveContact()
         => ContactPersons.FirstOrDefault(c => c.IsActive);
-        
+
     /// <summary>
     /// Clears the active contact (deactivates all contacts).
     /// </summary>
@@ -328,4 +339,3 @@ public class Prospect : Entity
         Touch();
     }
 }
-

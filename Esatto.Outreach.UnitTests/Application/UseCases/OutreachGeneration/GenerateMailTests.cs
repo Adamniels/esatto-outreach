@@ -1,0 +1,108 @@
+using FluentAssertions;
+using NSubstitute;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.UseCases.OutreachGeneration;
+using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
+using Esatto.Outreach.UnitTests.Helpers;
+
+namespace Esatto.Outreach.UnitTests.Application.UseCases.OutreachGeneration;
+
+public class GenerateMailTests
+{
+    private readonly IOutreachContextBuilder _contextBuilderMock;
+    private readonly IOutreachGeneratorFactory _factoryMock;
+    private readonly IOutreachGenerator _generatorMock;
+    private readonly IProspectRepository _prospectRepoMock;
+    private readonly GenerateMail _sut;
+
+    public GenerateMailTests()
+    {
+        _contextBuilderMock = Substitute.For<IOutreachContextBuilder>();
+        _factoryMock = Substitute.For<IOutreachGeneratorFactory>();
+        _generatorMock = Substitute.For<IOutreachGenerator>();
+        _prospectRepoMock = Substitute.For<IProspectRepository>();
+
+        _factoryMock.GetGenerator(Arg.Any<string>()).Returns(_generatorMock);
+        _factoryMock.GetGenerator().Returns(_generatorMock);
+
+        _sut = new GenerateMail(_contextBuilderMock, _factoryMock, _prospectRepoMock);
+    }
+
+    [Fact]
+    public async Task Handle_WithValidProspect_GeneratesDraftAndSavesToProspect()
+    {
+        // Arrange
+        var prospectId = Guid.NewGuid();
+        var userId = "user-1";
+        var prospect = TestFactory.CreateValidManualProspect();
+        TestFactory.SetId(prospect, prospectId);
+
+        _prospectRepoMock.GetByIdAsync(prospectId, Arg.Any<CancellationToken>())
+            .Returns(prospect);
+
+        var dummyContext = new OutreachGenerationContext
+        {
+            CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
+            Instructions = "test instructions",
+            Request = new CustomEmailRequestDto(prospectId, "Test Name", null, null, null, null, null),
+            Channel = OutreachChannel.Email
+        };
+
+        _contextBuilderMock.BuildContextAsync(prospectId, userId, OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(dummyContext);
+
+        var draftResult = new CustomOutreachDraftDto(
+            Title: "Test Subject",
+            BodyPlain: "Test plain body",
+            BodyHTML: "<html><p>Test</p></html>"
+        );
+        
+        _generatorMock.GenerateAsync(dummyContext, Arg.Any<CancellationToken>())
+            .Returns(draftResult);
+
+        // Act
+        var result = await _sut.Handle(prospectId, userId, null, CancellationToken.None);
+
+        // Assert
+        result.Should().NotBeNull();
+        prospect.MailTitle.Should().Be("Test Subject");
+        prospect.MailBodyPlain.Should().Be("Test plain body");
+        
+        await _prospectRepoMock.Received(1).UpdateAsync(prospect, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithMissingProspect_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var prospectId = Guid.NewGuid();
+        
+        var dummyContext = new OutreachGenerationContext
+        {
+            CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
+            Instructions = "test",
+            Request = new CustomEmailRequestDto(prospectId, "Test", null, null, null, null, null),
+            Channel = OutreachChannel.Email
+        };
+        
+        _contextBuilderMock.BuildContextAsync(prospectId, "u-1", OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(dummyContext);
+            
+        _generatorMock.GenerateAsync(Arg.Any<OutreachGenerationContext>(), Arg.Any<CancellationToken>())
+            .Returns(new CustomOutreachDraftDto("A", "B", "C"));
+            
+        // Mock returns null (missing prospect)
+        _prospectRepoMock.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns((Prospect)null!); 
+
+            
+        // Act & Assert
+        Func<Task> act = async () => await _sut.Handle(prospectId, "u-1", null, CancellationToken.None);
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not found*");
+    }
+}

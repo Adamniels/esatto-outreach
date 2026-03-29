@@ -57,86 +57,16 @@ public class WorkflowTemplate : Entity
     
     public void ReorderSteps()
     {
-        // Sort steps by DayOffset, then by TimeOfDay
         var ordered = Steps
             .OrderBy(s => s.DayOffset)
             .ThenBy(s => s.TimeOfDay)
             .ToList();
         
-        // Reassign OrderIndex sequentially
         for (int i = 0; i < ordered.Count; i++)
         {
             ordered[i].SetOrderIndex(i);
         }
         
         Touch();
-    }
-}
-
-public class WorkflowTemplateStep : Entity
-{
-    public Guid WorkflowTemplateId { get; private set; }
-
-    public int OrderIndex { get; private set; }
-    public int DayOffset { get; private set; }
-    public TimeSpan TimeOfDay { get; private set; }
-
-    public WorkflowStepType StepType { get; private set; }
-    public ContentGenerationStrategy? GenerationStrategy { get; private set; }
-
-    protected WorkflowTemplateStep() {}
-
-    public static WorkflowTemplateStep Create(WorkflowStepType type, int dayOffset, TimeSpan timeOfDay, int orderIndex, ContentGenerationStrategy? generationStrategy = null)
-    {
-        // Validate: Email and LinkedIn Message steps MUST have a generation strategy
-        if ((type == WorkflowStepType.Email || type == WorkflowStepType.LinkedInMessage) && generationStrategy == null)
-        {
-            throw new ArgumentException($"{type} step requires a content generation strategy");
-        }
-        
-        // Validate: Other step types should NOT have a generation strategy
-        if (type != WorkflowStepType.Email && type != WorkflowStepType.LinkedInMessage && generationStrategy != null)
-        {
-            throw new ArgumentException($"{type} step should not have a content generation strategy");
-        }
-        
-       return new WorkflowTemplateStep
-       {
-           StepType = type,
-           DayOffset = dayOffset,
-           TimeOfDay = timeOfDay,
-           OrderIndex = orderIndex,
-           GenerationStrategy = generationStrategy
-       };
-    }
-    
-    public void SetOrderIndex(int newIndex)
-    {
-        OrderIndex = newIndex;
-        Touch();
-    }
-    
-    public void UpdateConfiguration(WorkflowStepType type, int dayOffset, TimeSpan timeOfDay, WorkflowTemplate template, ContentGenerationStrategy? generationStrategy = null)
-    {
-        // Validate: Email and LinkedIn Message steps MUST have a generation strategy
-        if ((type == WorkflowStepType.Email || type == WorkflowStepType.LinkedInMessage) && generationStrategy == null)
-        {
-            throw new ArgumentException($"{type} step requires a content generation strategy");
-        }
-        
-        // Validate: Other step types should NOT have a generation strategy
-        if (type != WorkflowStepType.Email && type != WorkflowStepType.LinkedInMessage && generationStrategy != null)
-        {
-            throw new ArgumentException($"{type} step should not have a content generation strategy");
-        }
-        
-        StepType = type;
-        DayOffset = dayOffset;
-        TimeOfDay = timeOfDay;
-        GenerationStrategy = generationStrategy;
-        Touch();
-        
-        // Trigger reordering of all steps after updating this step's day/time
-        template?.ReorderSteps();
     }
 }

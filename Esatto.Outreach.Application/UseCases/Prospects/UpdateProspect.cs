@@ -1,6 +1,5 @@
-using Esatto.Outreach.Application.Abstractions;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Domain.Enums;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.DTOs.Prospects;
 
 namespace Esatto.Outreach.Application.UseCases.Prospects;
 
@@ -26,7 +25,8 @@ public class UpdateProspect
             notes: dto.Notes,
             mailTitle: dto.MailTitle,
             mailBodyPlain: dto.MailBodyPlain,
-            mailBodyHTML: dto.MailBodyHTML
+            mailBodyHTML: dto.MailBodyHTML,
+            linkedInMessage: dto.LinkedInMessage
         );
 
         if (dto.Status.HasValue)

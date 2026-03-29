@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
 
 namespace Esatto.Outreach.Application.UseCases.Prospects;
 

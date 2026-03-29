@@ -1,10 +1,9 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Application.DTOs.Prospects;
+using Esatto.Outreach.Application.DTOs.Intelligence;
 using Esatto.Outreach.Application.UseCases.Prospects;
-using Esatto.Outreach.Application.UseCases.EmailGeneration;
-using Esatto.Outreach.Application.UseCases.EmailDelivery;
-using Esatto.Outreach.Application.UseCases.SoftDataCollection;
-using Esatto.Outreach.Application.UseCases.Chat;
+using Esatto.Outreach.Application.UseCases.OutreachGeneration;
+using Esatto.Outreach.Application.UseCases.Intelligence;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -65,7 +64,7 @@ public static class ProspectEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var deleted = await useCase.ExecuteAsync(id, userId, ct);
+                var deleted = await useCase.Handle(id, userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (UnauthorizedAccessException)
@@ -98,11 +97,11 @@ public static class ProspectEndpoints
         .RequireAuthorization();
 
         app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
-            Guid prospectId, 
-            Guid contactId, 
-            UpdateContactPersonDto dto, 
-            UpdateContactPerson useCase, 
-            ClaimsPrincipal user, 
+            Guid prospectId,
+            Guid contactId,
+            UpdateContactPersonDto dto,
+            UpdateContactPerson useCase,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -114,10 +113,10 @@ public static class ProspectEndpoints
         .RequireAuthorization();
 
         app.MapDelete("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
-            Guid prospectId, 
-            Guid contactId, 
-            DeleteContactPerson useCase, 
-            ClaimsPrincipal user, 
+            Guid prospectId,
+            Guid contactId,
+            DeleteContactPerson useCase,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -225,7 +224,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/email/draft", async (
            Guid id,
-           GenerateMailOpenAIResponeAPI useCase,
+           GenerateMail useCase,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
@@ -249,48 +248,60 @@ public static class ProspectEndpoints
             }
         }).RequireAuthorization();
 
-        app.MapPost("/prospects/{id:guid}/email/send", async (
-            Guid id,
-            SendEmailViaN8n useCase,
-            CancellationToken ct) =>
+        // ============ LINKEDIN ENDPOINTS ============
+        // LinkedIn message generation is similar to email, but we can have a separate endpoint for clarity
+
+        app.MapPost("/prospects/{id:guid}/linkedin/draft", async (
+           Guid id,
+           GenerateLinkedInMessage useCase,
+           ClaimsPrincipal user,
+           string? type,
+           CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
             try
             {
-                var result = await useCase.Handle(id, ct);
-                return result.Success
-                    ? Results.Ok(result)
-                    : Results.BadRequest(result);
+                var prospect = await useCase.Handle(id, userId, type, ct);
+                return Results.Ok(prospect);
             }
             catch (InvalidOperationException ex)
             {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
                 return Results.BadRequest(new { error = ex.Message });
             }
-            catch (Exception ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: 500);
-            }
-        });
+        }).RequireAuthorization();
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
             try
             {
-                var res = await useCase.Handle(id, dto, ct);
+                var res = await useCase.Handle(id, userId, dto, ct);
                 return Results.Ok(res);
             }
             catch (InvalidOperationException ex)
             {
                 return Results.NotFound(new { error = ex.Message });
             }
-        });
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
+        }).RequireAuthorization();
 
         app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat useCase, CancellationToken ct) =>
         {
-            var success = await useCase.ExecuteAsync(id, ct);
+            var success = await useCase.Handle(id, ct);
             return success ? Results.NoContent() : Results.NotFound();
         })
         .RequireAuthorization();
@@ -301,12 +312,20 @@ public static class ProspectEndpoints
             Guid id,
             GenerateEntityIntelligence useCase,
             ILogger<Program> logger,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
             try
             {
-                var softData = await useCase.Handle(id, ct);
+                var softData = await useCase.Handle(id, userId, ct);
                 return Results.Ok(softData);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
             }
             catch (KeyNotFoundException ex)
             {
@@ -328,6 +347,6 @@ public static class ProspectEndpoints
                 logger.LogError(ex, "Failed to enrich prospect {Id}", id);
                 return Results.Json(new { error = ex.Message }, statusCode: 500);
             }
-        });
+        }).RequireAuthorization();
     }
 }

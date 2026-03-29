@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 using System.Text.RegularExpressions;
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Services;
 
 namespace Esatto.Outreach.Infrastructure.Services.Scraping;
 
@@ -96,7 +96,7 @@ public class WebScraperService : IWebScraperService
 
     private List<string> FilterRelevantUrls(List<string> urls)
     {
-        // Blocklist (from n8n workflow)
+        // Blocklist for low-relevance pages
         var excludePatterns = new[] 
         {
             "/kontakt", "/contact", "/kontakta-oss", "/jobb", "/karriar", "/career", "/job",

@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.Services;

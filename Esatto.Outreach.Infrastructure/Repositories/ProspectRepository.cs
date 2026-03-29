@@ -1,5 +1,6 @@
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Esatto.Outreach.Infrastructure.Repositories;
@@ -23,11 +24,11 @@ public class ProspectRepository : IProspectRepository
             .Include(p => p.EntityIntelligence)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    public async Task<Prospect?> GetByCapsuleIdAsync(long capsuleId, CancellationToken ct = default)
+    public async Task<Prospect?> GetByExternalCrmIdAsync(CrmProvider provider, string externalId, CancellationToken ct = default)
         => await _db.Prospects
             .Include(p => p.EntityIntelligence)
             .Include(p => p.Owner)
-            .FirstOrDefaultAsync(p => p.CapsuleId == capsuleId, ct);
+            .FirstOrDefaultAsync(p => p.CrmSource == provider && p.ExternalCrmId == externalId, ct);
 
     public async Task<IReadOnlyList<Prospect>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default)
         => await _db.Prospects

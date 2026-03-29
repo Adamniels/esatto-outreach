@@ -21,4 +21,14 @@ public sealed class ApplicationUser : IdentityUser
     /// Last login timestamp.
     /// </summary>
     public DateTime? LastLoginUtc { get; set; }
+
+    /// <summary>
+    /// Company ID.
+    /// </summary>
+    public Guid? CompanyId { get; set; }
+
+    /// <summary>
+    /// Company.
+    /// </summary>
+    public Company? Company { get; set; }
 }

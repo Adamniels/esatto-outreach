@@ -1,26 +1,26 @@
-using Microsoft.Extensions.Http;
-using System.Net.Http;
+using Esatto.Outreach.Infrastructure.Services;
+using Esatto.Outreach.Infrastructure.Clients;
+using Esatto.Outreach.Infrastructure.Options;
+using Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 using System.Text;
 using Esatto.Outreach.Domain.Entities;
-using Esatto.Outreach.Infrastructure.Common;
+
 
 using Esatto.Outreach.Infrastructure.Services.Scraping;
 using Esatto.Outreach.Infrastructure.Services.Enrichment;
-using Esatto.Outreach.Infrastructure.EmailGeneration;
-using Esatto.Outreach.Infrastructure.EmailDelivery;
-using Esatto.Outreach.Infrastructure.Chat;
-using Esatto.Outreach.Infrastructure.Auth;
-using Esatto.Outreach.Infrastructure.CompanyInfo;
-using Esatto.Outreach.Application.Abstractions;
+
+
+
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Infrastructure.Repositories;
-using Esatto.Outreach.Application.UseCases.Workflows;
-using Esatto.Outreach.Infrastructure.Services;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Esatto.Outreach.Infrastructure;
@@ -117,33 +117,24 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
         services.AddScoped<IProspectRepository, ProspectRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IEntityIntelligenceRepository, EntityIntelligenceRepository>();
-        services.AddScoped<IGenerateEmailPromptRepository, GenerateEmailPromptRepository>();
+        services.AddScoped<IOutreachPromptRepository, OutreachPromptRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-        // Company Info
-        services.AddSingleton<ICompanyInfoFileService, CompanyInfoFileService>();
-
+        services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
+        services.AddScoped<IProjectCaseRepository, ProjectCaseRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         // OpenAI options (shared across features)
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
         // Email Generation (multi-method)
         services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
-        services.Configure<EsattoRagOptions>(configuration.GetSection(EsattoRagOptions.SectionName));
-        services.AddHttpClient<OpenAICustomEmailGenerator>();
+        services.AddHttpClient<OpenAICustomOutreachGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
-        services.AddHttpClient<EsattoRagEmailGenerator>();
-        services.AddScoped<IEmailContextBuilder, EmailContextBuilder>();
-        services.AddScoped<IEmailGeneratorFactory, EmailGeneratorFactory>();
-
-        // Email Delivery (N8n)
-        services.Configure<N8nOptions>(configuration.GetSection(N8nOptions.SectionName));
-        services.AddHttpClient<IN8nEmailService, N8nEmailService>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<N8nOptions>>().Value;
-            client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
-        });
+        services.AddScoped<IOutreachContextBuilder, OutreachContextBuilder>();
+        services.AddScoped<IOutreachGeneratorFactory, EmailGeneratorFactory>();
 
         // Chat
         services.AddHttpClient<IOpenAIChatClient, OpenAIChatService>();
@@ -159,20 +150,13 @@ public static class DependencyInjection
         services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
         services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
         services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
-        services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>(); // Register UseCase
 
         // Workflow Mocks
         services.AddScoped<IEmailSender, MockEmailSender>();
         services.AddScoped<ILinkedInActionsClient, MockLinkedInClient>();
 
-
-        // Workflow Services
+        // Workflow Repository
         services.AddScoped<IWorkflowRepository, WorkflowRepository>();
-        services.AddScoped<WorkflowTemplateService>();
-
-        services.AddScoped<WorkflowInstanceService>();
-        services.AddScoped<DraftGenerationService>();
-        services.AddScoped<StepExecutionService>();
 
         return services;
 

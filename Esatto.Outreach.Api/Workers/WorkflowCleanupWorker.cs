@@ -1,9 +1,4 @@
-using Esatto.Outreach.Application.Abstractions;
-using Esatto.Outreach.Domain.Entities;
-using Esatto.Outreach.Domain.Enums;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Esatto.Outreach.Application.Abstractions.Repositories;
 
 namespace Esatto.Outreach.Api.Workers;
 

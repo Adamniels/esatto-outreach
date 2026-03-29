@@ -1,5 +1,4 @@
 using Esatto.Outreach.Domain.Entities;
-using Esatto.Outreach.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

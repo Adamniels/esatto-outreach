@@ -3,6 +3,7 @@ using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi.Models;
 using DotNetEnv;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.RateLimiting;
 
 // Load .env file only if it exists (local development)
 // On Azure, Application Settings are used instead
@@ -49,6 +50,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Register>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.Login>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.RefreshAccessToken>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.ValidateInvitation>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.AcceptInvitation>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Auth.CreateInvitation>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.CreateProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.UpdateProspect>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetProspectById>();
@@ -57,36 +61,63 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.Delete
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.AddContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.UpdateContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.DeleteContactPerson>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.EnrichContactPerson>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.EnrichContactPerson>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.SetActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.ClearActiveContact>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Prospects.GetActiveContact>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailGeneration.GenerateMailOpenAIResponeAPI>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailDelivery.SendEmailViaN8n>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ChatWithProspect>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Chat.ResetProspectChat>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.SoftDataCollection.GenerateEntityIntelligence>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.ListEmailPrompts>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.GetActiveEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.CreateEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.UpdateEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.ActivateEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.EmailPrompts.DeleteEmailPrompt>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Batch.GenerateEntityIntelligenceBatch>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Batch.GenerateEmailBatch>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CompanyInfo.GetCompanyInfo>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.CreateOrUpdateProspectFromCapsule>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.ClaimPendingProspect>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.RejectPendingProspect>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.ListPendingProspects>();
-builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.CapsuleDataSource.HandleCapsuleWebhook>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachGeneration.GenerateMail>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachGeneration.GenerateLinkedInMessage>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.ChatWithProspect>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.ResetProspectChat>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.GenerateEntityIntelligence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.ListOutreachPrompts>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.GetActiveOutreachPrompt>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.CreateOutreachPrompt>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.UpdateOutreachPrompt>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.ActivateOutreachPrompt>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.OutreachPrompts.DeleteOutreachPrompt>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.GetCompanyInfo>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Intelligence.UpdateCompanyInfo>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.GetProjectCases>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.GetProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.CreateProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.UpdateProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.ProjectCases.DeleteProjectCase>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.CreateOrUpdateProspectFromCapsule>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.ClaimPendingProspect>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.RejectPendingProspect>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.ListPendingProspects>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.HandleCapsuleWebhook>();
+
+// Workflow Use Cases
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.CreateWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.GetWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ListWorkflowTemplates>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.SetDefaultWorkflowTemplate>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowTemplateStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.CreateWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ActivateWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowInstance>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ListWorkflowInstances>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.RegenerateWorkflowStepDraft>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.AddWorkflowStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.DeleteWorkflowStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowStepContent>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.UpdateWorkflowStepConfig>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Workflows.ValidateWorkflowActivation>();
+
+// Application Services (internal services used by use cases and workers)
+builder.Services.AddScoped<Esatto.Outreach.Application.Services.WorkflowDraftGenerator>();
+builder.Services.AddScoped<Esatto.Outreach.Application.Services.WorkflowStepExecutor>();
 
 // Workflow Worker
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowExecutionWorker>();
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.WorkflowCleanupWorker>();
 
 
-// CORS - allow n8n and frontend UI
+// CORS - allow frontend UI
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("ui", p => p
@@ -106,6 +137,19 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Esatto.Outreach API", Version = "v1" });
 });
 
+// Rate Limiting for Auth
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 var app = builder.Build();
 
 // Configure port - use Azure's PORT environment variable if available, otherwise default to 3000
@@ -117,6 +161,7 @@ app.UseCors("ui");
 // ============ AUTHENTICATION & AUTHORIZATION MIDDLEWARE ============
 app.UseAuthentication();  // MUST be before UseAuthorization
 app.UseAuthorization();
+app.UseRateLimiter();
 // ===================================================================
 
 if (app.Environment.IsDevelopment())
@@ -130,10 +175,10 @@ app.MapGet("/healthz", () => Results.Ok(new { status = "ok" }));
 
 // ============ MAP ALL ENDPOINTS ============
 app.MapAuthEndpoints();
+app.MapInvitationEndpoints();
 app.MapProspectEndpoints();
-app.MapBatchEndpoints();
 app.MapCapsuleEndpoints();
-app.MapEmailPromptEndpoints();
+app.MapOutreachPromptEndpoints();
 app.MapCompanyInfoEndpoints();
 app.MapWorkflowEndpoints();
 

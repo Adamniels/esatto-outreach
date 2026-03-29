@@ -18,9 +18,15 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.Id)
             .ValueGeneratedNever();
 
-        // ========== CAPSULE CRM DATA ==========
-        b.Property(x => x.CapsuleId);
+        // ========== CRM IDENTITY ==========
+        b.Property(x => x.CrmSource)
+            .HasConversion<int>()
+            .IsRequired();
 
+        b.Property(x => x.ExternalCrmId)
+            .HasMaxLength(100);
+
+        // ========== CORE DATA ==========
         b.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
@@ -28,33 +34,22 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         b.Property(x => x.About)
             .HasColumnType("text");
 
-        b.Property(x => x.CapsuleCreatedAt);
+        b.Property(x => x.CrmCreatedAt);
 
-        b.Property(x => x.CapsuleUpdatedAt);
+        b.Property(x => x.CrmUpdatedAt);
 
         b.Property(x => x.LastContactedAt);
 
         b.Property(x => x.PictureURL)
             .HasMaxLength(500);
 
-        // Nested collections som JSONB
+        // Nested collections as JSONB (generic types, CRM-agnostic)
         b.Property(x => x.Websites)
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleWebsite>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleWebsite>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleWebsite>>(
-                (c1, c2) => c1!.SequenceEqual(c2!),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                c => c.ToList()));
-
-
-        b.Property(x => x.Addresses)
-            .HasColumnType("jsonb")
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleAddress>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleAddress>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleAddress>>(
+                v => JsonSerializer.Deserialize<List<Website>>(v, (JsonSerializerOptions?)null) ?? new List<Website>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<Website>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                 c => c.ToList()));
@@ -63,8 +58,8 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleTag>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleTag>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleTag>>(
+                v => JsonSerializer.Deserialize<List<Tag>>(v, (JsonSerializerOptions?)null) ?? new List<Tag>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<Tag>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                 c => c.ToList()));
@@ -73,8 +68,8 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<CapsuleCustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CapsuleCustomField>())
-            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CapsuleCustomField>>(
+                v => JsonSerializer.Deserialize<List<CustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CustomField>())
+            .Metadata.SetValueComparer(new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<CustomField>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),
                 c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                 c => c.ToList()));
@@ -134,15 +129,15 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
             .OnDelete(DeleteBehavior.Restrict);
 
         // ========== INDEX ==========
-        // CapsuleId (unique för Capsule prospects)
-        b.HasIndex(x => x.CapsuleId)
+        // External CRM ID (unique per CRM provider)
+        b.HasIndex(x => new { x.CrmSource, x.ExternalCrmId })
             .IsUnique()
-            .HasFilter("\"CapsuleId\" IS NOT NULL");  // Partial unique index
+            .HasFilter("\"ExternalCrmId\" IS NOT NULL");
 
-        // Pending prospects (viktigt för snabb hämtning)
+        // Pending prospects
         b.HasIndex(x => x.IsPending);
 
-        // Composite för pending + created (sortering)
+        // Composite for pending + created (sorting)
         b.HasIndex(x => new { x.IsPending, x.CreatedUtc });
 
         // Owner queries
@@ -151,13 +146,13 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
         // Owner + status
         b.HasIndex(x => new { x.OwnerId, x.Status });
 
-        // Name (för sökningar)
+        // Name (for searches)
         b.HasIndex(x => x.Name);
 
-        // Status + created (för filtrering)
+        // Status + created (for filtering)
         b.HasIndex(x => new { x.Status, x.CreatedUtc });
 
-        // Relationer
+        // Relations
         b.HasIndex(x => x.EntityIntelligenceId);
     }
 }

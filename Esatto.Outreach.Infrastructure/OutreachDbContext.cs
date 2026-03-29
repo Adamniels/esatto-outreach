@@ -13,13 +13,19 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
     // Betyder bara: "jag har en tabell för prospect Entities"
     public DbSet<Prospect> Prospects => Set<Prospect>();
 
+    public DbSet<Company> Companies => Set<Company>();
+    public DbSet<CompanyInformation> CompanyInformations => Set<CompanyInformation>();
+    public DbSet<ProjectCase> ProjectCases => Set<ProjectCase>();
+
     public DbSet<EntityIntelligence> EntityIntelligences => Set<EntityIntelligence>();
     
     public DbSet<ContactPerson> ContactPersons => Set<ContactPerson>();
 
-    public DbSet<GenerateEmailPrompt> GenerateEmailPrompts => Set<GenerateEmailPrompt>();
+    public DbSet<OutreachPrompt> OutreachPrompts => Set<OutreachPrompt>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<Invitation> Invitations => Set<Invitation>();
 
     public DbSet<WorkflowTemplate> WorkflowTemplates => Set<WorkflowTemplate>();
     public DbSet<WorkflowTemplateStep> WorkflowTemplateSteps => Set<WorkflowTemplateStep>();

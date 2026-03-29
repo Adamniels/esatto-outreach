@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs;
-using Esatto.Outreach.Application.UseCases.CapsuleDataSource;
+using Esatto.Outreach.Application.DTOs.Webhooks;
+using Esatto.Outreach.Application.UseCases.Webhooks;
 
 namespace Esatto.Outreach.Api.Endpoints;
 

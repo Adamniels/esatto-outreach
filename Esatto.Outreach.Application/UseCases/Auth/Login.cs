@@ -1,6 +1,8 @@
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Application.UseCases.Auth;
@@ -27,17 +29,17 @@ public sealed class Login
         _refreshTokenRepo = refreshTokenRepo;
     }
 
-    public async Task<(bool Success, AuthResponseDto? Data, string? Error)> Handle(
+    public async Task<AuthResponseDto> Handle(
         LoginRequestDto request,
         CancellationToken ct = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return (false, null, "Invalid email or password");
+            throw new AuthenticationFailedException("Invalid email or password");
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
-            return (false, null, "Invalid email or password");
+            throw new AuthenticationFailedException("Invalid email or password");
 
         // Update last login
         user.LastLoginUtc = DateTime.UtcNow;
@@ -55,13 +57,11 @@ public sealed class Login
             ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
         }, ct);
 
-        var response = new AuthResponseDto(
+        return new AuthResponseDto(
             accessToken,
             refreshToken,
             expiresAt,
             new UserDto(user.Id, user.Email!, user.FullName)
         );
-
-        return (true, response, null);
     }
 }

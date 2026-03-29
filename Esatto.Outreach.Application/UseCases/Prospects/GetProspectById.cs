@@ -1,5 +1,5 @@
-using Esatto.Outreach.Application.Abstractions;
-using Esatto.Outreach.Application.DTOs;
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.DTOs.Prospects;
 
 namespace Esatto.Outreach.Application.UseCases.Prospects;
 

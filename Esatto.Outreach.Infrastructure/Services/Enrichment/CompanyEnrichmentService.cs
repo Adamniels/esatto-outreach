@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Esatto.Outreach.Application.Abstractions;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Domain.ValueObjects;
 using Esatto.Outreach.Infrastructure.Services.Scraping;
 using Microsoft.Extensions.Logging;
-using Esatto.Outreach.Domain.Entities; // Added for KnowledgeSnippet
 
 namespace Esatto.Outreach.Infrastructure.Services.Enrichment;
 
