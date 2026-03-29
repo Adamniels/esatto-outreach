@@ -19,7 +19,11 @@ public sealed class AcceptInvitation
     private readonly IRefreshTokenRepository _refreshTokenRepo;
     private readonly IOutreachPromptRepository _promptRepo;
 
-    private const string DEFAULT_PROMPT = @"Fokusera på hur vi (Esatto AB) kan hjälpa företaget. 
+    // TODO: maybe create a default prompt for each prompt type
+    // Do that inside the database instead of hardcoding it here, 
+    // or at least move this string to a constant or resource file
+    // Why is this a good idea?
+    private const string DEFAULT_PROMPT = @"Fokusera på hur vi kan hjälpa företaget. 
 Använd informationen ovan om Esatto för att:
 - Hitta relevanta cases som liknar kundens bransch eller utmaningar
 - Visa konkret förståelse för kundens behov genom att referera till liknande projekt

@@ -1,5 +1,6 @@
 using Esatto.Outreach.Domain.Common;
 using Esatto.Outreach.Domain.Enums;
+using Esatto.Outreach.Domain.Extensions;
 
 namespace Esatto.Outreach.Domain.Entities;
 
@@ -137,14 +138,11 @@ public class WorkflowInstance : Entity
         
         foreach (var step in Steps)
         {
-            // Check 1: Email and LinkedIn Message steps must have a generation strategy
-            if ((step.Type == WorkflowStepType.Email || step.Type == WorkflowStepType.LinkedInMessage) 
-                && step.GenerationStrategy == null)
+            if (step.Type.RequiresContent() && step.GenerationStrategy == null)
             {
                 errors.Add($"Step {step.OrderIndex + 1} ({step.Type}) is missing a generation strategy");
             }
             
-            // Check 2: If step uses UseCollectedData strategy, prospect must have Entity Intelligence
             if (step.GenerationStrategy == ContentGenerationStrategy.UseCollectedData 
                 && !hasEntityIntelligence)
             {
@@ -153,183 +151,5 @@ public class WorkflowInstance : Entity
         }
         
         return errors;
-    }
-}
-
-public class WorkflowStep : Entity
-{
-    public Guid WorkflowInstanceId { get; private set; }
-    public WorkflowInstance WorkflowInstance { get; private set; } = default!;
-    
-    public WorkflowStepType Type { get; private set; }
-    public int OrderIndex { get; private set; }
-    public int DayOffset { get; private set; }
-    public TimeSpan TimeOfDay { get; private set; }
-    public ContentGenerationStrategy? GenerationStrategy { get; private set; }
-    
-    public DateTime? RunAt { get; private set; }
-    public WorkflowStepStatus Status { get; private set; } = WorkflowStepStatus.Pending;
-
-    // Content / Drafts
-    public string? EmailSubject { get; private set; }
-    public string? BodyContent { get; private set; } // Email Body or LinkedIn Message
-    
-    public string? FailureReason { get; private set; }
-    public int RetryCount { get; private set; } = 0;
-
-    // Concurrency Token - Database generates this automatically via trigger
-    // DO NOT manually set this value - it's updated by database trigger on every save
-    public byte[]? RowVersion { get; private set; } = null;
-
-    // Note: Removed custom Touch() override
-    // Base.Touch() from Entity class handles UpdatedUtc
-    // RowVersion is automatically updated by EF Core ValueGeneratedOnAddOrUpdate
-
-    // Concurrency Token for "Claiming"
-    // We will use a dedicated RowVersion or simple byte array in EF.
-    // Ideally we add: public byte[] RowVersion { get; set; } but usually this is shadow property.
-    // Let's rely on EF Core shadow property for RowVersion, 
-    // BUT since we need to explicitly query it, maybe explicit is better?
-    // Let's stick to standard EF patterns configurd in DbContext.
-
-    protected WorkflowStep() { }
-
-    public static WorkflowStep Create(
-        WorkflowStepType type, 
-        int dayOffset,
-        TimeSpan timeOfDay,
-        int orderIndex,
-        ContentGenerationStrategy? generationStrategy = null,
-        string? emailSubject = null,
-        string? bodyContent = null)
-    {
-        // Validate: Email and LinkedIn Message steps MUST have a generation strategy
-        if ((type == WorkflowStepType.Email || type == WorkflowStepType.LinkedInMessage) && generationStrategy == null)
-        {
-            throw new ArgumentException($"{type} step requires a content generation strategy");
-        }
-        
-        // Validate: Other step types should NOT have a generation strategy
-        if (type != WorkflowStepType.Email && type != WorkflowStepType.LinkedInMessage && generationStrategy != null)
-        {
-            throw new ArgumentException($"{type} step should not have a content generation strategy");
-        }
-        
-        return new WorkflowStep
-        {
-            Type = type,
-            DayOffset = dayOffset,
-            TimeOfDay = timeOfDay,
-            OrderIndex = orderIndex,
-            GenerationStrategy = generationStrategy,
-            Status = WorkflowStepStatus.Pending,
-            EmailSubject = emailSubject,
-            BodyContent = bodyContent
-        };
-    }
-
-    public void SetOrderIndex(int newIndex)
-    {
-        OrderIndex = newIndex;
-        Touch(); // Assuming Touch is available
-    }
-
-    public void UpdateConfiguration(WorkflowStepType type, int dayOffset, TimeSpan timeOfDay, ContentGenerationStrategy? generationStrategy = null)
-    {
-        if (Status == WorkflowStepStatus.Executing || Status == WorkflowStepStatus.Succeeded)
-             throw new InvalidOperationException("Cannot update configuration of executing/succeeded step");
-
-        // Validate: Email and LinkedIn Message steps MUST have a generation strategy
-        if ((type == WorkflowStepType.Email || type == WorkflowStepType.LinkedInMessage) && generationStrategy == null)
-        {
-            throw new ArgumentException($"{type} step requires a content generation strategy");
-        }
-        
-        // Validate: Other step types should NOT have a generation strategy
-        if (type != WorkflowStepType.Email && type != WorkflowStepType.LinkedInMessage && generationStrategy != null)
-        {
-            throw new ArgumentException($"{type} step should not have a content generation strategy");
-        }
-
-        Type = type;
-        DayOffset = dayOffset;
-        TimeOfDay = timeOfDay;
-        GenerationStrategy = generationStrategy;
-        Touch();
-        
-        // Trigger reordering of all steps after updating this step's day/time
-        WorkflowInstance?.ReorderSteps();
-    }
-
-    public void Schedule(DateTime workflowStartedAt, string timeZoneId)
-    {
-        // 1. Get TimeZone
-        var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        
-        // 2. Convert StartedAt (UTC) to Local Time
-        var localStarted = TimeZoneInfo.ConvertTimeFromUtc(workflowStartedAt, tz);
-        
-        // 3. Calculate Target Run Time in Local
-        // "DayOffset" is relative to Start Day. Start Day starts at 00:00 Local.
-        var localStartDay00 = localStarted.Date;
-        var targetLocal = localStartDay00.AddDays(DayOffset).Add(TimeOfDay);
-        
-        // 4. Convert back to UTC
-        // Handle invalid time (e.g. springing forward GAP)
-        if (tz.IsInvalidTime(targetLocal))
-        {
-            // If time is invalid (skipped), add an hour? Or usually standard .NET behavior jumps forward.
-            // Let's rely on standard mapping or assume valid day/time logic.
-            // Actually .NET throws ArgumentException on invalid time for mapping back unless we assume UTC offset.
-            // Safe approach: Add small delta until valid? Or just use map.
-             // Simple hack: if invalid, add 1 hour.
-             targetLocal = targetLocal.AddHours(1);
-        }
-
-        var utcRunAt = TimeZoneInfo.ConvertTimeToUtc(targetLocal, tz);
-        
-        RunAt = utcRunAt;
-        Status = WorkflowStepStatus.Pending;
-        Touch();
-    }
-
-    public void UpdateDraft(string? subject, string? body)
-    {
-        if (Status == WorkflowStepStatus.Executing || Status == WorkflowStepStatus.Succeeded)
-             throw new InvalidOperationException("Cannot update draft of executing/succeeded step");
-
-        EmailSubject = subject;
-        BodyContent = body;
-        Touch();
-    }
-    
-    public void MarkExecuting()
-    {
-        // State transition validation
-        if (Status != WorkflowStepStatus.Pending)
-             throw new InvalidOperationException($"Cannot start executing step in state {Status}");
-             
-        Status = WorkflowStepStatus.Executing;
-        Touch();
-    }
-
-    public void MarkSucceeded()
-    {
-        Status = WorkflowStepStatus.Succeeded;
-        Touch();
-    }
-
-    public void MarkFailed(string reason)
-    {
-        Status = WorkflowStepStatus.Failed;
-        FailureReason = reason;
-        Touch();
-    }
-    
-    public void Reset()
-    {
-        Status = WorkflowStepStatus.Pending;
-        FailureReason = null;
-        Touch();
     }
 }
