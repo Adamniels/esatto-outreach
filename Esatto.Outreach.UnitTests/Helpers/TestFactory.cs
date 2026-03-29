@@ -24,11 +24,6 @@ public static class TestFactory
             null);
     }
     
-    public static WorkflowInstance CreateWorkflowInstance(Guid? prospectId = null)
-    {
-        return WorkflowInstance.Create(prospectId ?? Guid.NewGuid());
-    }
-
     public static void SetId<T>(T entity, Guid id) where T : class
     {
         var propertyInfo = typeof(T).GetProperty("Id", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

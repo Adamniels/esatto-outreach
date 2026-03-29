@@ -27,10 +27,6 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Invitation> Invitations => Set<Invitation>();
 
-    public DbSet<WorkflowTemplate> WorkflowTemplates => Set<WorkflowTemplate>();
-    public DbSet<WorkflowTemplateStep> WorkflowTemplateSteps => Set<WorkflowTemplateStep>();
-    public DbSet<WorkflowInstance> WorkflowInstances => Set<WorkflowInstance>();
-    public DbSet<WorkflowStep> WorkflowSteps => Set<WorkflowStep>();
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

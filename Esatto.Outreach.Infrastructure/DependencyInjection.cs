@@ -151,13 +151,6 @@ public static class DependencyInjection
         services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
         services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
 
-        // Workflow Mocks
-        services.AddScoped<IEmailSender, MockEmailSender>();
-        services.AddScoped<ILinkedInActionsClient, MockLinkedInClient>();
-
-        // Workflow Repository
-        services.AddScoped<IWorkflowRepository, WorkflowRepository>();
-
         return services;
 
     }

@@ -1,14 +1,14 @@
 using System.Security.Claims;
 
-using Esatto.Outreach.Application.UseCases.Track;
+using Esatto.Outreach.Application.UseCases.Sequence;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
-public static class TrackEndpoints
+public static class SequenceEndpoints
 {
-    public static void MapTrackEndpoints(this WebApplication app)
+    public static void MapSequenceEndpoints(this WebApplication app)
     {
-        app.MapGet("/tracks", async (ListTracks useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/sequences", async (ListSequences useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();

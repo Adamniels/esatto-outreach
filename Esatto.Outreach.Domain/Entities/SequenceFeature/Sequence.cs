@@ -4,16 +4,10 @@ using Esatto.Outreach.Domain.Common;
 
 namespace Esatto.Outreach.Domain.Entities;
 
-public class Track : Entity
+public class Sequence : Entity
 {
-    public Guid WorkflowInstanceId { get; private set; }
-
-    public WorkflowInstance? WorkflowInstance
-    {
-        get; private set;
-    }
-
-    public List<TrackProspect> TrackProspects { get; private set; } = new();
+    public List<SequenceStep> SequenceSteps { get; private set; } = new();
+    public List<SequenceProspect> SequenceProspects { get; private set; } = new();
 
     // TODO: add settings entity later, not sure how I want it to look like yet
 
@@ -21,11 +15,21 @@ public class Track : Entity
     public ApplicationUser? Owner { get; private set; }
 }
 
+// TODO: want to have a few different types of steps, so for example:
+// - LinkedIn follow
+// - Email
+// - LinkedIn message
+// - Follow up email
+// - Follow up LinkedIn message
+// - Follow up email
+// how can I handle this?
+public class SequenceStep : Entity
+{}
 
-public class TrackProspect : Entity
+public class SequenceProspect : Entity
 {
-    public Guid TrackId { get; private set; }
-    public Track Track { get; private set; } = default!;
+    public Guid SequenceId { get; private set; }
+    public Sequence Sequence { get; private set; } = default!;
 
     public Guid ProspectId { get; private set; }
     public Prospect Prospect { get; private set; } = default!;
@@ -35,12 +39,12 @@ public class TrackProspect : Entity
     public Guid ContactPersonId { get; private set; }
     public ContactPerson Contact { get; private set; } = default!;
 
-    // Status to track each prospect's progress through the track, because i probably 
+    // Status to track each prospect's progress through the sequence, because i probably 
     // don't want to run them all, can lead to ban or flagging.
-    public TrackProspectStatus Status { get; private set; }
+    public SequenceProspectStatus Status { get; private set; }
 }
 
-public enum TrackProspectStatus
+public enum SequenceProspectStatus
 {
     Pending,
     Active,
