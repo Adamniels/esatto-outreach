@@ -106,6 +106,8 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.PauseS
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.CancelSequence>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.GenerateStepContent>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.SequenceOrchestrator>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.SaveBuilderProgress>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.CompleteSequenceSetup>();
 
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceExecutionWorker>();
 builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceThrottleWorker>();

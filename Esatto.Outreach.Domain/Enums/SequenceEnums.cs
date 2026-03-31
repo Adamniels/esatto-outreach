@@ -8,6 +8,7 @@ public enum SequenceMode
 
 public enum SequenceStatus
 {
+    Setup,
     Draft,
     Active,
     Paused,

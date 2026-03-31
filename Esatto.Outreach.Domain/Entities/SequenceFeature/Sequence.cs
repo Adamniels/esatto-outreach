@@ -11,6 +11,7 @@ public class Sequence : Entity
     public SequenceMode Mode { get; private set; }
 
     public SequenceStatus Status { get; private set; }
+    public int CurrentBuilderStep { get; private set; } = 1;
 
     public string? OwnerId { get; private set; }
     public ApplicationUser? Owner { get; private set; }
@@ -40,7 +41,7 @@ public class Sequence : Entity
             Title = title.Trim(),
             Description = description?.Trim(),
             Mode = mode,
-            Status = SequenceStatus.Draft,
+            Status = SequenceStatus.Setup,
             OwnerId = ownerId,
             Settings = SequenceSettings.CreateDefault(mode)
         };
@@ -64,10 +65,28 @@ public class Sequence : Entity
 
     public void AddStep(SequenceStep step)
     {
-        if (Status != SequenceStatus.Draft)
-            throw new InvalidOperationException("Can only add steps to sequences in Draft status");
+        if (Status != SequenceStatus.Draft && Status != SequenceStatus.Setup)
+            throw new InvalidOperationException("Can only add steps to sequences in Draft or Setup status");
 
         SequenceSteps.Add(step);
+        Touch();
+    }
+
+    public void UpdateBuilderStep(int step)
+    {
+        if (Status != SequenceStatus.Setup)
+            throw new InvalidOperationException("Can only update builder step while in Setup status");
+
+        CurrentBuilderStep = step;
+        Touch();
+    }
+
+    public void CompleteSetup()
+    {
+        if (Status != SequenceStatus.Setup)
+            throw new InvalidOperationException("Sequence is not in Setup status");
+
+        Status = SequenceStatus.Draft;
         Touch();
     }
 }

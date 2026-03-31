@@ -28,6 +28,7 @@ public record SequenceViewDto(
     SequenceStatus Status,
     SequenceSettingsDto Settings,
     int ProspectCount,
+    int CurrentBuilderStep,
     DateTime CreatedUtc,
     DateTime? UpdatedUtc
 )
@@ -40,6 +41,7 @@ public record SequenceViewDto(
         entity.Status,
         SequenceSettingsDto.FromEntity(entity.Settings),
         entity.SequenceProspects?.Count ?? 0,
+        entity.CurrentBuilderStep,
         entity.CreatedUtc,
         entity.UpdatedUtc
     );
@@ -54,6 +56,7 @@ public record SequenceDetailsDto(
     SequenceSettingsDto Settings,
     List<SequenceStepViewDto> Steps,
     List<SequenceProspectViewDto> Prospects,
+    int CurrentBuilderStep,
     DateTime CreatedUtc,
     DateTime? UpdatedUtc
 )
@@ -67,6 +70,7 @@ public record SequenceDetailsDto(
         SequenceSettingsDto.FromEntity(entity.Settings),
         entity.SequenceSteps?.Select(SequenceStepViewDto.FromEntity).ToList() ?? [],
         entity.SequenceProspects?.Select(SequenceProspectViewDto.FromEntity).ToList() ?? [],
+        entity.CurrentBuilderStep,
         entity.CreatedUtc,
         entity.UpdatedUtc
     );
@@ -162,3 +166,9 @@ public record UpdateSequenceStepContentRequest(
     string? GeneratedSubject,
     string? GeneratedBody
 );
+
+public record SaveBuilderProgressRequest(
+    int CurrentBuilderStep
+);
+
+public record CompleteSequenceSetupRequest();

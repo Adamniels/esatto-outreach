@@ -119,6 +119,24 @@ public static class SequenceEndpoints
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
+        group.MapPut("/{id:guid}/progress", async (Guid id, SaveBuilderProgressRequest req, SaveBuilderProgress useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            try { return Results.Ok(await useCase.Handle(id, req, userId, ct)); }
+            catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
+        });
+
+        group.MapPost("/{id:guid}/complete-setup", async (Guid id, CompleteSequenceSetup useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            try { return Results.Ok(await useCase.Handle(id, userId, ct)); }
+            catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
+        });
+
         // Execution Control
         group.MapPost("/{id:guid}/activate", async (Guid id, ActivateSequence useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {

@@ -27,6 +27,10 @@ public class SequenceConfiguration : IEntityTypeConfiguration<Sequence>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(s => s.CurrentBuilderStep)
+            .IsRequired()
+            .HasDefaultValue(1);
+
         // Settings are an owned entity that map to columns in the Sequences table
         builder.OwnsOne(s => s.Settings, settingsBuilder =>
         {
