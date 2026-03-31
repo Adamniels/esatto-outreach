@@ -46,6 +46,7 @@ public class ProspectRepository : IProspectRepository
     public async Task<IReadOnlyList<Prospect>> ListByOwnerAsync(string ownerId, CancellationToken ct = default)
         => await _db.Prospects
             .Include(p => p.EntityIntelligence)
+            .Include(p => p.ContactPersons)
             .Where(p => p.OwnerId == ownerId)
             .OrderByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);

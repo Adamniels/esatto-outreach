@@ -89,6 +89,27 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.RejectP
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.ListPendingProspects>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.HandleCapsuleWebhook>();
 
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.CreateSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.UpdateSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.GetSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.DeleteSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.ListSequences>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.AddSequenceStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.UpdateSequenceStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.UpdateSequenceStepContent>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.DeleteSequenceStep>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.ReorderSequenceSteps>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.EnrollProspect>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.RemoveProspect>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.ActivateSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.PauseSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.CancelSequence>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.GenerateStepContent>();
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.SequenceOrchestrator>();
+
+builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceExecutionWorker>();
+builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceThrottleWorker>();
+
 
 // CORS - allow frontend UI
 builder.Services.AddCors(opt =>
@@ -153,7 +174,7 @@ app.MapProspectEndpoints();
 app.MapCapsuleEndpoints();
 app.MapOutreachPromptEndpoints();
 app.MapCompanyInfoEndpoints();
-
+app.MapSequenceEndpoints();
 
 app.Run();
 

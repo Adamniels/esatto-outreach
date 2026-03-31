@@ -24,7 +24,7 @@ public class GenerateMail
     {
         // 1. Determine if we need soft data based on generator type
         bool includeSoftData = !string.IsNullOrWhiteSpace(type) &&
-            type.Equals("UseCollectedData", StringComparison.OrdinalIgnoreCase);
+            type.Equals(nameof(OutreachGenerationType.UseCollectedData), StringComparison.OrdinalIgnoreCase);
 
         // 2. Build context with all required data
         var context = await _contextBuilder.BuildContextAsync(id, userId, OutreachChannel.Email, includeSoftData, ct);

@@ -1,4 +1,5 @@
 using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Entities.SequenceFeature;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,10 @@ public class OutreachDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ContactPerson> ContactPersons => Set<ContactPerson>();
 
     public DbSet<OutreachPrompt> OutreachPrompts => Set<OutreachPrompt>();
+
+    public DbSet<Sequence> Sequences => Set<Sequence>();
+    public DbSet<SequenceStep> SequenceSteps => Set<SequenceStep>();
+    public DbSet<SequenceProspect> SequenceProspects => Set<SequenceProspect>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

@@ -1,14 +1,164 @@
-// Only what is needed to display the overview of the sequence, on the page
-// where we can see all the sequences and their status. Then we can click on a sequence
-// to see the details of the sequence.
+using Esatto.Outreach.Domain.Entities.SequenceFeature;
+using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.DTOs.Sequence;
 
-// NOTE: probably want to add more fields later on with actual data and information.
+public record SequenceSettingsDto(
+    // Focused
+    bool? EnrichCompany,
+    bool? EnrichContact,
+    // Multi
+    bool? ResearchSimilarities,
+    int? MaxActiveProspectsPerDay
+)
+{
+    public static SequenceSettingsDto FromEntity(SequenceSettings entity) => new(
+        entity.EnrichCompany,
+        entity.EnrichContact,
+        entity.ResearchSimilarities,
+        entity.MaxActiveProspectsPerDay
+    );
+}
+
 public record SequenceViewDto(
     Guid Id,
-    string Name,
-    string Description,
-    DateTime CreatedAt,
-    DateTime UpdatedAt
+    string Title,
+    string? Description,
+    SequenceMode Mode,
+    SequenceStatus Status,
+    SequenceSettingsDto Settings,
+    int ProspectCount,
+    DateTime CreatedUtc,
+    DateTime? UpdatedUtc
+)
+{
+    public static SequenceViewDto FromEntity(Esatto.Outreach.Domain.Entities.SequenceFeature.Sequence entity) => new(
+        entity.Id,
+        entity.Title,
+        entity.Description,
+        entity.Mode,
+        entity.Status,
+        SequenceSettingsDto.FromEntity(entity.Settings),
+        entity.SequenceProspects?.Count ?? 0,
+        entity.CreatedUtc,
+        entity.UpdatedUtc
+    );
+}
+
+public record SequenceDetailsDto(
+    Guid Id,
+    string Title,
+    string? Description,
+    SequenceMode Mode,
+    SequenceStatus Status,
+    SequenceSettingsDto Settings,
+    List<SequenceStepViewDto> Steps,
+    List<SequenceProspectViewDto> Prospects,
+    DateTime CreatedUtc,
+    DateTime? UpdatedUtc
+)
+{
+    public static SequenceDetailsDto FromEntity(Esatto.Outreach.Domain.Entities.SequenceFeature.Sequence entity) => new(
+        entity.Id,
+        entity.Title,
+        entity.Description,
+        entity.Mode,
+        entity.Status,
+        SequenceSettingsDto.FromEntity(entity.Settings),
+        entity.SequenceSteps?.Select(SequenceStepViewDto.FromEntity).ToList() ?? [],
+        entity.SequenceProspects?.Select(SequenceProspectViewDto.FromEntity).ToList() ?? [],
+        entity.CreatedUtc,
+        entity.UpdatedUtc
+    );
+}
+
+public record SequenceStepViewDto(
+    Guid Id,
+    int OrderIndex,
+    SequenceStepType StepType,
+    int DelayInDays,
+    TimeOfDay? TimeOfDayToRun,
+    string? GeneratedSubject,
+    string? GeneratedBody,
+    OutreachGenerationType? GenerationType
+)
+{
+    public static SequenceStepViewDto FromEntity(SequenceStep entity) => new(
+        entity.Id,
+        entity.OrderIndex,
+        entity.StepType,
+        entity.DelayInDays,
+        entity.TimeOfDayToRun,
+        entity.GeneratedSubject,
+        entity.GeneratedBody,
+        entity.GenerationType
+    );
+}
+
+public record SequenceProspectViewDto(
+    Guid Id,
+    Guid ProspectId,
+    string ProspectName,
+    Guid ContactPersonId,
+    string ContactPersonName,
+    SequenceProspectStatus Status,
+    int CurrentStepIndex,
+    DateTime? NextStepScheduledAt,
+    DateTime? LastStepExecutedAt,
+    string? FailureReason
+)
+{
+    public static SequenceProspectViewDto FromEntity(SequenceProspect entity) => new(
+        entity.Id,
+        entity.ProspectId,
+        entity.Prospect?.Name ?? "Unknown",
+        entity.ContactPersonId,
+        entity.Contact?.Name ?? "Unknown",
+        entity.Status,
+        entity.CurrentStepIndex,
+        entity.NextStepScheduledAt,
+        entity.LastStepExecutedAt,
+        entity.FailureReason
+    );
+}
+
+// Request DTOs
+public record CreateSequenceRequest(
+    string Title,
+    string? Description,
+    SequenceMode Mode
+);
+
+public record UpdateSequenceRequest(
+    string Title,
+    string? Description,
+    SequenceSettingsDto Settings
+);
+
+public record AddSequenceStepRequest(
+    SequenceStepType StepType,
+    int DelayInDays,
+    TimeOfDay? TimeOfDayToRun,
+    OutreachGenerationType? GenerationType
+);
+
+public record UpdateSequenceStepRequest(
+    SequenceStepType StepType,
+    int DelayInDays,
+    TimeOfDay? TimeOfDayToRun,
+    OutreachGenerationType? GenerationType
+);
+
+public record ReorderSequenceStepsRequest(
+    List<Guid> StepIdsInOrder
+);
+
+public record EnrollProspectRequest(
+    Guid ProspectId,
+    Guid ContactPersonId
+);
+
+public record UpdateSequenceStepContentRequest(
+    string? GeneratedSubject,
+    string? GeneratedBody
 );

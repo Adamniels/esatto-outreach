@@ -1,9 +1,9 @@
-namespace Esatto.Outreach.Infrastructure.Options;
+namespace Esatto.Outreach.Domain.Enums;
 
 /// <summary>
-/// Enum for selecting which method to use for email generation.
+/// Enum for selecting which method to use for AI outreach generation.
 /// </summary>
-public enum EmailGenerationType
+public enum OutreachGenerationType
 {
     /// <summary>
     /// Use web search to find real-time information about the prospect, with openAI

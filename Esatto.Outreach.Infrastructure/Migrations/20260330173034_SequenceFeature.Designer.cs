@@ -3,6 +3,7 @@ using System;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
-    partial class OutreachDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260330173034_SequenceFeature")]
+    partial class SequenceFeature
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -605,8 +608,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea")
-                        .HasDefaultValueSql("gen_random_bytes(16)");
+                        .HasColumnType("bytea");
 
                     b.Property<Guid>("SequenceId")
                         .HasColumnType("uuid");
@@ -651,10 +653,6 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                     b.Property<string>("GeneratedSubject")
                         .HasColumnType("text");
 
-                    b.Property<string>("GenerationType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<int>("OrderIndex")
                         .HasColumnType("integer");
 
@@ -672,6 +670,9 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.Property<DateTime?>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool?>("UseCollectedData")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

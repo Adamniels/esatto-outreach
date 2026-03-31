@@ -1,4 +1,4 @@
-using Esatto.Outreach.Infrastructure.Options;
+using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.Application.Abstractions.Services;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +12,11 @@ namespace Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly EmailGenerationOptions _options;
+    private readonly OutreachGenerationOptions _options;
 
     public EmailGeneratorFactory(
         IServiceProvider serviceProvider,
-        IOptions<EmailGenerationOptions> options)
+        IOptions<OutreachGenerationOptions> options)
     {
         _serviceProvider = serviceProvider;
         _options = options.Value;
@@ -26,8 +26,8 @@ public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
     {
         return _options.DefaultType switch
         {
-            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
-            EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
+            OutreachGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
+            OutreachGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {_options.DefaultType}")
         };
     }
@@ -37,7 +37,7 @@ public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
         if (string.IsNullOrWhiteSpace(type))
             return GetGenerator();
 
-        if (!Enum.TryParse<EmailGenerationType>(type, ignoreCase: true, out var generatorType))
+        if (!Enum.TryParse<OutreachGenerationType>(type, ignoreCase: true, out var generatorType))
         {
             throw new ArgumentException(
                 $"Invalid generator type: '{type}'. Valid values are: WebSearch, UseCollectedData",
@@ -46,8 +46,8 @@ public sealed class EmailGeneratorFactory : IOutreachGeneratorFactory
 
         return generatorType switch
         {
-            EmailGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
-            EmailGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
+            OutreachGenerationType.WebSearch => _serviceProvider.GetRequiredService<OpenAICustomOutreachGenerator>(),
+            OutreachGenerationType.UseCollectedData => _serviceProvider.GetRequiredService<CollectedDataEmailGenerator>(),
             _ => throw new InvalidOperationException($"Unknown generator type: {generatorType}")
         };
     }

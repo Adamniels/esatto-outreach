@@ -116,7 +116,12 @@ public static class DependencyInjection
         // JWT Token Service
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-        services.AddScoped<IProspectRepository, ProspectRepository>();
+        services.AddScoped<ISequenceRepository, SequenceRepository>();
+
+        services.AddScoped<IStepExecutor, Esatto.Outreach.Infrastructure.Services.StepExecutors.EmailStepExecutor>();
+        services.AddScoped<IStepExecutor, Esatto.Outreach.Infrastructure.Services.StepExecutors.LinkedInMessageExecutor>();
+        services.AddScoped<IStepExecutor, Esatto.Outreach.Infrastructure.Services.StepExecutors.LinkedInConnectionExecutor>();
+        services.AddScoped<IStepExecutor, Esatto.Outreach.Infrastructure.Services.StepExecutors.LinkedInInteractionExecutor>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IEntityIntelligenceRepository, EntityIntelligenceRepository>();
         services.AddScoped<IOutreachPromptRepository, OutreachPromptRepository>();
@@ -124,13 +129,14 @@ public static class DependencyInjection
         services.AddScoped<IInvitationRepository, InvitationRepository>();
         services.AddScoped<ICompanyInfoRepository, CompanyInfoRepository>();
         services.AddScoped<IProjectCaseRepository, ProjectCaseRepository>();
+        services.AddScoped<IProspectRepository, ProspectRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         // OpenAI options (shared across features)
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.SectionName));
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
         // Email Generation (multi-method)
-        services.Configure<EmailGenerationOptions>(configuration.GetSection(EmailGenerationOptions.SectionName));
+        services.Configure<OutreachGenerationOptions>(configuration.GetSection(OutreachGenerationOptions.SectionName));
         services.AddHttpClient<OpenAICustomOutreachGenerator>();
         services.AddHttpClient<CollectedDataEmailGenerator>();
         services.AddScoped<IOutreachContextBuilder, OutreachContextBuilder>();
