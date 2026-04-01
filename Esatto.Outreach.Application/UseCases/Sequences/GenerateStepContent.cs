@@ -44,7 +44,7 @@ public class GenerateStepContent
         {
             SequenceStepType.Email => OutreachChannel.Email,
             SequenceStepType.LinkedInMessage => OutreachChannel.LinkedIn,
-            SequenceStepType.LinkedInConnectionRequest => OutreachChannel.LinkedIn, // Usually treated similarly for prompt structure
+            SequenceStepType.LinkedInConnectionRequest => OutreachChannel.LinkedIn,
             SequenceStepType.LinkedInInteraction => OutreachChannel.LinkedIn,
             _ => OutreachChannel.Email
         };
@@ -56,8 +56,9 @@ public class GenerateStepContent
                 throw new InvalidOperationException("Focused sequence must have exactly one prospect enrolled to generate content.");
 
             // Enrichment check is simplified here for now. A real enrichment step might be called before context building.
+            // TODO: Implement a proper enrichment status check and possibly trigger enrichment before generation if data is stale or missing.
             var includeSoftData = step.GenerationType == OutreachGenerationType.UseCollectedData;
-            
+
             var context = await _contextBuilder.BuildContextAsync(prospect.Value, userId, channel, includeSoftData, ct);
             var draft = await generator.GenerateAsync(context, ct);
 
@@ -68,6 +69,7 @@ public class GenerateStepContent
             // For multi-mode, logic implies AI finding commonalities. Right now, we might not have a generic multi-context builder.
             // Simplified: use the first enrolled prospect's context as baseline for multi (or stub it).
             // A real IMultiOutreachContextBuilder might be needed in the future.
+            // TODO: Implement a proper multi-prospect context builder that can synthesize commonalities across prospects for better multi-step generation.
             var representativeProspect = sequence.SequenceProspects.FirstOrDefault()?.ProspectId;
             if (representativeProspect == null)
                 throw new InvalidOperationException("Multi sequence must have at least one prospect enrolled to establish a prompt baseline.");

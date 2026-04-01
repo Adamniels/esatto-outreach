@@ -16,6 +16,7 @@ public class SequenceExecutionWorker : BackgroundService
         _logger = logger;
     }
 
+    // TODO: Consider implementing a more robust scheduling mechanism (e.g., Quartz.NET) if we need more control over execution times or retries.
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -24,7 +25,7 @@ public class SequenceExecutionWorker : BackgroundService
             {
                 using var scope = _serviceProvider.CreateScope();
                 var orchestrator = scope.ServiceProvider.GetRequiredService<SequenceOrchestrator>();
-                
+
                 await orchestrator.ProcessDueStepsAsync(batchSize: 50, stoppingToken);
             }
             catch (Exception ex)

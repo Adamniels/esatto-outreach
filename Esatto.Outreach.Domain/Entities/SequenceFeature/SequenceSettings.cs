@@ -36,6 +36,7 @@ public class SequenceSettings
         };
     }
 
+    // TODO: validation to ensure only relevant settings are updated based on mode
     public void UpdateFocusedSettings(bool enrichCompany, bool enrichContact)
     {
         EnrichCompany = enrichCompany;

@@ -11,7 +11,7 @@ public class Sequence : Entity
     public SequenceMode Mode { get; private set; }
 
     public SequenceStatus Status { get; private set; }
-    public int CurrentBuilderStep { get; private set; } = 1;
+    public int CurrentBuilderStep { get; private set; } = 1; // Tracks progress in the builder, starts at 1 for new sequences 1.steps 2.prospects 3.settings -> overview
 
     public string? OwnerId { get; private set; }
     public ApplicationUser? Owner { get; private set; }
@@ -20,6 +20,7 @@ public class Sequence : Entity
     public List<SequenceProspect> SequenceProspects { get; private set; } = new();
 
     public SequenceSettings Settings { get; private set; } = default!;
+
     public string? MultiEnrichment { get; private set; } // for multi mode
 
     protected Sequence() { } // For EF Core
