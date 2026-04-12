@@ -18,7 +18,7 @@ public class ProspectTests
         var prospect = Prospect.CreateManual(name, ownerId);
 
         // Assert
-        prospect.Should().NotBeNull();
+        ObjectAssertion.Should(prospect).NotBeNull();
         prospect.Name.Should().Be(name);
         prospect.OwnerId.Should().Be(ownerId);
         prospect.IsPending.Should().BeFalse();
@@ -37,7 +37,7 @@ public class ProspectTests
         var ownerId = "owner-123";
 
         // Act & Assert
-        Action act = () => Prospect.CreateManual(invalidName, ownerId);
+        Action act = () => Prospect.CreateManual(invalidName!, ownerId);
         act.Should().Throw<ArgumentException>().WithParameterName("name");
     }
 
@@ -60,7 +60,7 @@ public class ProspectTests
             null);
 
         // Assert
-        prospect.Should().NotBeNull();
+        ObjectAssertion.Should(prospect).NotBeNull();
         prospect.Name.Should().Be(name);
         prospect.ExternalCrmId.Should().Be(crmId);
         prospect.CrmSource.Should().Be(CrmProvider.Capsule);
@@ -114,14 +114,14 @@ public class ProspectTests
         prospect.SetActiveContact(contactB.Id);
 
         // Assert
-        prospect.GetActiveContact().Should().Be(contactB);
+        ObjectAssertion.Should(prospect.GetActiveContact()).Be(contactB);
         contactB.IsActive.Should().BeTrue();
 
         // Act - switch to C
         prospect.SetActiveContact(contactC.Id);
 
         // Assert
-        prospect.GetActiveContact().Should().Be(contactC);
+        ObjectAssertion.Should(prospect.GetActiveContact()).Be(contactC);
         contactB.IsActive.Should().BeFalse();
         contactC.IsActive.Should().BeTrue();
         contactA.IsActive.Should().BeFalse();

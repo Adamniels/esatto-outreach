@@ -6,6 +6,7 @@ using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.UseCases.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Exceptions;
+using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
@@ -172,7 +173,7 @@ public class AcceptInvitationTests
 
         var result = await _useCase.Handle(Req());
 
-        result.Should().NotBeNull();
+        ObjectAssertion.Should(result).NotBeNull();
         result.AccessToken.Should().Be("access-token-xyz");
         result.RefreshToken.Should().Be("refresh-token-xyz");
 

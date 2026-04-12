@@ -4,6 +4,7 @@ using Esatto.Outreach.Application.DTOs.Auth;
 using Esatto.Outreach.Application.UseCases.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Exceptions;
+using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
 using NSubstitute;
 
@@ -104,7 +105,7 @@ public class RefreshAccessTokenTests
         var result = await _useCase.Handle(req);
 
         // Assert
-        result.Should().NotBeNull();
+        ObjectAssertion.Should(result).NotBeNull();
         result.AccessToken.Should().Be("new-access-token");
         result.RefreshToken.Should().Be("new-refresh-token");
         

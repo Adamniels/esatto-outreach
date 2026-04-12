@@ -91,7 +91,7 @@ public class ChatWithProspectTests
         var result = await _useCase.Handle(prospect.Id, "user-A", DefaultRequest());
 
         // Assert
-        result.Should().NotBeNull();
+        ObjectAssertion.Should(result).NotBeNull();
         result.AiMessage.Should().Be("Here is my answer");
 
         // Prospect should be updated with the new response ID

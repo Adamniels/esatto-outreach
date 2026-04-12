@@ -28,7 +28,7 @@ public class UpdateProspectTests
 
         var result = await _useCase.Handle(Guid.NewGuid(), EmptyUpdate(), "any-user");
 
-        result.Should().BeNull();
+        ObjectAssertion.Should(result).BeNull();
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class UpdateProspectTests
         var result = await _useCase.Handle(prospect.Id, dto, userId: "owner-A");
 
         // Assert
-        result.Should().NotBeNull();
+        ObjectAssertion.Should(result).NotBeNull();
         await _repo.Received(1).UpdateAsync(prospect, Arg.Any<CancellationToken>());
     }
 

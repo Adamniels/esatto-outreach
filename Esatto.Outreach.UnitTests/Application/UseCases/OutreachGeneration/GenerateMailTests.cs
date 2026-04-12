@@ -68,7 +68,7 @@ public class GenerateMailTests
         var result = await _sut.Handle(prospectId, userId, null, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
+        ObjectAssertion.Should(result).NotBeNull();
         prospect.MailTitle.Should().Be("Test Subject");
         prospect.MailBodyPlain.Should().Be("Test plain body");
         
