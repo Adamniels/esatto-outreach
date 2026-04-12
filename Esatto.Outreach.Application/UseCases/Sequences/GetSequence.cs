@@ -5,22 +5,16 @@ namespace Esatto.Outreach.Application.UseCases.Sequences;
 
 public class GetSequence
 {
-    private readonly ISequenceRepository _repo;
+    private readonly SequenceAccess _access;
 
-    public GetSequence(ISequenceRepository repo)
+    public GetSequence(SequenceAccess access)
     {
-        _repo = repo;
+        _access = access;
     }
 
     public async Task<SequenceDetailsDto> Handle(Guid id, string userId, CancellationToken ct = default)
     {
-        var sequence = await _repo.GetByIdWithDetailsAsync(id, ct);
-        if (sequence == null)
-            throw new KeyNotFoundException("Sequence not found");
-
-        if (sequence.OwnerId != userId)
-            throw new UnauthorizedAccessException("You don't have permission to access this sequence");
-
+        var sequence = await _access.GetOwnedWithDetailsForReadAsync(id, userId, ct);
         return SequenceDetailsDto.FromEntity(sequence);
     }
 }

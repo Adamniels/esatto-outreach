@@ -1,31 +1,22 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.UseCases.Sequences;
 
 public class PauseSequence
 {
     private readonly ISequenceRepository _repo;
+    private readonly SequenceAccess _access;
 
-    public PauseSequence(ISequenceRepository repo)
+    public PauseSequence(ISequenceRepository repo, SequenceAccess access)
     {
         _repo = repo;
+        _access = access;
     }
 
     public async Task Handle(Guid sequenceId, string userId, CancellationToken ct = default)
     {
-        var sequence = await _repo.GetByIdAsync(sequenceId, ct);
-        if (sequence == null)
-            throw new KeyNotFoundException("Sequence not found");
-
-        if (sequence.OwnerId != userId)
-            throw new UnauthorizedAccessException("You don't have permission to modify this sequence");
-
-        if (sequence.Status != SequenceStatus.Active)
-            throw new InvalidOperationException("Only active sequences can be paused.");
-
-        sequence.SetStatus(SequenceStatus.Paused);
-
+        var sequence = await _access.GetOwnedAsync(sequenceId, userId, ct);
+        sequence.Pause();
         await _repo.UpdateAsync(sequence, ct);
     }
 }

@@ -1,41 +1,28 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.DTOs.Sequence;
-using Esatto.Outreach.Domain.Entities.SequenceFeature;
 
 namespace Esatto.Outreach.Application.UseCases.Sequences;
 
 public class AddSequenceStep
 {
     private readonly ISequenceRepository _repo;
+    private readonly SequenceAccess _access;
 
-    public AddSequenceStep(ISequenceRepository repo)
+    public AddSequenceStep(ISequenceRepository repo, SequenceAccess access)
     {
         _repo = repo;
+        _access = access;
     }
 
     public async Task<SequenceStepViewDto> Handle(Guid sequenceId, AddSequenceStepRequest request, string userId, CancellationToken ct = default)
     {
-        var sequence = await _repo.GetByIdWithDetailsAsync(sequenceId, ct);
-        if (sequence == null)
-            throw new KeyNotFoundException("Sequence not found");
+        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
 
-        if (sequence.OwnerId != userId)
-            throw new UnauthorizedAccessException("You don't have permission to modify this sequence");
-
-        int nextOrderIndex = sequence.SequenceSteps.Count > 0 
-            ? sequence.SequenceSteps.Max(s => s.OrderIndex) + 1 
-            : 0;
-
-        var step = SequenceStep.Create(
-            sequenceId,
-            nextOrderIndex,
+        var step = sequence.AddNewStep(
             request.StepType,
             request.DelayInDays,
             request.TimeOfDayToRun,
-            request.GenerationType
-        );
-
-        sequence.AddStep(step);
+            request.GenerationType);
 
         await _repo.AddStepAsync(step, ct);
         return SequenceStepViewDto.FromEntity(step);

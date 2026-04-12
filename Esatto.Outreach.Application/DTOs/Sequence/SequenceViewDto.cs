@@ -136,7 +136,7 @@ public record CreateSequenceRequest(
 public record UpdateSequenceRequest(
     string Title,
     string? Description,
-    SequenceSettingsDto Settings
+    SequenceSettingsDto? Settings
 );
 
 public record AddSequenceStepRequest(

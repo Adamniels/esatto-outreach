@@ -84,4 +84,28 @@ public class SequenceProspect : Entity
         NextStepScheduledAt = null;
         Touch();
     }
+
+    /// <summary>
+    /// If there is no step at the current execution index, marks this enrollment complete. Used by the worker before executing.
+    /// </summary>
+    /// <returns>true if the enrollment was completed and execution should be skipped.</returns>
+    public bool TryCompleteIfNoCurrentStep(Sequence sequence)
+    {
+        if (sequence.GetStepAtExecutionIndex(CurrentStepIndex) != null)
+            return false;
+
+        MarkSequenceCompleted();
+        return true;
+    }
+
+    /// <summary>After a step executor succeeds, advances schedule or completes the enrollment.</summary>
+    public void RecordSuccessfulStepAndScheduleNext(Sequence sequence, DateTime utcNow)
+    {
+        var nextIndex = CurrentStepIndex + 1;
+        var nextStep = sequence.GetStepAtExecutionIndex(nextIndex);
+        if (nextStep == null)
+            MarkSequenceCompleted();
+        else
+            MarkStepCompleted(utcNow.AddDays(nextStep.DelayInDays));
+    }
 }

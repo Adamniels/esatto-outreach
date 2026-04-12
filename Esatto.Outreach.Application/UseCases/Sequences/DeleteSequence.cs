@@ -1,28 +1,22 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.UseCases.Sequences;
 
 public class DeleteSequence
 {
     private readonly ISequenceRepository _repo;
+    private readonly SequenceAccess _access;
 
-    public DeleteSequence(ISequenceRepository repo)
+    public DeleteSequence(ISequenceRepository repo, SequenceAccess access)
     {
         _repo = repo;
+        _access = access;
     }
 
     public async Task Handle(Guid id, string userId, CancellationToken ct = default)
     {
-        var sequence = await _repo.GetByIdAsync(id, ct);
-        if (sequence == null)
-            throw new KeyNotFoundException("Sequence not found");
-
-        if (sequence.OwnerId != userId)
-            throw new UnauthorizedAccessException("You don't have permission to delete this sequence");
-
-        if (sequence.Status != SequenceStatus.Draft)
-            throw new InvalidOperationException("Only draft sequences can be deleted. Please cancel or archive active sequences instead.");
+        var sequence = await _access.GetOwnedAsync(id, userId, ct);
+        sequence.EnsureCanDelete();
 
         await _repo.DeleteAsync(sequence, ct);
     }

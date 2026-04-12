@@ -89,6 +89,7 @@ builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.RejectP
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.ListPendingProspects>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Webhooks.HandleCapsuleWebhook>();
 
+builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.SequenceAccess>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.CreateSequence>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.UpdateSequence>();
 builder.Services.AddScoped<Esatto.Outreach.Application.UseCases.Sequences.GetSequence>();

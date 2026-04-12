@@ -10,7 +10,8 @@ These rules are grounded in the actual state of the codebase following the trans
 
 The project follows a **strict Layered Clean Architecture** combined with a **Command-Pattern Use Case** design.
 Historically, the project contained monolithic service classes and inconsistent error handling. Following recent refactoring, the core patterns have been standardized:
-- Business logic is strictly isolated in single-responsibility Use Cases.
+- **Domain entities** hold business rules and state transitions (validate-and-mutate methods on aggregates).
+- **Use cases** orchestrate: load data, enforce ownership, call domain methods, persist, map DTOs.
 - Endpoints are extremely thin.
 - Dependencies flow inwards towards the Domain.
 
@@ -56,7 +57,7 @@ The Application layer is organized around **features** for Use Cases, but uses *
 We do not use monolithic `XYZService` classes (like `ProspectService` or `WorkflowInstanceService`).
 - **RULE**: Every action the system can perform is represented by a single class in the `UseCases` folder.
 - **Naming**: The class name is an active verb phrase representing the action (e.g., `CreateWorkflowInstance`, `UpdateProspect`, `AcceptInvitation`).
-- **Method Signature**: The class MUST expose exactly one public method named `Handle()`. This method must contain the actual business logic. (Do not use `ExecuteAsync()` or other variations).
+- **Method Signature**: The class MUST expose exactly one public method named `Handle()`. This method **coordinates** dependencies and invokes domain entities; **business rules and invariant checks belong on domain entities**, not duplicated in `Handle()`. (Do not use `ExecuteAsync()` or other variations).
 
 ### Thin Minimal API Endpoints
 - **RULE**: Endpoints are strictly responsible for HTTP translation. They parse requests, inject the correct Use Case, execute `Handle()`, catch exceptions, and return HTTP `200/201/204/400/404` results.
@@ -74,8 +75,11 @@ The system relies heavily on the **Throw-or-Return** pattern instead of returnin
 - The executing Endpoint must catch `KeyNotFoundException` and return `Results.NotFound()`.
 
 ### Business Rule Violations (Conflict, Invalid State)
-- Use Cases should throw `InvalidOperationException` for business logic violations (e.g., "Workflow is not in draft state").
+- **Domain entities** and use cases may throw `InvalidOperationException` for business rule violations (e.g., "Workflow is not in draft state"). Prefer throwing from the **domain** when the rule is an aggregate invariant.
 - Endpoints catch this and return `Results.BadRequest(new { error = ex.Message })` (or `Results.Conflict` where appropriate).
+
+### Malformed Input (Client Errors)
+- Throw `ArgumentException` for invalid arguments (e.g., reorder payload does not match sequence steps). Endpoints should map this to `400 Bad Request`.
 
 ### Authentication & Authorization Failures
 - Use `AuthenticationFailedException` (located in Domain/Exceptions) for credential failures, invalid tokens, or rejected invitations. Endpoints catch this and return `BadRequest` (for security obscurity) or `Unauthorized`.
@@ -94,6 +98,8 @@ This is a multi-tenant / multi-user system where prospects belong to specific us
       throw new UnauthorizedAccessException("You don't have permission to modify this prospect");
   ```
 - *Note: This applies to all reads (`GetProspectById`) and writes.*
+
+- **Sequence commands**: Use the shared `SequenceAccess` helper in `UseCases/Sequences/` to load a sequence by id, throw `KeyNotFoundException` if missing, and throw `UnauthorizedAccessException` if `OwnerId` does not match. This avoids duplicating the same guard in every sequence use case; other features may adopt the same pattern where helpful.
 
 ---
 

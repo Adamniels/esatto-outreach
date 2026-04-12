@@ -82,4 +82,13 @@ public class SequenceStep : Entity
         GeneratedBody = null;
         Touch();
     }
+
+    public OutreachChannel GetOutreachChannel() => StepType switch
+    {
+        SequenceStepType.Email => OutreachChannel.Email,
+        SequenceStepType.LinkedInMessage => OutreachChannel.LinkedIn,
+        SequenceStepType.LinkedInConnectionRequest => OutreachChannel.LinkedIn,
+        SequenceStepType.LinkedInInteraction => OutreachChannel.LinkedIn,
+        _ => OutreachChannel.Email
+    };
 }

@@ -60,6 +60,7 @@ public static class SequenceEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try { return Results.Ok(await useCase.Handle(id, req, userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
@@ -69,6 +70,7 @@ public static class SequenceEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try { return Results.Ok(await useCase.Handle(id, stepId, req, userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
@@ -78,6 +80,7 @@ public static class SequenceEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try { return Results.Ok(await useCase.Handle(id, stepId, req, userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
@@ -87,6 +90,7 @@ public static class SequenceEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try { await useCase.Handle(id, stepId, userId, ct); return Results.NoContent(); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
@@ -171,6 +175,7 @@ public static class SequenceEndpoints
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try { return Results.Ok(await useCase.Handle(id, stepId, userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
+            catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
     }

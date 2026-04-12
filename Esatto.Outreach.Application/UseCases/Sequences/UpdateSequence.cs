@@ -6,38 +6,26 @@ namespace Esatto.Outreach.Application.UseCases.Sequences;
 public class UpdateSequence
 {
     private readonly ISequenceRepository _repo;
+    private readonly SequenceAccess _access;
 
-    public UpdateSequence(ISequenceRepository repo)
+    public UpdateSequence(ISequenceRepository repo, SequenceAccess access)
     {
         _repo = repo;
+        _access = access;
     }
 
     public async Task<SequenceViewDto> Handle(Guid id, UpdateSequenceRequest request, string userId, CancellationToken ct = default)
     {
-        var sequence = await _repo.GetByIdAsync(id, ct);
-        if (sequence == null)
-            throw new KeyNotFoundException("Sequence not found");
+        var sequence = await _access.GetOwnedAsync(id, userId, ct);
 
-        if (sequence.OwnerId != userId)
-            throw new UnauthorizedAccessException("You don't have permission to modify this sequence");
-
-        sequence.UpdateDetails(request.Title, request.Description);
-
-        if (request.Settings != null)
-        {
-            if (sequence.Mode == Esatto.Outreach.Domain.Enums.SequenceMode.Focused)
-            {
-                sequence.Settings.UpdateFocusedSettings(
-                    request.Settings.EnrichCompany ?? true,
-                    request.Settings.EnrichContact ?? true);
-            }
-            else
-            {
-                sequence.Settings.UpdateMultiSettings(
-                    request.Settings.ResearchSimilarities ?? false,
-                    request.Settings.MaxActiveProspectsPerDay ?? 20);
-            }
-        }
+        sequence.ApplyMetadataUpdate(
+            request.Title,
+            request.Description,
+            applySettings: request.Settings != null,
+            enrichCompany: request.Settings?.EnrichCompany ?? true,
+            enrichContact: request.Settings?.EnrichContact ?? true,
+            researchSimilarities: request.Settings?.ResearchSimilarities ?? false,
+            maxActiveProspectsPerDay: request.Settings?.MaxActiveProspectsPerDay ?? 20);
 
         await _repo.UpdateAsync(sequence, ct);
         return SequenceViewDto.FromEntity(sequence);
