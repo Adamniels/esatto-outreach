@@ -1,4 +1,4 @@
-.PHONY: build test coverage coverage-summary coverage-report db-up db-down run dev clean
+.PHONY: build test coverage coverage-summary coverage-report db-up db-down migrate-dev run dev clean
 
 # Backend Makefile
 
@@ -38,6 +38,12 @@ db-up:
 db-down:
 	@echo "Stopping database..."
 	docker compose down
+
+migrate-dev:
+	@echo "Applying EF Core migrations (Development)..."
+	ASPNETCORE_ENVIRONMENT=Development DOTNET_ENVIRONMENT=Development dotnet ef database update \
+		--project Esatto.Outreach.Infrastructure/Esatto.Outreach.Infrastructure.csproj \
+		--startup-project Esatto.Outreach.Api/Esatto.Outreach.Api.csproj
 
 run:
 	@echo "Running the API..."

@@ -1,6 +1,6 @@
 using Esatto.Outreach.Api.Endpoints;
 using Esatto.Outreach.Infrastructure;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using DotNetEnv;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.RateLimiting;
