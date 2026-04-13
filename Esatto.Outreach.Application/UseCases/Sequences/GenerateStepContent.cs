@@ -23,6 +23,8 @@ public class GenerateStepContent
         _access = access;
     }
 
+    // TODO: Here I want different things depending on if it is a focused or multi sequence. So maybe to new functions depending on it?
+    // Multi want a way to get some information of all the prospect and focused need the prospect enrichment if the setting is set
     public async Task<SequenceStepViewDto> Handle(Guid sequenceId, Guid stepId, string userId, CancellationToken ct = default)
     {
         var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);

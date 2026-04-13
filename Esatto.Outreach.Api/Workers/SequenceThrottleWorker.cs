@@ -20,6 +20,7 @@ public class SequenceThrottleWorker : BackgroundService
         _logger = logger;
     }
 
+    // NOTE: Currenty this does not follow the maximum numbers "per day" but follows on maximun "at the moment"
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Give it a minute before starting the first loop
@@ -33,7 +34,7 @@ public class SequenceThrottleWorker : BackgroundService
                 // Since this needs to scan sequences in Multi mode, we will access DBContext directly for the worker,
                 // or ideally via a specific method in the repository.
                 var dbContext = scope.ServiceProvider.GetRequiredService<OutreachDbContext>();
-                
+
                 var multiSequences = await dbContext.Sequences
                     .Where(s => s.Status == SequenceStatus.Active && s.Mode == SequenceMode.Multi)
                     .ToListAsync(stoppingToken);

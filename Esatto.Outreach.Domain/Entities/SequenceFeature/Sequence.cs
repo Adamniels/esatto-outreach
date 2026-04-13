@@ -224,6 +224,8 @@ public class Sequence : Entity
         return sp;
     }
 
+    // NOTE: If a paused sequence get activated it will continue like nothing happened.
+    // Is this what I want?
     public void Activate(DateTime utcNow)
     {
         EnsureCanActivateFromDraftOrPaused();
