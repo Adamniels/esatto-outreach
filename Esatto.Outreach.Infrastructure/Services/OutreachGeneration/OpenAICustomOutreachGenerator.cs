@@ -4,8 +4,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Features.Intelligence;
-using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.Intelligence.Shared;
+using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
 using Esatto.Outreach.Domain.Enums;
 using Microsoft.Extensions.Logging;
 

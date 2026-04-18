@@ -1,0 +1,3 @@
+namespace Esatto.Outreach.Application.Features.OutreachPrompts.ActivateOutreachPrompt;
+
+public sealed record ActivateOutreachPromptCommand;

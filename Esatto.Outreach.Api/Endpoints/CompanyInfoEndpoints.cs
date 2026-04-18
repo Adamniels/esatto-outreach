@@ -1,7 +1,12 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.Features.Intelligence;
-using Esatto.Outreach.Application.Features.Intelligence;
-using Esatto.Outreach.Application.Features.ProjectCases;
+using Esatto.Outreach.Application.Features.Intelligence.GetCompanyInfo;
+using Esatto.Outreach.Application.Features.Intelligence.Shared;
+using Esatto.Outreach.Application.Features.Intelligence.UpdateCompanyInfo;
+using Esatto.Outreach.Application.Features.ProjectCases.CreateProjectCase;
+using Esatto.Outreach.Application.Features.ProjectCases.DeleteProjectCase;
+using Esatto.Outreach.Application.Features.ProjectCases.GetProjectCase;
+using Esatto.Outreach.Application.Features.ProjectCases.ListProjectCases;
+using Esatto.Outreach.Application.Features.ProjectCases.UpdateProjectCase;
 namespace Esatto.Outreach.Api.Endpoints;
 
 public static class CompanyInfoEndpoints
@@ -44,7 +49,7 @@ public static class CompanyInfoEndpoints
 
         // --- PROJECT CASES ---
 
-        companyInfo.MapGet("/cases", async (GetProjectCasesQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/cases", async (ListProjectCasesQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();

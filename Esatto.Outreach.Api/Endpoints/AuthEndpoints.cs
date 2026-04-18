@@ -1,5 +1,6 @@
-using Esatto.Outreach.Application.Features.Auth;
-using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth.LoginUser;
+using Esatto.Outreach.Application.Features.Auth.RefreshToken;
+using Esatto.Outreach.Application.Features.Auth.RegisterUser;
 using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -13,7 +14,7 @@ public static class AuthEndpoints
                       .RequireRateLimiting("AuthPolicy");
 
         auth.MapPost("/register", async (
-            RegisterRequestDto dto,
+            RegisterRequest dto,
             RegisterCommandHandler useCase,
             CancellationToken ct) =>
         {
@@ -33,7 +34,7 @@ public static class AuthEndpoints
         });
 
         auth.MapPost("/login", async (
-            LoginRequestDto dto,
+            LoginRequest dto,
             LoginCommandHandler useCase,
             CancellationToken ct) =>
         {
@@ -42,14 +43,14 @@ public static class AuthEndpoints
                 var data = await useCase.Handle(dto, ct);
                 return Results.Ok(data);
             }
-            catch (AuthenticationFailedException ex)
+            catch (AuthenticationFailedException)
             {
-                return Results.BadRequest(new { error = ex.Message });
+                return Results.Unauthorized();
             }
         });
 
         auth.MapPost("/refresh", async (
-            RefreshTokenRequestDto dto,
+            RefreshTokenRequest dto,
             RefreshAccessTokenCommandHandler useCase,
             CancellationToken ct) =>
         {

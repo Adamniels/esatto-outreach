@@ -26,9 +26,20 @@ public sealed class UnitOfWork : IUnitOfWork, IAsyncDisposable
 
     public async Task CommitTransactionAsync(CancellationToken ct = default)
     {
-        if (_currentTransaction != null)
+        try
         {
-            await _currentTransaction.CommitAsync(ct);
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.CommitAsync(ct);
+            }
+        }
+        finally
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
         }
     }
 

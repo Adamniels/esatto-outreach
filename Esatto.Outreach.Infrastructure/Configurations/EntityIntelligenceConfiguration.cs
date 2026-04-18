@@ -39,7 +39,6 @@ public class EntityIntelligenceConfiguration : IEntityTypeConfiguration<EntityIn
         };
 
         b.Property(x => x.EnrichedData)
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, jsonOptions),
                 v => JsonSerializer.Deserialize<CompanyEnrichmentResult>(v, jsonOptions) ?? new CompanyEnrichmentResult(),

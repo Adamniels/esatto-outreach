@@ -1,0 +1,3 @@
+namespace Esatto.Outreach.Application.Features.Sequences.UpdateSequenceStepContent;
+
+public sealed record UpdateSequenceStepContentCommand;

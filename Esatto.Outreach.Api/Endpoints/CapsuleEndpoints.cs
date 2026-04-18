@@ -1,6 +1,9 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.Features.Webhooks;
-using Esatto.Outreach.Application.Features.Webhooks;
+using Esatto.Outreach.Application.Features.Webhooks.ClaimPendingProspect;
+using Esatto.Outreach.Application.Features.Webhooks.HandleCapsuleWebhook;
+using Esatto.Outreach.Application.Features.Webhooks.ListPendingProspects;
+using Esatto.Outreach.Application.Features.Webhooks.RejectPendingProspect;
+using Esatto.Outreach.Application.Features.Webhooks.Shared;
 
 namespace Esatto.Outreach.Api.Endpoints;
 

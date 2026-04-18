@@ -85,6 +85,15 @@ public class SequenceProspect : Entity
         Touch();
     }
 
+    public void LeaseForExecution(DateTime leaseUntilUtc)
+    {
+        if (Status != SequenceProspectStatus.Active)
+            throw new InvalidOperationException("Can only lease active prospects");
+
+        NextStepScheduledAt = leaseUntilUtc;
+        Touch();
+    }
+
     /// <summary>
     /// If there is no step at the current execution index, marks this enrollment complete. Used by the worker before executing.
     /// </summary>
@@ -104,8 +113,31 @@ public class SequenceProspect : Entity
         var nextIndex = CurrentStepIndex + 1;
         var nextStep = sequence.GetStepAtExecutionIndex(nextIndex);
         if (nextStep == null)
+        {
             MarkSequenceCompleted();
+        }
         else
-            MarkStepCompleted(utcNow.AddDays(nextStep.DelayInDays));
+        {
+            var scheduledDate = utcNow.Date.AddDays(nextStep.DelayInDays);
+            if (nextStep.TimeOfDayToRun.HasValue)
+            {
+                var runAt = nextStep.TimeOfDayToRun.Value switch
+                {
+                    TimeOfDay.EarlyMorning => new TimeSpan(6, 0, 0),
+                    TimeOfDay.LateMorning => new TimeSpan(10, 0, 0),
+                    TimeOfDay.EarlyAfternoon => new TimeSpan(13, 0, 0),
+                    TimeOfDay.LateAfternoon => new TimeSpan(16, 0, 0),
+                    TimeOfDay.Evening => new TimeSpan(19, 0, 0),
+                    _ => new TimeSpan(10, 0, 0)
+                };
+                scheduledDate = scheduledDate.Add(runAt);
+            }
+            else
+            {
+                scheduledDate = utcNow.AddDays(nextStep.DelayInDays);
+            }
+
+            MarkStepCompleted(scheduledDate);
+        }
     }
 }

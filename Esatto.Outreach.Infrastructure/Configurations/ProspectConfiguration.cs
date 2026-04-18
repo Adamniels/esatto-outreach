@@ -45,7 +45,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
 
         // Nested collections as JSONB (generic types, CRM-agnostic)
         b.Property(x => x.Websites)
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<List<Website>>(v, (JsonSerializerOptions?)null) ?? new List<Website>())
@@ -55,7 +54,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
                 c => c.ToList()));
 
         b.Property(x => x.Tags)
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<List<Tag>>(v, (JsonSerializerOptions?)null) ?? new List<Tag>())
@@ -65,7 +63,6 @@ public class ProspectConfiguration : IEntityTypeConfiguration<Prospect>
                 c => c.ToList()));
 
         b.Property(x => x.CustomFields)
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<List<CustomField>>(v, (JsonSerializerOptions?)null) ?? new List<CustomField>())

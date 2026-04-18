@@ -17,7 +17,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -182,12 +182,12 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.Property<string>("PersonalHooks")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("text")
                         .HasColumnName("PersonalHooksJson");
 
                     b.Property<string>("PersonalNews")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("text")
                         .HasColumnName("PersonalNewsJson");
 
                     b.Property<Guid>("ProspectId")
@@ -225,7 +225,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("EnrichedData")
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
                     b.Property<string>("EnrichmentVersion")
                         .HasMaxLength(50)
@@ -393,7 +393,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.Property<string>("CustomFields")
                         .IsRequired()
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("EntityIntelligenceId")
                         .HasColumnType("uuid");
@@ -450,14 +450,14 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.Property<string>("Tags")
                         .IsRequired()
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Websites")
                         .IsRequired()
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -498,7 +498,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -515,7 +515,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.HasIndex("ExpiresAt");
 
-                    b.HasIndex("Token")
+                    b.HasIndex("TokenHash")
                         .IsUnique();
 
                     b.HasIndex("UserId");
@@ -630,7 +630,9 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 
                     b.HasIndex("ProspectId");
 
-                    b.HasIndex("SequenceId");
+                    b.HasIndex("SequenceId", "ProspectId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_SequenceProspects_SequenceId_ProspectId");
 
                     b.HasIndex("Status", "NextStepScheduledAt")
                         .HasDatabaseName("IX_SequenceProspects_WorkerQueue");

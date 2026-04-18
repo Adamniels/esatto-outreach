@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence.ChatWithProspect;
 
 using Microsoft.Extensions.Options;
 
@@ -29,7 +29,7 @@ public sealed class OpenAIChatService : IOpenAIChatClient
         _options = options.Value;
     }
 
-    public async Task<(ChatResponseDto response, string ResponseId)> SendChatMessageAsync(
+    public async Task<(ChatWithProspectResponse response, string ResponseId)> SendChatMessageAsync(
         string userInput,
         string? systemPrompt,
         string? previousResponseId,
@@ -62,11 +62,11 @@ public sealed class OpenAIChatService : IOpenAIChatClient
         return (response, responseId);
     }
 
-    private static ChatResponseDto ParseAndValidateResponse(string outputText)
+    private static ChatWithProspectResponse ParseAndValidateResponse(string outputText)
     {
         if (string.IsNullOrWhiteSpace(outputText))
         {
-            return new ChatResponseDto(
+            return new ChatWithProspectResponse(
                 AiMessage: "[Tomt svar från AI]",
                 ImprovedMail: false,
                 MailTitle: null,
@@ -93,7 +93,7 @@ public sealed class OpenAIChatService : IOpenAIChatClient
 
         try
         {
-            var dto = JsonSerializer.Deserialize<ChatResponseDto>(cleanText, new JsonSerializerOptions
+            var dto = JsonSerializer.Deserialize<ChatWithProspectResponse>(cleanText, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -110,7 +110,7 @@ public sealed class OpenAIChatService : IOpenAIChatClient
             {
                 // Check if it looks like we missed the schema entirely (e.g. no improved mail, just data)
                 // If the user wanted specific JSON (companyHooks etc), passing it as AiMessage allows the caller to parse it 
-                return new ChatResponseDto(
+                return new ChatWithProspectResponse(
                     AiMessage: cleanText,
                     ImprovedMail: false,
                     MailTitle: null,
@@ -142,7 +142,7 @@ public sealed class OpenAIChatService : IOpenAIChatClient
         catch (JsonException)
         {
             // Om JSON parsing misslyckas, returnera texten som ett vanligt meddelande
-            return new ChatResponseDto(
+            return new ChatWithProspectResponse(
                 AiMessage: cleanText, // Return cleanText directly if it's not JSON or invalid JSON
                 ImprovedMail: false,
                 MailTitle: null,

@@ -44,5 +44,9 @@ public class SequenceProspectConfiguration : IEntityTypeConfiguration<SequencePr
         // Indices required for Orchestrator background work
         builder.HasIndex(sp => new { sp.Status, sp.NextStepScheduledAt })
             .HasDatabaseName("IX_SequenceProspects_WorkerQueue");
+
+        builder.HasIndex(sp => new { sp.SequenceId, sp.ProspectId })
+            .IsUnique()
+            .HasDatabaseName("IX_SequenceProspects_SequenceId_ProspectId");
     }
 }

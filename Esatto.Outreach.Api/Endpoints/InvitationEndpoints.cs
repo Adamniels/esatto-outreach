@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Esatto.Outreach.Application.Features.Auth;
-using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth.AcceptInvitation;
+using Esatto.Outreach.Application.Features.Auth.InviteUser;
+using Esatto.Outreach.Application.Features.Auth.ValidateInvitation;
 using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -30,7 +31,7 @@ public static class InvitationEndpoints
         });
 
         invitations.MapPost("/accept", async (
-            AcceptInvitationDto dto,
+            AcceptInvitationRequest dto,
             AcceptInvitationCommandHandler useCase,
             CancellationToken ct) =>
         {
@@ -49,9 +50,9 @@ public static class InvitationEndpoints
             }
         });
 
-        app.MapPost("/company/invitations", async (
-            CreateInvitationDto dto,
-            CreateInvitationCommandHandler useCase,
+        invitations.MapPost("/", async (
+            InviteUserRequest dto,
+            InviteUserCommandHandler useCase,
             ClaimsPrincipal user,
             IConfiguration configuration,
             CancellationToken ct) =>
@@ -76,5 +77,33 @@ public static class InvitationEndpoints
             }
         })
         .RequireAuthorization();
+
+        // Backward-compatible legacy route.
+        app.MapPost("/company/invitations", async (
+            InviteUserRequest dto,
+            InviteUserCommandHandler useCase,
+            ClaimsPrincipal user,
+            IConfiguration configuration,
+            CancellationToken ct) =>
+        {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
+            try
+            {
+                var frontendBaseUrl = configuration["Frontend:BaseUrl"];
+                var data = await useCase.Handle(userId, dto.Email, frontendBaseUrl, ct);
+                return Results.Ok(data);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        }).RequireAuthorization();
     }
 }

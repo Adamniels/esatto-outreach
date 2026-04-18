@@ -11,9 +11,12 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     public RefreshTokenRepository(OutreachDbContext db) => _db = db;
 
     public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct = default)
-        => await _db.RefreshTokens
+    {
+        var tokenHash = RefreshToken.ComputeTokenHash(token);
+        return await _db.RefreshTokens
             .Include(rt => rt.User)
-            .FirstOrDefaultAsync(rt => rt.Token == token, ct);
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, ct);
+    }
 
     public async Task AddAsync(RefreshToken refreshToken, CancellationToken ct = default)
     {

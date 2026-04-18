@@ -76,7 +76,7 @@ public class SequenceRepository : ISequenceRepository
     public async Task<IReadOnlyList<SequenceProspect>> GetActiveProspectsDueForExecutionAsync(int batchSize, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
-        return await _context.SequenceProspects
+        var dueProspects = await _context.SequenceProspects
             .Include(sp => sp.Sequence)
                 .ThenInclude(s => s.SequenceSteps)
             .Where(sp => sp.Status == SequenceProspectStatus.Active 
@@ -85,6 +85,20 @@ public class SequenceRepository : ISequenceRepository
             .OrderBy(sp => sp.NextStepScheduledAt)
             .Take(batchSize)
             .ToListAsync(ct);
+
+        // Lightweight lease to reduce duplicate processing across worker instances.
+        var leaseUntilUtc = now.AddMinutes(2);
+        foreach (var dueProspect in dueProspects)
+        {
+            dueProspect.LeaseForExecution(leaseUntilUtc);
+        }
+
+        if (dueProspects.Count > 0)
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+
+        return dueProspects;
     }
 
     public async Task<int> CountActiveProspectsForSequenceAsync(Guid sequenceId, CancellationToken ct = default)

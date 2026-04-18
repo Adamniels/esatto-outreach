@@ -1,7 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Features.Intelligence;
-using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.Intelligence.Shared;
+using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 

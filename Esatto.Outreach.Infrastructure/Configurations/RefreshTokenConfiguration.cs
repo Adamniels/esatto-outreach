@@ -15,11 +15,11 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
         builder.Property(rt => rt.Id)
             .ValueGeneratedNever();
         
-        builder.Property(rt => rt.Token)
+        builder.Property(rt => rt.TokenHash)
             .IsRequired()
             .HasMaxLength(200);
         
-        builder.HasIndex(rt => rt.Token)
+        builder.HasIndex(rt => rt.TokenHash)
             .IsUnique();
         
         builder.Property(rt => rt.UserId)

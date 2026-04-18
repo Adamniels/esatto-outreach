@@ -1,0 +1,62 @@
+using Esatto.Outreach.Application.Abstractions.Repositories;
+using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Features.Auth.Shared;
+using Esatto.Outreach.Domain.Entities;
+using Esatto.Outreach.Domain.Exceptions;
+using Microsoft.AspNetCore.Identity;
+using RefreshTokenEntity = Esatto.Outreach.Domain.Entities.RefreshToken;
+
+namespace Esatto.Outreach.Application.Features.Auth.RefreshToken;
+
+public sealed class RefreshAccessTokenCommandHandler
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IJwtTokenService _jwtService;
+    private readonly IRefreshTokenRepository _refreshTokenRepo;
+
+    public RefreshAccessTokenCommandHandler(
+        UserManager<ApplicationUser> userManager,
+        IJwtTokenService jwtService,
+        IRefreshTokenRepository refreshTokenRepo)
+    {
+        _userManager = userManager;
+        _jwtService = jwtService;
+        _refreshTokenRepo = refreshTokenRepo;
+    }
+
+    public async Task<AuthResponseDto> Handle(
+        RefreshTokenRequest request,
+        CancellationToken ct = default)
+    {
+        var refreshToken = await _refreshTokenRepo.GetByTokenAsync(request.RefreshToken, ct);
+
+        if (refreshToken == null)
+            throw new AuthenticationFailedException("Invalid refresh token");
+
+        if (refreshToken.IsRevoked)
+            throw new AuthenticationFailedException("Refresh token has been revoked");
+
+        if (refreshToken.ExpiresAt < DateTime.UtcNow)
+            throw new AuthenticationFailedException("Refresh token has expired");
+
+        var (accessToken, expiresAt) = _jwtService.GenerateAccessToken(refreshToken.User);
+        var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+        refreshToken.IsRevoked = true;
+        await _refreshTokenRepo.UpdateAsync(refreshToken, ct);
+
+        await _refreshTokenRepo.AddAsync(new RefreshTokenEntity
+        {
+            TokenHash = RefreshTokenEntity.ComputeTokenHash(newRefreshToken),
+            UserId = refreshToken.UserId,
+            ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
+        }, ct);
+
+        return new AuthResponseDto(
+            accessToken,
+            newRefreshToken,
+            expiresAt,
+            new UserDto(refreshToken.User.Id, refreshToken.User.Email!, refreshToken.User.FullName)
+        );
+    }
+}

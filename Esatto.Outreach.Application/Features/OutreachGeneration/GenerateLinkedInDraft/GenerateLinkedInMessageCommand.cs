@@ -1,0 +1,3 @@
+namespace Esatto.Outreach.Application.Features.OutreachGeneration.GenerateLinkedInDraft;
+
+public sealed record GenerateLinkedInMessageCommand;

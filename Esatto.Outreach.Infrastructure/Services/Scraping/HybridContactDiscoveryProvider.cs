@@ -32,7 +32,8 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
         // 1. Define Parallel Tasks
         
         // Task A: Web Scraper
-        var scrapeTask = Task.Run(async () => 
+        var scrapeTask = ScrapeAsync();
+        async Task<string> ScrapeAsync()
         {
             try 
             {
@@ -45,10 +46,11 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
                 _logger.LogWarning(ex, "Method [WebScraper]: Failed");
                 return "";
             }
-        }, ct);
+        }
 
         // Task B: DuckDuckGo SERP
-        var serpTask = Task.Run(async () =>
+        var serpTask = SearchSerpAsync();
+        async Task<List<SerpResult>> SearchSerpAsync()
         {
             try
             {
@@ -72,10 +74,11 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
                 _logger.LogWarning(ex, "Method [DuckDuckGo]: Failed");
                 return new List<SerpResult>();
             }
-        }, ct);
+        }
 
         // Task C: OpenAI Web Search (The "Verification" Method)
-        var openAiSearchTask = Task.Run(async () =>
+        var openAiSearchTask = SearchOpenAiAsync();
+        async Task<string> SearchOpenAiAsync()
         {
             try
             {
@@ -100,7 +103,7 @@ public class HybridContactDiscoveryProvider : IContactDiscoveryProvider
                 _logger.LogWarning(ex, "Method [OpenAI Web Search]: Failed");
                 return "";
             }
-        }, ct);
+        }
 
 
         // 2. Wait for all to complete

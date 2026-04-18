@@ -37,7 +37,8 @@ public class CompanyEnrichmentService : ICompanyEnrichmentService
         // Define the two parallel tracks
         
         // TRACK A: Internal Website Intelligence
-        var internalTask = Task.Run(async () => 
+        var internalTask = BuildInternalNuggetsAsync();
+        async Task<List<KnowledgeSnippet>> BuildInternalNuggetsAsync()
         {
             // 1. Scraping (Map)
             var siteData = await _webScraper.ScrapeCompanySiteAsync(domain, ct);
@@ -45,7 +46,7 @@ public class CompanyEnrichmentService : ICompanyEnrichmentService
 
             // 2. Knowledge Extraction (Reduce)
             return await _knowledgeBase.AnalyzePagesAsync(siteData.Pages, ct);
-        }, ct);
+        }
 
         // TRACK B: External Intelligence (Deep Search & Crawl) - RUNS IN PARALLEL
         var externalTask = GetExternalIntelligenceAsync(companyName, ct);

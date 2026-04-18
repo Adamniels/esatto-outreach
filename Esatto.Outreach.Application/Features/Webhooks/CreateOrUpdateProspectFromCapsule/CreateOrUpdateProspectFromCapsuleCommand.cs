@@ -1,0 +1,3 @@
+namespace Esatto.Outreach.Application.Features.Webhooks.CreateOrUpdateProspectFromCapsule;
+
+public sealed record CreateOrUpdateProspectFromCapsuleCommand;

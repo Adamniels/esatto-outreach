@@ -1,10 +1,10 @@
-using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence.ChatWithProspect;
 
 namespace Esatto.Outreach.Application.Abstractions.Clients;
 
 public interface IOpenAIChatClient
 {
-    Task<(ChatResponseDto response, string ResponseId)> SendChatMessageAsync(
+    Task<(ChatWithProspectResponse response, string ResponseId)> SendChatMessageAsync(
     string userInput,
     string? systemPrompt,
     string? previousResponseId,

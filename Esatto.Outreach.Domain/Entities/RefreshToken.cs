@@ -1,4 +1,6 @@
 using Esatto.Outreach.Domain.Common;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Esatto.Outreach.Domain.Entities;
 
@@ -8,9 +10,9 @@ namespace Esatto.Outreach.Domain.Entities;
 public sealed class RefreshToken : Entity
 {
     /// <summary>
-    /// The actual token string.
+    /// SHA-256 hash of the refresh token.
     /// </summary>
-    public string Token { get; set; } = string.Empty;
+    public string TokenHash { get; set; } = string.Empty;
     
     /// <summary>
     /// User ID this token belongs to.
@@ -31,4 +33,14 @@ public sealed class RefreshToken : Entity
     /// Navigation property to user.
     /// </summary>
     public ApplicationUser User { get; set; } = null!;
+
+    public static string ComputeTokenHash(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            throw new ArgumentException("Token is required", nameof(token));
+
+        var bytes = Encoding.UTF8.GetBytes(token.Trim());
+        var hash = SHA256.HashData(bytes);
+        return Convert.ToBase64String(hash);
+    }
 }

@@ -47,7 +47,7 @@ migrate-dev:
 
 run:
 	@echo "Running the API..."
-	dotnet run --project Esatto.Outreach.Api/Esatto.Outreach.Api.csproj
+	DOTNET_ENVIRONMENT=Development ASPNETCORE_ENVIRONMENT=Development dotnet run --project Esatto.Outreach.Api/Esatto.Outreach.Api.csproj
 
 dev:
 	@echo "Running the API in development mode..."

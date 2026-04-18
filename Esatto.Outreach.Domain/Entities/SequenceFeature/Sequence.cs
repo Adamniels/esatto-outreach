@@ -168,6 +168,10 @@ public class Sequence : Entity
     public void ReorderSteps(IReadOnlyList<Guid> stepIdsInOrder)
     {
         EnsureSetupDraftOrPausedForStepMutations();
+        if (stepIdsInOrder == null)
+            throw new ArgumentNullException(nameof(stepIdsInOrder));
+        if (stepIdsInOrder.Count == 0)
+            throw new ArgumentException("Step IDs are required.", nameof(stepIdsInOrder));
 
         var distinct = stepIdsInOrder.Distinct().ToList();
         if (distinct.Count != stepIdsInOrder.Count)
@@ -208,7 +212,7 @@ public class Sequence : Entity
         CompleteSetup();
     }
 
-    public SequenceProspect EnrollProspectCommandHandler(Guid prospectId, Guid contactPersonId)
+    public SequenceProspect EnrollProspect(Guid prospectId, Guid contactPersonId)
     {
         EnsureNotTerminal("Enrolling prospects");
 

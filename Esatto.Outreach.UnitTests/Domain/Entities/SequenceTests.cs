@@ -34,7 +34,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         seq.CompleteWizard();
         seq.Status.Should().Be(SequenceStatus.Draft);
     }
@@ -44,7 +44,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         seq.CompleteWizard();
         seq.SequenceSteps[0].SetGeneratedContent(null, "body text");
         var act = () => seq.Activate(DateTime.UtcNow);
@@ -56,7 +56,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.LinkedInMessage, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         seq.CompleteWizard();
         seq.SequenceSteps[0].SetGeneratedContent(null, "msg");
         seq.Activate(DateTime.UtcNow);
@@ -74,6 +74,15 @@ public class SequenceTests
         seq.AddStep(b);
         var act = () => seq.ReorderSteps(new List<Guid> { a.Id });
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ReorderSteps_WithNullInput_ThrowsArgumentNullException()
+    {
+        var seq = NewFocused();
+        seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
+        var act = () => seq.ReorderSteps(null!);
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
@@ -102,8 +111,8 @@ public class SequenceTests
     public void EnrollProspect_FocusedSecondProspect_Throws()
     {
         var seq = NewFocused();
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
-        var act = () => seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
+        var act = () => seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         act.Should().Throw<InvalidOperationException>().WithMessage("*only contain one prospect*");
     }
 
@@ -112,8 +121,8 @@ public class SequenceTests
     {
         var seq = NewMulti();
         var pid = Guid.NewGuid();
-        seq.EnrollProspectCommandHandler(pid, Guid.NewGuid());
-        var act = () => seq.EnrollProspectCommandHandler(pid, Guid.NewGuid());
+        seq.EnrollProspect(pid, Guid.NewGuid());
+        var act = () => seq.EnrollProspect(pid, Guid.NewGuid());
         act.Should().Throw<InvalidOperationException>().WithMessage("*already enrolled*");
     }
 
@@ -130,7 +139,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         var pid = Guid.NewGuid();
-        seq.EnrollProspectCommandHandler(pid, Guid.NewGuid());
+        seq.EnrollProspect(pid, Guid.NewGuid());
         seq.GetBaselineProspectIdForContentGeneration().Should().Be(pid);
     }
 
@@ -152,7 +161,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         var sp = seq.SequenceProspects[0];
         sp.Activate(DateTime.UtcNow);
         sp.RecordSuccessfulStepAndScheduleNext(seq, DateTime.UtcNow);
@@ -160,11 +169,28 @@ public class SequenceTests
     }
 
     [Fact]
+    public void RecordSuccessfulStepAndScheduleNext_UsesConfiguredTimeOfDayUtc()
+    {
+        var seq = NewFocused();
+        seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
+        seq.AddStep(SequenceStep.Create(seq.Id, 1, SequenceStepType.Email, 1, TimeOfDay.LateAfternoon));
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
+
+        var sp = seq.SequenceProspects[0];
+        var now = new DateTime(2026, 4, 18, 8, 30, 0, DateTimeKind.Utc);
+        sp.Activate(now);
+
+        sp.RecordSuccessfulStepAndScheduleNext(seq, now);
+
+        sp.NextStepScheduledAt.Should().Be(new DateTime(2026, 4, 19, 16, 0, 0, DateTimeKind.Utc));
+    }
+
+    [Fact]
     public void TryCompleteIfNoCurrentStep_WhenIndexPastSteps_Completes()
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         var sp = seq.SequenceProspects[0];
         sp.Activate(DateTime.UtcNow);
         sp.MarkStepCompleted(DateTime.UtcNow);
@@ -194,7 +220,7 @@ public class SequenceTests
     {
         var seq = NewFocused();
         seq.AddStep(SequenceStep.Create(seq.Id, 0, SequenceStepType.Email, 0));
-        seq.EnrollProspectCommandHandler(Guid.NewGuid(), Guid.NewGuid());
+        seq.EnrollProspect(Guid.NewGuid(), Guid.NewGuid());
         var sp = seq.SequenceProspects[0];
         sp.Activate(DateTime.UtcNow);
         sp.TryCompleteIfNoCurrentStep(seq).Should().BeFalse();

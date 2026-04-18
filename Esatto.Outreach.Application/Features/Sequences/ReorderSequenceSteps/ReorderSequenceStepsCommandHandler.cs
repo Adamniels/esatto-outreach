@@ -1,7 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.Features.Sequences;
+using Esatto.Outreach.Application.Features.Sequences.Shared;
 
-namespace Esatto.Outreach.Application.Features.Sequences;
+namespace Esatto.Outreach.Application.Features.Sequences.ReorderSequenceSteps;
 
 public class ReorderSequenceStepsCommandHandler
 {

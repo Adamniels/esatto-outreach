@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.Features.Sequences;
+using Esatto.Outreach.Application.Features.Sequences.SequenceOrchestrator;
 // using Microsoft.Extensions.Hosting;
 // using Microsoft.Extensions.Logging;
 // using Microsoft.Extensions.DependencyInjection;

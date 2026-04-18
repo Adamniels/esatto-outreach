@@ -1,6 +1,10 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.Features.OutreachGeneration;
-using Esatto.Outreach.Application.Features.OutreachPrompts;
+using Esatto.Outreach.Application.Features.OutreachPrompts.ActivateOutreachPrompt;
+using Esatto.Outreach.Application.Features.OutreachPrompts.CreateOutreachPrompt;
+using Esatto.Outreach.Application.Features.OutreachPrompts.DeleteOutreachPrompt;
+using Esatto.Outreach.Application.Features.OutreachPrompts.GetActiveOutreachPrompt;
+using Esatto.Outreach.Application.Features.OutreachPrompts.ListOutreachPrompts;
+using Esatto.Outreach.Application.Features.OutreachPrompts.UpdateOutreachPrompt;
 using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -32,7 +36,7 @@ public static class OutreachPromptEndpoints
         }).RequireAuthorization();
 
         // Create new prompt
-        app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptDto dto, CreateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptRequest dto, CreateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -53,7 +57,7 @@ public static class OutreachPromptEndpoints
         }).RequireAuthorization();
 
         // Update existing prompt
-        app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptDto dto, UpdateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptRequest dto, UpdateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))

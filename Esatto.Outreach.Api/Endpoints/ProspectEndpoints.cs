@@ -1,9 +1,21 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.Features.Prospects;
-using Esatto.Outreach.Application.Features.Intelligence;
-using Esatto.Outreach.Application.Features.Prospects;
-using Esatto.Outreach.Application.Features.OutreachGeneration;
-using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Prospects.AddContactPerson;
+using Esatto.Outreach.Application.Features.Prospects.ClearActiveContact;
+using Esatto.Outreach.Application.Features.Prospects.CreateProspect;
+using Esatto.Outreach.Application.Features.Prospects.DeleteContactPerson;
+using Esatto.Outreach.Application.Features.Prospects.DeleteProspect;
+using Esatto.Outreach.Application.Features.Prospects.GetActiveContact;
+using Esatto.Outreach.Application.Features.Prospects.GetProspectById;
+using Esatto.Outreach.Application.Features.Prospects.ListProspects;
+using Esatto.Outreach.Application.Features.Prospects.SetActiveContact;
+using Esatto.Outreach.Application.Features.Prospects.UpdateContactPerson;
+using Esatto.Outreach.Application.Features.Prospects.UpdateProspect;
+using Esatto.Outreach.Application.Features.Intelligence.ChatWithProspect;
+using Esatto.Outreach.Application.Features.Intelligence.EnrichContactPerson;
+using Esatto.Outreach.Application.Features.Intelligence.GenerateEntityIntelligence;
+using Esatto.Outreach.Application.Features.Intelligence.ResetProspectChat;
+using Esatto.Outreach.Application.Features.OutreachGeneration.GenerateEmailDraft;
+using Esatto.Outreach.Application.Features.OutreachGeneration.GenerateLinkedInDraft;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -30,27 +42,27 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects", async (CreateProspectRequest request, CreateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var created = await useCase.Handle(dto, userId, ct);
+                var created = await useCase.Handle(request, userId, ct);
                 return Results.Created($"/prospects/{created.Id}", created);
             }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         })
         .RequireAuthorization();
 
-        app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, UpdateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectRequest request, UpdateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var updated = await useCase.Handle(id, dto, userId, ct);
+                var updated = await useCase.Handle(id, request, userId, ct);
                 return updated is null ? Results.NotFound() : Results.Ok(updated);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
@@ -78,7 +90,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/contacts", async (
             Guid id,
-            CreateContactPersonDto dto,
+            AddContactPersonRequest request,
             AddContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
@@ -88,7 +100,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var created = await useCase.Handle(id, dto, ct);
+                var created = await useCase.Handle(id, request, ct);
                 return created is null ? Results.NotFound() : Results.Ok(created);
             }
             catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
@@ -99,7 +111,7 @@ public static class ProspectEndpoints
         app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
             Guid prospectId,
             Guid contactId,
-            UpdateContactPersonDto dto,
+            UpdateContactPersonRequest request,
             UpdateContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
@@ -107,7 +119,7 @@ public static class ProspectEndpoints
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var updated = await useCase.Handle(prospectId, contactId, dto, ct);
+            var updated = await useCase.Handle(prospectId, contactId, request, ct);
             return updated is null ? Results.NotFound() : Results.Ok(updated);
         })
         .RequireAuthorization();
@@ -279,7 +291,7 @@ public static class ProspectEndpoints
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectRequest dto, ChatWithProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();

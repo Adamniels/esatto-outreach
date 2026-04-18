@@ -37,8 +37,6 @@ public class DuckDuckGoSerpService
             if (results.Count == 0)
             {
                  _logger.LogWarning("DDG SERP returned 0 results. HTML Preview: {HtmlPreview}...", html.Substring(0, Math.Min(500, html.Length)).Replace("\n", " "));
-                 // Dump full HTML for debug
-                 await File.WriteAllTextAsync("debug_ddg_error.html", html);
             }
 
             return results;

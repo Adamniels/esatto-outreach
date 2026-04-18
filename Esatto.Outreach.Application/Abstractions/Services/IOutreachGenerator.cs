@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
 
 namespace Esatto.Outreach.Application.Abstractions.Services;
 

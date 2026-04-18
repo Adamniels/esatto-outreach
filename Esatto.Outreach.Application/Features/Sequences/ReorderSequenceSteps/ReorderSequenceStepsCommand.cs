@@ -1,3 +1,3 @@
-namespace Esatto.Outreach.Application.Features.Sequences;
+namespace Esatto.Outreach.Application.Features.Sequences.ReorderSequenceSteps;
 
 public sealed record ReorderSequenceStepsCommand;

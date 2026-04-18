@@ -32,7 +32,6 @@ public class ContactPersonConfiguration : IEntityTypeConfiguration<ContactPerson
         // JSONB columns for lists
         builder.Property(x => x.PersonalHooks)
             .HasColumnName("PersonalHooksJson")
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
@@ -43,7 +42,6 @@ public class ContactPersonConfiguration : IEntityTypeConfiguration<ContactPerson
 
         builder.Property(x => x.PersonalNews)
             .HasColumnName("PersonalNewsJson")
-            .HasColumnType("jsonb")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
