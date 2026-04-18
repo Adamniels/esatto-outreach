@@ -17,6 +17,7 @@ public class GenerateMailTests
     private readonly IOutreachGeneratorFactory _factoryMock;
     private readonly IOutreachGenerator _generatorMock;
     private readonly IProspectRepository _prospectRepoMock;
+    private readonly IUnitOfWork _unitOfWorkMock;
     private readonly GenerateMailCommandHandler _sut;
 
     public GenerateMailTests()
@@ -25,11 +26,12 @@ public class GenerateMailTests
         _factoryMock = Substitute.For<IOutreachGeneratorFactory>();
         _generatorMock = Substitute.For<IOutreachGenerator>();
         _prospectRepoMock = Substitute.For<IProspectRepository>();
+        _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
         _factoryMock.GetGenerator(Arg.Any<string>()).Returns(_generatorMock);
         _factoryMock.GetGenerator().Returns(_generatorMock);
 
-        _sut = new GenerateMailCommandHandler(_contextBuilderMock, _factoryMock, _prospectRepoMock);
+        _sut = new GenerateMailCommandHandler(_contextBuilderMock, _factoryMock, _prospectRepoMock, _unitOfWorkMock);
     }
 
     [Fact]

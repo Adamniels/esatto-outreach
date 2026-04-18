@@ -12,6 +12,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
     private readonly IProspectRepository _prospectRepo;
     private readonly IContactDiscoveryProvider _contactDiscovery;
     private readonly ICompanyEnrichmentService _enrichmentService; // Injected
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<GenerateEntityIntelligenceCommandHandler> _logger;
 
     public GenerateEntityIntelligenceCommandHandler(
@@ -19,12 +20,14 @@ public sealed class GenerateEntityIntelligenceCommandHandler
         IProspectRepository prospectRepo,
         IContactDiscoveryProvider contactDiscovery,
         ICompanyEnrichmentService enrichmentService,
+        IUnitOfWork unitOfWork,
         ILogger<GenerateEntityIntelligenceCommandHandler> logger)
     {
         _enrichmentRepo = enrichmentRepo;
         _prospectRepo = prospectRepo;
         _contactDiscovery = contactDiscovery;
         _enrichmentService = enrichmentService;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -98,6 +101,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
         }
 
         await _prospectRepo.UpdateAsync(trackedProspect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return EntityIntelligenceDto.FromEntity(existingIntelligence);
     }
 }

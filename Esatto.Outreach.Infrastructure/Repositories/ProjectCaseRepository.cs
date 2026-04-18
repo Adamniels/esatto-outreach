@@ -13,6 +13,7 @@ public class ProjectCaseRepository : IProjectCaseRepository
     public async Task<List<ProjectCase>> ListByCompanyIdAsync(Guid companyId, CancellationToken ct = default)
     {
         return await _db.ProjectCases
+            .AsNoTracking()
             .Where(x => x.CompanyId == companyId)
             .OrderByDescending(x => x.CreatedUtc)
             .ToListAsync(ct);
@@ -26,18 +27,15 @@ public class ProjectCaseRepository : IProjectCaseRepository
     public async Task AddAsync(ProjectCase pc, CancellationToken ct = default)
     {
         _db.ProjectCases.Add(pc);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(ProjectCase pc, CancellationToken ct = default)
     {
         _db.ProjectCases.Update(pc);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(ProjectCase pc, CancellationToken ct = default)
     {
         _db.ProjectCases.Remove(pc);
-        await _db.SaveChangesAsync(ct);
     }
 }

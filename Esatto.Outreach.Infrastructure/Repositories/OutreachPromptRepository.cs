@@ -13,6 +13,7 @@ public sealed class OutreachPromptRepository : IOutreachPromptRepository
 
     public async Task<OutreachPrompt?> GetActiveByUserIdAndTypeAsync(string userId, PromptType type, CancellationToken ct = default)
         => await _db.OutreachPrompts
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == userId && p.Type == type && p.IsActive, ct);
 
     public async Task<OutreachPrompt?> GetByIdAsync(Guid id, string userId, CancellationToken ct = default)
@@ -21,6 +22,7 @@ public sealed class OutreachPromptRepository : IOutreachPromptRepository
 
     public async Task<IReadOnlyList<OutreachPrompt>> ListByUserIdAsync(string userId, CancellationToken ct = default)
         => await _db.OutreachPrompts
+            .AsNoTracking()
             .Where(p => p.UserId == userId)
             .OrderByDescending(p => p.IsActive)
             .ThenByDescending(p => p.CreatedUtc)
@@ -29,14 +31,12 @@ public sealed class OutreachPromptRepository : IOutreachPromptRepository
     public async Task<OutreachPrompt> AddAsync(OutreachPrompt prompt, CancellationToken ct = default)
     {
         await _db.OutreachPrompts.AddAsync(prompt, ct);
-        await _db.SaveChangesAsync(ct);
         return prompt;
     }
 
     public async Task UpdateAsync(OutreachPrompt prompt, CancellationToken ct = default)
     {
         _db.OutreachPrompts.Update(prompt);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(Guid id, string userId, CancellationToken ct = default)
@@ -46,7 +46,6 @@ public sealed class OutreachPromptRepository : IOutreachPromptRepository
         if (entity is null) return;
 
         _db.OutreachPrompts.Remove(entity);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeactivateAllForUserAndTypeAsync(string userId, PromptType type, CancellationToken ct = default)
@@ -59,7 +58,5 @@ public sealed class OutreachPromptRepository : IOutreachPromptRepository
         {
             prompt.Deactivate();
         }
-
-        await _db.SaveChangesAsync(ct);
     }
 }

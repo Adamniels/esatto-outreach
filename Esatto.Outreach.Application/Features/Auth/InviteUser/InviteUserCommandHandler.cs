@@ -9,15 +9,18 @@ public sealed class InviteUserCommandHandler
 {
     private readonly IInvitationRepository _invitationRepo;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUnitOfWork _unitOfWork;
 
     private const int ExpiryDays = 7;
 
     public InviteUserCommandHandler(
         IInvitationRepository invitationRepo,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IUnitOfWork unitOfWork)
     {
         _invitationRepo = invitationRepo;
         _userManager = userManager;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<InviteUserResponse> Handle(
@@ -52,6 +55,7 @@ public sealed class InviteUserCommandHandler
         };
 
         await _invitationRepo.AddAsync(invitation, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         string? inviteLink = null;
         if (!string.IsNullOrWhiteSpace(command.FrontendBaseUrl))

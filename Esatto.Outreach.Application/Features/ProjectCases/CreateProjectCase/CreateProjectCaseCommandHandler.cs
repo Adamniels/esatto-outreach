@@ -8,11 +8,13 @@ public sealed class CreateProjectCaseCommandHandler
 {
     private readonly IProjectCaseRepository _caseRepo;
     private readonly ICompanyInfoRepository _companyRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CreateProjectCaseCommandHandler(IProjectCaseRepository caseRepo, ICompanyInfoRepository companyRepo)
+    public CreateProjectCaseCommandHandler(IProjectCaseRepository caseRepo, ICompanyInfoRepository companyRepo, IUnitOfWork unitOfWork)
     {
         _caseRepo = caseRepo;
         _companyRepo = companyRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProjectCaseDto> Handle(CreateProjectCaseCommand command, string userId, CancellationToken ct = default)
@@ -30,6 +32,7 @@ public sealed class CreateProjectCaseCommandHandler
         };
 
         await _caseRepo.AddAsync(pc, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return new ProjectCaseDto(pc.Id, pc.ClientName, pc.Text, pc.IsActive);
     }
 }

@@ -75,7 +75,7 @@ Krav:
         if (existingUser != null)
             throw new InvalidOperationException("User already exists in the system.");
 
-        await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
+        await _unitOfWork.BeginTransactionAsync(ct);
         try
         {
             var user = new ApplicationUser
@@ -116,6 +116,7 @@ Krav:
                 ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
             }, ct);
 
+            await _unitOfWork.SaveChangesAsync(ct);
             await _unitOfWork.CommitTransactionAsync(ct);
 
             return new AuthResponseDto(

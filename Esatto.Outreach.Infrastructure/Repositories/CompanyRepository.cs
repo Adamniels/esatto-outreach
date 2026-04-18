@@ -12,20 +12,21 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<Company?> GetByNameAsync(string name, CancellationToken ct = default)
         => await _db.Companies
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Name == name, ct);
 
     public async Task<Company?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        => await _db.Companies.FirstOrDefaultAsync(c => c.Id == id, ct);
+        => await _db.Companies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
 
     public async Task AddAsync(Company company, CancellationToken ct = default)
     {
         await _db.Companies.AddAsync(company, ct);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(Company company, CancellationToken ct = default)
     {
         _db.Companies.Update(company);
-        await _db.SaveChangesAsync(ct);
     }
 }

@@ -10,6 +10,7 @@ public sealed class ChatWithProspectCommandHandler
     private readonly IProspectRepository _repo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IOpenAIChatClient _chat;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ChatWithProspectCommandHandler> _logger;
     private static string? _esattoCompanyInfo;
 
@@ -17,11 +18,13 @@ public sealed class ChatWithProspectCommandHandler
         IProspectRepository repo,
         IEntityIntelligenceRepository enrichmentRepo,
         IOpenAIChatClient chat,
+        IUnitOfWork unitOfWork,
         ILogger<ChatWithProspectCommandHandler> logger)
     {
         _repo = repo;
         _enrichmentRepo = enrichmentRepo;
         _chat = chat;
+        _unitOfWork = unitOfWork;
         _logger = logger;
         LoadEsattoCompanyInfo();
     }
@@ -79,6 +82,7 @@ public sealed class ChatWithProspectCommandHandler
 
         prospect.SetLastOpenAIResponseId(newResponseId);
         await _repo.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return response;
     }

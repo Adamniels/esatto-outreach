@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Esatto.Outreach.Application.Features.Auth.AcceptInvitation;
 using Esatto.Outreach.Application.Features.Auth.InviteUser;
 using Esatto.Outreach.Application.Features.Auth.ValidateInvitation;
-using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -50,60 +49,25 @@ public static class InvitationEndpoints
             }
         });
 
-        invitations.MapPost("/", async (
+        static async Task<IResult> InviteUser(
             InviteUserCommand dto,
             InviteUserCommandHandler handler,
             ClaimsPrincipal user,
             IConfiguration configuration,
-            CancellationToken ct) =>
+            CancellationToken ct)
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = user.GetRequiredUserId();
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            try
-            {
-                var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-                var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
-                return Results.Ok(data);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .RequireAuthorization();
+            var frontendBaseUrl = configuration["Frontend:BaseUrl"];
+            var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
+            return Results.Ok(data);
+        }
+
+        invitations.MapPost("/", InviteUser).RequireAuthorization();
 
         // Backward-compatible legacy route.
-        app.MapPost("/company/invitations", async (
-            InviteUserCommand dto,
-            InviteUserCommandHandler handler,
-            ClaimsPrincipal user,
-            IConfiguration configuration,
-            CancellationToken ct) =>
-        {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Results.Unauthorized();
-
-            try
-            {
-                var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-                var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
-                return Results.Ok(data);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        }).RequireAuthorization();
+        app.MapPost("/company/invitations", InviteUser).RequireAuthorization();
     }
 }

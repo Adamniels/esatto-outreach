@@ -6,11 +6,13 @@ namespace Esatto.Outreach.Application.Features.Sequences.UpdateSequence;
 public class UpdateSequenceCommandHandler
 {
     private readonly ISequenceRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly SequenceAccessCommandHandler _access;
 
-    public UpdateSequenceCommandHandler(ISequenceRepository repo, SequenceAccessCommandHandler access)
+    public UpdateSequenceCommandHandler(ISequenceRepository repo, IUnitOfWork unitOfWork, SequenceAccessCommandHandler access)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
         _access = access;
     }
 
@@ -28,6 +30,7 @@ public class UpdateSequenceCommandHandler
             maxActiveProspectsPerDay: command.Settings?.MaxActiveProspectsPerDay ?? 20);
 
         await _repo.UpdateAsync(sequence, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return SequenceViewDto.FromEntity(sequence);
     }
 }

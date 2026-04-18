@@ -22,4 +22,6 @@ public interface ISequenceRepository
     Task<int> CountActiveProspectsForSequenceAsync(Guid sequenceId, CancellationToken ct = default);
     Task<IReadOnlyList<SequenceProspect>> GetPendingProspectsAsync(Guid sequenceId, int count, CancellationToken ct = default);
     Task<SequenceProspect?> GetProspectExecutionDetailsAsync(Guid sequenceProspectId, CancellationToken ct = default);
+    Task<IReadOnlyList<Sequence>> ListActiveMultiSequencesAsync(CancellationToken ct = default);
+    Task<int> ActivatePendingProspectsUpToLimitAsync(Guid sequenceId, int maxActiveProspects, CancellationToken ct = default);
 }

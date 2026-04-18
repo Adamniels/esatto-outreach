@@ -14,6 +14,7 @@ public class ChatWithProspectTests
     private readonly IProspectRepository _repo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IOpenAIChatClient _chat;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ChatWithProspectCommandHandler _useCase;
 
     public ChatWithProspectTests()
@@ -21,11 +22,13 @@ public class ChatWithProspectTests
         _repo = Substitute.For<IProspectRepository>();
         _enrichmentRepo = Substitute.For<IEntityIntelligenceRepository>();
         _chat = Substitute.For<IOpenAIChatClient>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
 
         _useCase = new ChatWithProspectCommandHandler(
             _repo,
             _enrichmentRepo,
             _chat,
+            _unitOfWork,
             Substitute.For<ILogger<ChatWithProspectCommandHandler>>());
     }
 

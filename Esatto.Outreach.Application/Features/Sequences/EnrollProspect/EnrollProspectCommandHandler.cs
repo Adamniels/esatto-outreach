@@ -7,12 +7,14 @@ public class EnrollProspectCommandHandler
 {
     private readonly ISequenceRepository _sequenceRepo;
     private readonly IProspectRepository _prospectRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly SequenceAccessCommandHandler _access;
 
-    public EnrollProspectCommandHandler(ISequenceRepository sequenceRepo, IProspectRepository prospectRepo, SequenceAccessCommandHandler access)
+    public EnrollProspectCommandHandler(ISequenceRepository sequenceRepo, IProspectRepository prospectRepo, IUnitOfWork unitOfWork, SequenceAccessCommandHandler access)
     {
         _sequenceRepo = sequenceRepo;
         _prospectRepo = prospectRepo;
+        _unitOfWork = unitOfWork;
         _access = access;
     }
 
@@ -33,6 +35,7 @@ public class EnrollProspectCommandHandler
         var sequenceProspect = sequence.EnrollProspect(command.ProspectId, command.ContactPersonId);
 
         await _sequenceRepo.AddProspectAsync(sequenceProspect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var fullSP = await _sequenceRepo.GetProspectExecutionDetailsAsync(sequenceProspect.Id, ct);
 

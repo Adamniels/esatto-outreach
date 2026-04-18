@@ -30,9 +30,13 @@ public static class SequenceEndpoints
         // Sequences CRUD
         group.MapPost("/", async (CreateSequenceCommand cmd, CreateSequenceCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = user.GetRequiredUserId();
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(cmd, userId, ct)); }
+            try
+            {
+                var created = await handler.Handle(cmd, userId, ct);
+                return Results.Created($"/sequences/{created.Id}", created);
+            }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 

@@ -6,11 +6,13 @@ namespace Esatto.Outreach.Application.Features.Sequences.RemoveProspect;
 public class RemoveProspectCommandHandler
 {
     private readonly ISequenceRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly SequenceAccessCommandHandler _access;
 
-    public RemoveProspectCommandHandler(ISequenceRepository repo, SequenceAccessCommandHandler access)
+    public RemoveProspectCommandHandler(ISequenceRepository repo, IUnitOfWork unitOfWork, SequenceAccessCommandHandler access)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
         _access = access;
     }
 
@@ -19,5 +21,6 @@ public class RemoveProspectCommandHandler
         var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
         sequence.RemoveEnrollment(command.SequenceProspectId);
         await _repo.UpdateAsync(sequence, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

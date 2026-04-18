@@ -8,11 +8,13 @@ public sealed class UpdateCompanyInfoCommandHandler
 {
     private readonly ICompanyInfoRepository _repo;
     private readonly ICompanyRepository _companyRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateCompanyInfoCommandHandler(ICompanyInfoRepository repo, ICompanyRepository companyRepo)
+    public UpdateCompanyInfoCommandHandler(ICompanyInfoRepository repo, ICompanyRepository companyRepo, IUnitOfWork unitOfWork)
     {
         _repo = repo;
         _companyRepo = companyRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<CompanyInfoDto?> Handle(UpdateCompanyInfoCommand command, string userId, CancellationToken ct = default)
@@ -48,6 +50,7 @@ public sealed class UpdateCompanyInfoCommandHandler
             await _repo.UpdateAsync(info, ct);
         }
 
+        await _unitOfWork.SaveChangesAsync(ct);
         return new CompanyInfoDto(info.Id, company.Name, info.Overview, info.ValueProposition);
     }
 }

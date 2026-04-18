@@ -14,17 +14,20 @@ public sealed class LoginCommandHandler
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IJwtTokenService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
     public LoginCommandHandler(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         IJwtTokenService jwtService,
-        IRefreshTokenRepository refreshTokenRepo)
+        IRefreshTokenRepository refreshTokenRepo,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtService = jwtService;
         _refreshTokenRepo = refreshTokenRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthResponseDto> Handle(
@@ -51,6 +54,7 @@ public sealed class LoginCommandHandler
             UserId = user.Id,
             ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
         }, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return new AuthResponseDto(
             accessToken,

@@ -18,13 +18,11 @@ public sealed class InvitationRepository : IInvitationRepository
     public async Task AddAsync(Invitation invitation, CancellationToken ct = default)
     {
         await _db.Invitations.AddAsync(invitation, ct);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(Invitation invitation, CancellationToken ct = default)
     {
         _db.Invitations.Update(invitation);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task<bool> MarkAsUsedAsync(Guid invitationId, CancellationToken ct = default)

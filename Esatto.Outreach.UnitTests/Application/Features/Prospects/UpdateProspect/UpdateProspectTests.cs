@@ -16,7 +16,7 @@ public class UpdateProspectTests
     public UpdateProspectTests()
     {
         _repo = Substitute.For<IProspectRepository>();
-        _useCase = new UpdateProspectCommandHandler(_repo);
+        _useCase = new UpdateProspectCommandHandler(_repo, Substitute.For<IUnitOfWork>());
     }
 
     private static UpdateProspectCommand EmptyUpdate(Guid id) => new(id, null, null, null, null, null, null, null, null);

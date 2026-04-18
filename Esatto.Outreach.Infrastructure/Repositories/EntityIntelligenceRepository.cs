@@ -19,14 +19,12 @@ public class EntityIntelligenceRepository : IEntityIntelligenceRepository
     public async Task<EntityIntelligence> AddAsync(EntityIntelligence data, CancellationToken ct = default)
     {
         await _db.EntityIntelligences.AddAsync(data, ct);
-        await _db.SaveChangesAsync(ct);
         return data;
     }
 
     public async Task UpdateAsync(EntityIntelligence data, CancellationToken ct = default)
     {
         _db.EntityIntelligences.Update(data);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -35,6 +33,5 @@ public class EntityIntelligenceRepository : IEntityIntelligenceRepository
         if (entity is null) return;
 
         _db.EntityIntelligences.Remove(entity);
-        await _db.SaveChangesAsync(ct);
     }
 }

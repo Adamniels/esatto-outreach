@@ -13,21 +13,27 @@ public sealed class RefreshAccessTokenCommandHandler
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtTokenService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
     public RefreshAccessTokenCommandHandler(
         UserManager<ApplicationUser> userManager,
         IJwtTokenService jwtService,
-        IRefreshTokenRepository refreshTokenRepo)
+        IRefreshTokenRepository refreshTokenRepo,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _jwtService = jwtService;
         _refreshTokenRepo = refreshTokenRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthResponseDto> Handle(
         RefreshAccessTokenCommand command,
         CancellationToken ct = default)
     {
+        await _unitOfWork.BeginTransactionAsync(ct);
+        try
+        {
         var refreshToken = await _refreshTokenRepo.GetByTokenAsync(command.RefreshToken, ct);
 
         if (refreshToken == null)
@@ -51,6 +57,8 @@ public sealed class RefreshAccessTokenCommandHandler
             UserId = refreshToken.UserId,
             ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
         }, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+        await _unitOfWork.CommitTransactionAsync(ct);
 
         return new AuthResponseDto(
             accessToken,
@@ -58,5 +66,11 @@ public sealed class RefreshAccessTokenCommandHandler
             expiresAt,
             new UserDto(refreshToken.User.Id, refreshToken.User.Email!, refreshToken.User.FullName)
         );
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(ct);
+            throw;
+        }
     }
 }

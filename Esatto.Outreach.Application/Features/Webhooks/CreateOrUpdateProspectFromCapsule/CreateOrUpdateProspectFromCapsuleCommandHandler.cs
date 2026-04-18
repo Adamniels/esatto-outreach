@@ -10,13 +10,16 @@ namespace Esatto.Outreach.Application.Features.Webhooks.CreateOrUpdateProspectFr
 public class CreateOrUpdateProspectFromCapsuleCommandHandler
 {
     private readonly IProspectRepository _prospectRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateOrUpdateProspectFromCapsuleCommandHandler> _logger;
 
     public CreateOrUpdateProspectFromCapsuleCommandHandler(
         IProspectRepository prospectRepo,
+        IUnitOfWork unitOfWork,
         ILogger<CreateOrUpdateProspectFromCapsuleCommandHandler> logger)
     {
         _prospectRepo = prospectRepo;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -42,6 +45,7 @@ public class CreateOrUpdateProspectFromCapsuleCommandHandler
 
         prospect.UpdateFromCrm(party.Name, party.About, party.UpdatedAt, party.LastContactedAt, party.PictureURL, websites, tags, customFields);
         await _prospectRepo.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         _logger.LogInformation("Updated prospect: '{Name}' (Capsule ID: {CapsuleId})", party.Name, party.Id);
         return new WebhookResultDto(true, $"Updated prospect: {party.Name}");
     }
@@ -58,6 +62,7 @@ public class CreateOrUpdateProspectFromCapsuleCommandHandler
             party.LastContactedAt, party.PictureURL, websites, tags, customFields);
 
         await _prospectRepo.AddAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         _logger.LogInformation("Created pending prospect: '{Name}' (Capsule ID: {CapsuleId})", party.Name, party.Id);
         return new WebhookResultDto(true, $"Created pending prospect: {party.Name}");
     }

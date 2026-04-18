@@ -15,15 +15,18 @@ namespace Esatto.Outreach.Application.Features.Intelligence.EnrichContactPerson;
 public sealed class EnrichContactPersonCommandHandler
 {
     private readonly IProspectRepository _prospectRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IGenerativeAIClient _aiClient;
     private readonly ILogger<EnrichContactPersonCommandHandler> _logger;
 
     public EnrichContactPersonCommandHandler(
         IProspectRepository prospectRepo,
+        IUnitOfWork unitOfWork,
         IGenerativeAIClient aiClient,
         ILogger<EnrichContactPersonCommandHandler> logger)
     {
         _prospectRepo = prospectRepo;
+        _unitOfWork = unitOfWork;
         _aiClient = aiClient;
         _logger = logger;
     }
@@ -75,6 +78,7 @@ public sealed class EnrichContactPersonCommandHandler
         );
 
         await _prospectRepo.UpdateContactPersonAsync(contact, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         _logger.LogInformation("Successfully enriched contact {ContactId}", command.ContactId);
 

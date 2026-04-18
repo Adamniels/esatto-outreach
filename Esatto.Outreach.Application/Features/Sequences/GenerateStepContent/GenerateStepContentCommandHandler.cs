@@ -7,17 +7,20 @@ namespace Esatto.Outreach.Application.Features.Sequences.GenerateStepContent;
 public class GenerateStepContentCommandHandler
 {
     private readonly ISequenceRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IOutreachContextBuilder _contextBuilder;
     private readonly IOutreachGeneratorFactory _generatorFactory;
     private readonly SequenceAccessCommandHandler _access;
 
     public GenerateStepContentCommandHandler(
         ISequenceRepository repo,
+        IUnitOfWork unitOfWork,
         IOutreachContextBuilder contextBuilder,
         IOutreachGeneratorFactory generatorFactory,
         SequenceAccessCommandHandler access)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
         _contextBuilder = contextBuilder;
         _generatorFactory = generatorFactory;
         _access = access;
@@ -47,6 +50,7 @@ public class GenerateStepContentCommandHandler
         sequence.ApplyGeneratedContentFromDraft(command.StepId, draft.Title, body);
 
         await _repo.UpdateAsync(sequence, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var updated = sequence.SequenceSteps.First(s => s.Id == command.StepId);
         return SequenceStepViewDto.FromEntity(updated);

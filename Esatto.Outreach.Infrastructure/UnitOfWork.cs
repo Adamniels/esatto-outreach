@@ -13,52 +13,50 @@ public sealed class UnitOfWork : IUnitOfWork, IAsyncDisposable
         _dbContext = dbContext;
     }
 
-    public async Task<System.Data.Common.DbTransaction?> BeginTransactionAsync(CancellationToken ct = default)
+    public async Task BeginTransactionAsync(CancellationToken ct = default)
     {
         if (_currentTransaction != null)
         {
-            return _currentTransaction.GetDbTransaction();
+            return;
         }
 
         _currentTransaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        return _currentTransaction.GetDbTransaction();
+    }
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        return _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task CommitTransactionAsync(CancellationToken ct = default)
     {
+        if (_currentTransaction == null)
+            throw new InvalidOperationException("No active transaction to commit.");
+
         try
         {
-            if (_currentTransaction != null)
-            {
-                await _currentTransaction.CommitAsync(ct);
-            }
+            await _currentTransaction.CommitAsync(ct);
         }
         finally
         {
-            if (_currentTransaction != null)
-            {
-                await _currentTransaction.DisposeAsync();
-                _currentTransaction = null;
-            }
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
         }
     }
 
     public async Task RollbackTransactionAsync(CancellationToken ct = default)
     {
+        if (_currentTransaction == null)
+            throw new InvalidOperationException("No active transaction to roll back.");
+
         try
         {
-            if (_currentTransaction != null)
-            {
-                await _currentTransaction.RollbackAsync(ct);
-            }
+            await _currentTransaction.RollbackAsync(ct);
         }
         finally
         {
-            if (_currentTransaction != null)
-            {
-                await _currentTransaction.DisposeAsync();
-                _currentTransaction = null;
-            }
+            await _currentTransaction.DisposeAsync();
+            _currentTransaction = null;
         }
     }
 

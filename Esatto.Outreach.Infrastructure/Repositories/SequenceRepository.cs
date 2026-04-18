@@ -34,6 +34,7 @@ public class SequenceRepository : ISequenceRepository
     public async Task<IReadOnlyList<Sequence>> ListByOwnerAsync(string ownerId, CancellationToken ct = default)
     {
         return await _context.Sequences
+            .AsNoTracking()
             .Include(s => s.SequenceProspects)
             .Where(s => s.OwnerId == ownerId)
             .OrderByDescending(s => s.CreatedUtc)
@@ -43,19 +44,16 @@ public class SequenceRepository : ISequenceRepository
     public async Task AddAsync(Sequence sequence, CancellationToken ct = default)
     {
         await _context.Sequences.AddAsync(sequence, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task AddStepAsync(SequenceStep step, CancellationToken ct = default)
     {
         await _context.Set<SequenceStep>().AddAsync(step, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task AddProspectAsync(SequenceProspect prospect, CancellationToken ct = default)
     {
         await _context.Set<SequenceProspect>().AddAsync(prospect, ct);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(Sequence sequence, CancellationToken ct = default)
@@ -64,13 +62,11 @@ public class SequenceRepository : ISequenceRepository
         {
             _context.Sequences.Update(sequence);
         }
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(Sequence sequence, CancellationToken ct = default)
     {
         _context.Sequences.Remove(sequence);
-        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyList<SequenceProspect>> GetActiveProspectsDueForExecutionAsync(int batchSize, CancellationToken ct = default)
@@ -91,11 +87,6 @@ public class SequenceRepository : ISequenceRepository
         foreach (var dueProspect in dueProspects)
         {
             dueProspect.LeaseForExecution(leaseUntilUtc);
-        }
-
-        if (dueProspects.Count > 0)
-        {
-            await _context.SaveChangesAsync(ct);
         }
 
         return dueProspects;
@@ -125,5 +116,34 @@ public class SequenceRepository : ISequenceRepository
             .Include(sp => sp.Prospect)
             .Include(sp => sp.Contact)
             .FirstOrDefaultAsync(sp => sp.Id == sequenceProspectId, ct);
+    }
+
+    public async Task<IReadOnlyList<Sequence>> ListActiveMultiSequencesAsync(CancellationToken ct = default)
+    {
+        return await _context.Sequences
+            .AsNoTracking()
+            .Where(s => s.Status == SequenceStatus.Active && s.Mode == SequenceMode.Multi)
+            .ToListAsync(ct);
+    }
+
+    public async Task<int> ActivatePendingProspectsUpToLimitAsync(Guid sequenceId, int maxActiveProspects, CancellationToken ct = default)
+    {
+        var currentlyActive = await CountActiveProspectsForSequenceAsync(sequenceId, ct);
+        if (currentlyActive >= maxActiveProspects)
+            return 0;
+
+        var availableSlots = maxActiveProspects - currentlyActive;
+        var pendingToActivate = await _context.SequenceProspects
+            .Where(sp => sp.SequenceId == sequenceId && sp.Status == SequenceProspectStatus.Pending)
+            .OrderBy(sp => sp.CreatedUtc)
+            .Take(availableSlots)
+            .ToListAsync(ct);
+
+        foreach (var prospect in pendingToActivate)
+        {
+            prospect.Activate(DateTime.UtcNow);
+        }
+
+        return pendingToActivate.Count;
     }
 }

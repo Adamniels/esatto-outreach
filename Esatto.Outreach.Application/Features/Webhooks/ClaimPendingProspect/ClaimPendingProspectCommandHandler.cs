@@ -7,11 +7,13 @@ namespace Esatto.Outreach.Application.Features.Webhooks.ClaimPendingProspect;
 public class ClaimPendingProspectCommandHandler
 {
     private readonly IProspectRepository _prospectRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ClaimPendingProspectCommandHandler> _logger;
 
-    public ClaimPendingProspectCommandHandler(IProspectRepository prospectRepo, ILogger<ClaimPendingProspectCommandHandler> logger)
+    public ClaimPendingProspectCommandHandler(IProspectRepository prospectRepo, IUnitOfWork unitOfWork, ILogger<ClaimPendingProspectCommandHandler> logger)
     {
         _prospectRepo = prospectRepo;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -27,6 +29,7 @@ public class ClaimPendingProspectCommandHandler
 
         prospect.Claim(userId);
         await _prospectRepo.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         _logger.LogInformation("Prospect claimed by user: {UserId} - '{ProspectName}' (ID: {ProspectId})", userId, prospect.Name, command.ProspectId);
         return ProspectViewDto.FromEntity(prospect);
     }

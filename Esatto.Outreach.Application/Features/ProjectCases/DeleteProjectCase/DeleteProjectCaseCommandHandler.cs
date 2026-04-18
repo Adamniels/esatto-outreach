@@ -6,11 +6,13 @@ public sealed class DeleteProjectCaseCommandHandler
 {
     private readonly IProjectCaseRepository _caseRepo;
     private readonly ICompanyInfoRepository _companyRepo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteProjectCaseCommandHandler(IProjectCaseRepository caseRepo, ICompanyInfoRepository companyRepo)
+    public DeleteProjectCaseCommandHandler(IProjectCaseRepository caseRepo, ICompanyInfoRepository companyRepo, IUnitOfWork unitOfWork)
     {
         _caseRepo = caseRepo;
         _companyRepo = companyRepo;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<bool> Handle(DeleteProjectCaseCommand command, string userId, CancellationToken ct = default)
@@ -24,6 +26,7 @@ public sealed class DeleteProjectCaseCommandHandler
             return false;
 
         await _caseRepo.DeleteAsync(pc, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return true;
     }
 }

@@ -1,4 +1,5 @@
 using Esatto.Outreach.Api.Endpoints;
+using Esatto.Outreach.Application;
 using Esatto.Outreach.Domain.Exceptions;
 using Esatto.Outreach.Infrastructure;
 using Microsoft.OpenApi;
@@ -48,73 +49,13 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // Use-cases (each action the system can perform)
+builder.Services.AddApplication();
 
-
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.RegisterUser.RegisterCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.LoginUser.LoginCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.RefreshToken.RefreshAccessTokenCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.ValidateInvitation.ValidateInvitationCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.AcceptInvitation.AcceptInvitationCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Auth.InviteUser.InviteUserCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.CreateProspect.CreateProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.UpdateProspect.UpdateProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.GetProspectById.GetProspectByIdQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.ListProspects.ListProspectsQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.DeleteProspect.DeleteProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.AddContactPerson.AddContactPersonCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.UpdateContactPerson.UpdateContactPersonCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.DeleteContactPerson.DeleteContactPersonCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.EnrichContactPerson.EnrichContactPersonCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.SetActiveContact.SetActiveContactCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.ClearActiveContact.ClearActiveContactCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Prospects.GetActiveContact.GetActiveContactQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachGeneration.GenerateEmailDraft.GenerateMailCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachGeneration.GenerateLinkedInDraft.GenerateLinkedInMessageCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.ChatWithProspect.ChatWithProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.ResetProspectChat.ResetProspectChatCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.GenerateEntityIntelligence.GenerateEntityIntelligenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.ListOutreachPrompts.ListOutreachPromptsQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.GetActiveOutreachPrompt.GetActiveOutreachPromptQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.CreateOutreachPrompt.CreateOutreachPromptCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.UpdateOutreachPrompt.UpdateOutreachPromptCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.ActivateOutreachPrompt.ActivateOutreachPromptCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.OutreachPrompts.DeleteOutreachPrompt.DeleteOutreachPromptCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.GetCompanyInfo.GetCompanyInfoQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Intelligence.UpdateCompanyInfo.UpdateCompanyInfoCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.ProjectCases.ListProjectCases.ListProjectCasesQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.ProjectCases.GetProjectCase.GetProjectCaseQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.ProjectCases.CreateProjectCase.CreateProjectCaseCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.ProjectCases.UpdateProjectCase.UpdateProjectCaseCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.ProjectCases.DeleteProjectCase.DeleteProjectCaseCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Webhooks.CreateOrUpdateProspectFromCapsule.CreateOrUpdateProspectFromCapsuleCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Webhooks.ClaimPendingProspect.ClaimPendingProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Webhooks.RejectPendingProspect.RejectPendingProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Webhooks.ListPendingProspects.ListPendingProspectsQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Webhooks.HandleCapsuleWebhook.HandleCapsuleWebhookCommandHandler>();
-
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.Shared.SequenceAccessCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.CreateSequence.CreateSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.UpdateSequence.UpdateSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.GetSequence.GetSequenceQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.DeleteSequence.DeleteSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.ListSequences.ListSequencesQueryHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.AddSequenceStep.AddSequenceStepCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.UpdateSequenceStep.UpdateSequenceStepCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.UpdateSequenceStepContent.UpdateSequenceStepContentCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.DeleteSequenceStep.DeleteSequenceStepCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.ReorderSequenceSteps.ReorderSequenceStepsCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.EnrollProspect.EnrollProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.RemoveProspect.RemoveProspectCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.ActivateSequence.ActivateSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.PauseSequence.PauseSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.CancelSequence.CancelSequenceCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.GenerateStepContent.GenerateStepContentCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.SequenceOrchestrator.SequenceOrchestratorCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.SaveBuilderProgress.SaveBuilderProgressCommandHandler>();
-builder.Services.AddScoped<Esatto.Outreach.Application.Features.Sequences.CompleteSequenceSetup.CompleteSequenceSetupCommandHandler>();
-
-builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceExecutionWorker>();
-builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceThrottleWorker>();
+if (builder.Configuration.GetValue("BackgroundWorkers:Enabled", true))
+{
+    builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceExecutionWorker>();
+    builder.Services.AddHostedService<Esatto.Outreach.Api.Workers.SequenceThrottleWorker>();
+}
 
 
 // CORS - allow frontend UI

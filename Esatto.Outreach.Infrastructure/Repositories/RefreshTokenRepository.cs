@@ -21,12 +21,10 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
     public async Task AddAsync(RefreshToken refreshToken, CancellationToken ct = default)
     {
         await _db.RefreshTokens.AddAsync(refreshToken, ct);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct = default)
     {
         _db.RefreshTokens.Update(refreshToken);
-        await _db.SaveChangesAsync(ct);
     }
 }

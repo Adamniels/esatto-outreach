@@ -78,7 +78,7 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
 
         // 4. Hämta aktiv kontaktperson
         ContactPersonContext? activeContactContext = null;
-        var activeContact = prospect.GetActiveContactQueryHandler();
+        var activeContact = prospect.GetActiveContact();
         if (activeContact != null)
         {
             activeContactContext = new ContactPersonContext(

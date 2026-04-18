@@ -103,9 +103,10 @@ public static class ProspectEndpoints
 
             try
             {
-                var created = await handler.Handle(command with { ProspectId = id }, ct);
+                var created = await handler.Handle(command with { ProspectId = id }, userId, ct);
                 return created is null ? Results.NotFound() : Results.Ok(created);
             }
+            catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
             catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         })
@@ -122,8 +123,15 @@ public static class ProspectEndpoints
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var updated = await handler.Handle(command with { ProspectId = prospectId, ContactId = contactId }, ct);
-            return updated is null ? Results.NotFound() : Results.Ok(updated);
+            try
+            {
+                var updated = await handler.Handle(command with { ProspectId = prospectId, ContactId = contactId }, userId, ct);
+                return updated is null ? Results.NotFound() : Results.Ok(updated);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
         })
         .RequireAuthorization();
 
@@ -137,8 +145,15 @@ public static class ProspectEndpoints
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var success = await handler.Handle(new DeleteContactPersonCommand(prospectId, contactId), ct);
-            return success ? Results.Ok() : Results.NotFound();
+            try
+            {
+                var success = await handler.Handle(new DeleteContactPersonCommand(prospectId, contactId), userId, ct);
+                return success ? Results.Ok() : Results.NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
         })
         .RequireAuthorization();
 
@@ -314,10 +329,20 @@ public static class ProspectEndpoints
             }
         }).RequireAuthorization();
 
-        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler handler, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var success = await handler.Handle(new ResetProspectChatCommand(id), ct);
-            return success ? Results.NoContent() : Results.NotFound();
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            try
+            {
+                var success = await handler.Handle(new ResetProspectChatCommand(id), userId, ct);
+                return success ? Results.NoContent() : Results.NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
+            }
         })
         .RequireAuthorization();
 

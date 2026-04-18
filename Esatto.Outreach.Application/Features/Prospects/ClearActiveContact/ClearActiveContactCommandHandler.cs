@@ -5,10 +5,12 @@ namespace Esatto.Outreach.Application.Features.Prospects.ClearActiveContact;
 public class ClearActiveContactCommandHandler
 {
     private readonly IProspectRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ClearActiveContactCommandHandler(IProspectRepository repository)
+    public ClearActiveContactCommandHandler(IProspectRepository repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task Handle(ClearActiveContactCommand command, string userId, CancellationToken ct = default)
@@ -21,7 +23,8 @@ public class ClearActiveContactCommandHandler
         if (prospect.OwnerId != userId)
             throw new UnauthorizedAccessException("You are not authorized to modify this prospect");
 
-        prospect.ClearActiveContactCommandHandler();
+        prospect.ClearActiveContact();
         await _repository.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

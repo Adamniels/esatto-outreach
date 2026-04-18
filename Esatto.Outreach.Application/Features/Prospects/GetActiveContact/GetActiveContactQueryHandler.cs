@@ -25,7 +25,7 @@ public class GetActiveContactQueryHandler
         if (prospect.OwnerId != userId)
             throw new UnauthorizedAccessException("You are not authorized to view this prospect");
 
-        var activeContact = prospect.GetActiveContactQueryHandler();
+        var activeContact = prospect.GetActiveContact();
 
         return activeContact != null
             ? ContactPersonDto.FromEntity(activeContact)

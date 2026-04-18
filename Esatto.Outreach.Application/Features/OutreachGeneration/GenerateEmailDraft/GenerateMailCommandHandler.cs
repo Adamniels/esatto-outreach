@@ -9,15 +9,18 @@ public class GenerateMailCommandHandler
     private readonly IOutreachContextBuilder _contextBuilder;
     private readonly IOutreachGeneratorFactory _generatorFactory;
     private readonly IProspectRepository _prospectRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public GenerateMailCommandHandler(
         IOutreachContextBuilder contextBuilder,
         IOutreachGeneratorFactory generatorFactory,
-        IProspectRepository prospectRepository)
+        IProspectRepository prospectRepository,
+        IUnitOfWork unitOfWork)
     {
         _contextBuilder = contextBuilder;
         _generatorFactory = generatorFactory;
         _prospectRepository = prospectRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProspectViewDto> Handle(GenerateMailCommand command, string userId, CancellationToken ct = default)
@@ -44,6 +47,7 @@ public class GenerateMailCommandHandler
         );
 
         await _prospectRepository.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return ProspectViewDto.FromEntity(prospect);
     }
 }

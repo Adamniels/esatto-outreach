@@ -7,15 +7,18 @@ namespace Esatto.Outreach.Application.Features.Sequences.SequenceOrchestrator;
 public class SequenceOrchestratorCommandHandler
 {
     private readonly ISequenceRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEnumerable<IStepExecutor> _executors;
     private readonly ILogger<SequenceOrchestratorCommandHandler> _logger;
 
     public SequenceOrchestratorCommandHandler(
         ISequenceRepository repo,
+        IUnitOfWork unitOfWork,
         IEnumerable<IStepExecutor> executors,
         ILogger<SequenceOrchestratorCommandHandler> logger)
     {
         _repo = repo;
+        _unitOfWork = unitOfWork;
         _executors = executors;
         _logger = logger;
     }
@@ -38,6 +41,7 @@ public class SequenceOrchestratorCommandHandler
                 if (fullDetails.TryCompleteIfNoCurrentStep(sequence))
                 {
                     await _repo.UpdateAsync(sequence, ct);
+                    await _unitOfWork.SaveChangesAsync(ct);
                     continue;
                 }
 
@@ -53,6 +57,7 @@ public class SequenceOrchestratorCommandHandler
                 fullDetails.RecordSuccessfulStepAndScheduleNext(sequence, DateTime.UtcNow);
 
                 await _repo.UpdateAsync(sequence, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
             }
             catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
             {
@@ -71,6 +76,7 @@ public class SequenceOrchestratorCommandHandler
                 _logger.LogError(ex, "Failed to execute sequence step for SequenceProspect {Id}", p.Id);
                 p.MarkFailed($"Execution error: {ex.Message}");
                 await _repo.UpdateAsync(p.Sequence, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
             }
         }
     }

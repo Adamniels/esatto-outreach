@@ -57,11 +57,11 @@ Krav:
         if (string.IsNullOrWhiteSpace(command.CompanyName))
             throw new ArgumentException("Company name is required");
 
-        var existingCompany = await _companyRepo.GetByNameAsync(command.CompanyName.Trim());
+        var existingCompany = await _companyRepo.GetByNameAsync(command.CompanyName.Trim(), ct);
         if (existingCompany != null)
             throw new InvalidOperationException("Company name already exists");
 
-        await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
+        await _unitOfWork.BeginTransactionAsync(ct);
         try
         {
             var company = new Company { Name = command.CompanyName.Trim() };
@@ -112,6 +112,7 @@ Krav:
                 ExpiresAt = _jwtService.GetRefreshTokenExpiryDate()
             }, ct);
 
+            await _unitOfWork.SaveChangesAsync(ct);
             await _unitOfWork.CommitTransactionAsync(ct);
 
             return new AuthResponseDto(

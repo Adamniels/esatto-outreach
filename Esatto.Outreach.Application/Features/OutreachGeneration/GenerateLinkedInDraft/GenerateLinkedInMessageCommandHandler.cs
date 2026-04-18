@@ -10,15 +10,18 @@ public class GenerateLinkedInMessageCommandHandler
     private readonly IOutreachContextBuilder _contextBuilder;
     private readonly IOutreachGeneratorFactory _generatorFactory;
     private readonly IProspectRepository _prospectRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public GenerateLinkedInMessageCommandHandler(
         IOutreachContextBuilder contextBuilder,
         IOutreachGeneratorFactory generatorFactory,
-        IProspectRepository prospectRepository)
+        IProspectRepository prospectRepository,
+        IUnitOfWork unitOfWork)
     {
         _contextBuilder = contextBuilder;
         _generatorFactory = generatorFactory;
         _prospectRepository = prospectRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ProspectViewDto> Handle(GenerateLinkedInMessageCommand command, string userId, CancellationToken ct = default)
@@ -40,6 +43,7 @@ public class GenerateLinkedInMessageCommandHandler
 
         prospect.UpdateLinkedInMessage(draft.BodyPlain);
         await _prospectRepository.UpdateAsync(prospect, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return ProspectViewDto.FromEntity(prospect);
     }
 }

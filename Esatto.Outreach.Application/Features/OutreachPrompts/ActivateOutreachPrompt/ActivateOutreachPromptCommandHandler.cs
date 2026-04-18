@@ -6,8 +6,13 @@ namespace Esatto.Outreach.Application.Features.OutreachPrompts.ActivateOutreachP
 public sealed class ActivateOutreachPromptCommandHandler
 {
     private readonly IOutreachPromptRepository _repo;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ActivateOutreachPromptCommandHandler(IOutreachPromptRepository repo) => _repo = repo;
+    public ActivateOutreachPromptCommandHandler(IOutreachPromptRepository repo, IUnitOfWork unitOfWork)
+    {
+        _repo = repo;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<OutreachPromptDto?> Handle(ActivateOutreachPromptCommand command, string userId, CancellationToken ct = default)
     {
@@ -18,6 +23,7 @@ public sealed class ActivateOutreachPromptCommandHandler
         await _repo.DeactivateAllForUserAndTypeAsync(userId, prompt.Type, ct);
         prompt.Activate();
         await _repo.UpdateAsync(prompt, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return new OutreachPromptDto(
             prompt.Id,

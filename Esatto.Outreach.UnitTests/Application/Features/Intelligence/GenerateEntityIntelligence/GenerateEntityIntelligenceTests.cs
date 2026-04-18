@@ -15,6 +15,7 @@ public class GenerateEntityIntelligenceTests
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IContactDiscoveryProvider _contactDiscovery;
     private readonly ICompanyEnrichmentService _enrichmentService;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly GenerateEntityIntelligenceCommandHandler _useCase;
 
     public GenerateEntityIntelligenceTests()
@@ -23,12 +24,14 @@ public class GenerateEntityIntelligenceTests
         _enrichmentRepo = Substitute.For<IEntityIntelligenceRepository>();
         _contactDiscovery = Substitute.For<IContactDiscoveryProvider>();
         _enrichmentService = Substitute.For<ICompanyEnrichmentService>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
 
         _useCase = new GenerateEntityIntelligenceCommandHandler(
             _enrichmentRepo,
             _prospectRepo,
             _contactDiscovery,
             _enrichmentService,
+            _unitOfWork,
             Substitute.For<ILogger<GenerateEntityIntelligenceCommandHandler>>());
     }
 

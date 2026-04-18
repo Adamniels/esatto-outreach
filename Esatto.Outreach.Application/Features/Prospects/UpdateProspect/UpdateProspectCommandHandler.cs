@@ -6,7 +6,12 @@ namespace Esatto.Outreach.Application.Features.Prospects.UpdateProspect;
 public class UpdateProspectCommandHandler
 {
     private readonly IProspectRepository _repo;
-    public UpdateProspectCommandHandler(IProspectRepository repo) => _repo = repo;
+    private readonly IUnitOfWork _unitOfWork;
+    public UpdateProspectCommandHandler(IProspectRepository repo, IUnitOfWork unitOfWork)
+    {
+        _repo = repo;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<ProspectViewDto?> Handle(UpdateProspectCommand command, string userId, CancellationToken ct = default)
     {
@@ -30,6 +35,7 @@ public class UpdateProspectCommandHandler
             entity.SetStatus(command.Status.Value);
 
         await _repo.UpdateAsync(entity, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
         return ProspectViewDto.FromEntity(entity);
     }
 }

@@ -13,16 +13,18 @@ public class RefreshAccessTokenTests
 {
     private readonly IRefreshTokenRepository _repoMock;
     private readonly IJwtTokenService _jwtMock;
+    private readonly IUnitOfWork _unitOfWorkMock;
     private readonly RefreshAccessTokenCommandHandler _useCase;
 
     public RefreshAccessTokenTests()
     {
         _repoMock = Substitute.For<IRefreshTokenRepository>();
         _jwtMock = Substitute.For<IJwtTokenService>();
+        _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
         // UserManager is injected but currently unused in the RefreshAccessTokenCommandHandler flow,
         // so we can safely pass null or a dummy mock.
-        _useCase = new RefreshAccessTokenCommandHandler(null!, _jwtMock, _repoMock);
+        _useCase = new RefreshAccessTokenCommandHandler(null!, _jwtMock, _repoMock, _unitOfWorkMock);
     }
 
     [Fact]
@@ -116,5 +118,6 @@ public class RefreshAccessTokenTests
         await _repoMock.Received(1).AddAsync(Arg.Is<RefreshToken>(t =>
             t.TokenHash == RefreshToken.ComputeTokenHash("new-refresh-token") &&
             t.UserId == "user-1"), Arg.Any<CancellationToken>());
+        await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 }

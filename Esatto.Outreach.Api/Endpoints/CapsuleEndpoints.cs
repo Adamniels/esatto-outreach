@@ -110,12 +110,21 @@ public static class CapsuleEndpoints
         app.MapPost("/prospects/{id:guid}/pending/reject", async (
             Guid id,
             RejectPendingProspectCommandHandler handler,
+            ClaimsPrincipal user,
             CancellationToken ct) =>
         {
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Results.Unauthorized();
+
             try
             {
-                var deleted = await handler.Handle(new RejectPendingProspectCommand(id), ct);
+                var deleted = await handler.Handle(new RejectPendingProspectCommand(id), userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Results.StatusCode(403);
             }
             catch (InvalidOperationException ex)
             {

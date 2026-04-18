@@ -32,6 +32,7 @@ public class ProspectRepository : IProspectRepository
 
     public async Task<IReadOnlyList<Prospect>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default)
         => await _db.Prospects
+            .AsNoTracking()
             .Include(p => p.EntityIntelligence)
             .Include(p => p.Owner)
             .Where(p => ids.Contains(p.Id))
@@ -39,12 +40,14 @@ public class ProspectRepository : IProspectRepository
 
     public async Task<IReadOnlyList<Prospect>> ListAsync(CancellationToken ct = default)
         => await _db.Prospects
+            .AsNoTracking()
             .Include(p => p.EntityIntelligence)
             .OrderByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<Prospect>> ListByOwnerAsync(string ownerId, CancellationToken ct = default)
         => await _db.Prospects
+            .AsNoTracking()
             .Include(p => p.EntityIntelligence)
             .Include(p => p.ContactPersons)
             .Where(p => p.OwnerId == ownerId)
@@ -53,6 +56,7 @@ public class ProspectRepository : IProspectRepository
 
     public async Task<IReadOnlyList<Prospect>> ListPendingAsync(CancellationToken ct = default)
         => await _db.Prospects
+            .AsNoTracking()
             .Where(p => p.IsPending)
             .OrderByDescending(p => p.CreatedUtc)
             .ToListAsync(ct);
@@ -60,7 +64,6 @@ public class ProspectRepository : IProspectRepository
     public async Task<Prospect> AddAsync(Prospect prospect, CancellationToken ct = default)
     {
         await _db.Prospects.AddAsync(prospect, ct);
-        await _db.SaveChangesAsync(ct);
         return prospect;
     }
 
@@ -73,7 +76,6 @@ public class ProspectRepository : IProspectRepository
         {
             _db.Prospects.Update(prospect);
         }
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -82,7 +84,6 @@ public class ProspectRepository : IProspectRepository
         if (entity is null) return;
 
         _db.Prospects.Remove(entity);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task<ContactPerson?> GetContactPersonByIdAsync(Guid contactId, CancellationToken ct = default)
@@ -94,7 +95,6 @@ public class ProspectRepository : IProspectRepository
     {
         // Explicitly add to tracking as Added
         await _db.Set<ContactPerson>().AddAsync(contact, ct);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateContactPersonAsync(ContactPerson contact, CancellationToken ct = default)
@@ -102,7 +102,6 @@ public class ProspectRepository : IProspectRepository
         // Typically the contact is already attached if we fetched it, 
         // but to be safe we can check state or just Update.
         _db.Set<ContactPerson>().Update(contact);
-        await _db.SaveChangesAsync(ct);
     }
 
     public async Task DeleteContactPersonAsync(Guid contactId, CancellationToken ct = default)
@@ -111,7 +110,6 @@ public class ProspectRepository : IProspectRepository
         if (entity != null)
         {
             _db.Set<ContactPerson>().Remove(entity);
-            await _db.SaveChangesAsync(ct);
         }
     }
 }
