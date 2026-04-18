@@ -76,7 +76,7 @@ public class ContactPerson : Entity
 
     /// <summary>
     /// Marks this contact as active for email generation.
-    /// Business logic: Only call this through Prospect.SetActiveContact() to ensure uniqueness.
+    /// Business logic: Only call this through Prospect.SetActiveContactCommandHandler() to ensure uniqueness.
     /// </summary>
     public void Activate()
     {

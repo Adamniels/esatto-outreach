@@ -208,7 +208,7 @@ public class Sequence : Entity
         CompleteSetup();
     }
 
-    public SequenceProspect EnrollProspect(Guid prospectId, Guid contactPersonId)
+    public SequenceProspect EnrollProspectCommandHandler(Guid prospectId, Guid contactPersonId)
     {
         EnsureNotTerminal("Enrolling prospects");
 

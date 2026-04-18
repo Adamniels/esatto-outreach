@@ -13,7 +13,7 @@ namespace Esatto.Outreach.Infrastructure.Migrations
 {
     [DbContext(typeof(OutreachDbContext))]
     [Migration("20260114171021_AddContactPerson")]
-    partial class AddContactPerson
+    partial class AddContactPersonCommandHandler
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

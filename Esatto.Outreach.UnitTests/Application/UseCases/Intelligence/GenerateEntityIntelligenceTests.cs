@@ -1,6 +1,6 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.UseCases.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
@@ -15,7 +15,7 @@ public class GenerateEntityIntelligenceTests
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IContactDiscoveryProvider _contactDiscovery;
     private readonly ICompanyEnrichmentService _enrichmentService;
-    private readonly GenerateEntityIntelligence _useCase;
+    private readonly GenerateEntityIntelligenceCommandHandler _useCase;
 
     public GenerateEntityIntelligenceTests()
     {
@@ -24,12 +24,12 @@ public class GenerateEntityIntelligenceTests
         _contactDiscovery = Substitute.For<IContactDiscoveryProvider>();
         _enrichmentService = Substitute.For<ICompanyEnrichmentService>();
 
-        _useCase = new GenerateEntityIntelligence(
+        _useCase = new GenerateEntityIntelligenceCommandHandler(
             _enrichmentRepo,
             _prospectRepo,
             _contactDiscovery,
             _enrichmentService,
-            Substitute.For<ILogger<GenerateEntityIntelligence>>());
+            Substitute.For<ILogger<GenerateEntityIntelligenceCommandHandler>>());
     }
 
     [Fact]

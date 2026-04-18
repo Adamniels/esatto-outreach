@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
 
 using Esatto.Outreach.Domain.Enums;
 

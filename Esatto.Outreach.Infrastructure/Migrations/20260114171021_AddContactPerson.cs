@@ -5,7 +5,7 @@
 namespace Esatto.Outreach.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddContactPerson : Migration
+    public partial class AddContactPersonCommandHandler : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -1,7 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Clients;
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.UseCases.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
@@ -15,7 +15,7 @@ public class ChatWithProspectTests
     private readonly IProspectRepository _repo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
     private readonly IOpenAIChatClient _chat;
-    private readonly ChatWithProspect _useCase;
+    private readonly ChatWithProspectCommandHandler _useCase;
 
     public ChatWithProspectTests()
     {
@@ -23,11 +23,11 @@ public class ChatWithProspectTests
         _enrichmentRepo = Substitute.For<IEntityIntelligenceRepository>();
         _chat = Substitute.For<IOpenAIChatClient>();
 
-        _useCase = new ChatWithProspect(
+        _useCase = new ChatWithProspectCommandHandler(
             _repo,
             _enrichmentRepo,
             _chat,
-            Substitute.For<ILogger<ChatWithProspect>>());
+            Substitute.For<ILogger<ChatWithProspectCommandHandler>>());
     }
 
     private static ChatRequestDto DefaultRequest()

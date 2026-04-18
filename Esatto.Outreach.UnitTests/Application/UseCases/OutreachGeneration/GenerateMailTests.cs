@@ -2,9 +2,9 @@ using FluentAssertions;
 using NSubstitute;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.UseCases.OutreachGeneration;
-using Esatto.Outreach.Application.DTOs.Outreach;
-using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.Intelligence;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
 using Esatto.Outreach.UnitTests.Helpers;
@@ -17,7 +17,7 @@ public class GenerateMailTests
     private readonly IOutreachGeneratorFactory _factoryMock;
     private readonly IOutreachGenerator _generatorMock;
     private readonly IProspectRepository _prospectRepoMock;
-    private readonly GenerateMail _sut;
+    private readonly GenerateMailCommandHandler _sut;
 
     public GenerateMailTests()
     {
@@ -29,7 +29,7 @@ public class GenerateMailTests
         _factoryMock.GetGenerator(Arg.Any<string>()).Returns(_generatorMock);
         _factoryMock.GetGenerator().Returns(_generatorMock);
 
-        _sut = new GenerateMail(_contextBuilderMock, _factoryMock, _prospectRepoMock);
+        _sut = new GenerateMailCommandHandler(_contextBuilderMock, _factoryMock, _prospectRepoMock);
     }
 
     [Fact]

@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Esatto.Outreach.Application.Abstractions.Clients;
-using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
 
 using Microsoft.Extensions.Options;
 

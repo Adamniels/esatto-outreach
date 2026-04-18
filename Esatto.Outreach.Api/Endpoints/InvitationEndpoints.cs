@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth;
 using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -16,7 +16,7 @@ public static class InvitationEndpoints
 
         invitations.MapGet("/validate", async (
             [FromQuery] string? token,
-            ValidateInvitation useCase,
+            ValidateInvitationCommandHandler useCase,
             CancellationToken ct) =>
         {
             if (string.IsNullOrEmpty(token))
@@ -31,7 +31,7 @@ public static class InvitationEndpoints
 
         invitations.MapPost("/accept", async (
             AcceptInvitationDto dto,
-            AcceptInvitation useCase,
+            AcceptInvitationCommandHandler useCase,
             CancellationToken ct) =>
         {
             try
@@ -51,7 +51,7 @@ public static class InvitationEndpoints
 
         app.MapPost("/company/invitations", async (
             CreateInvitationDto dto,
-            CreateInvitation useCase,
+            CreateInvitationCommandHandler useCase,
             ClaimsPrincipal user,
             IConfiguration configuration,
             CancellationToken ct) =>

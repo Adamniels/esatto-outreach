@@ -1,5 +1,5 @@
-using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth;
 using Esatto.Outreach.Domain.Exceptions;
 
 namespace Esatto.Outreach.Api.Endpoints;
@@ -14,7 +14,7 @@ public static class AuthEndpoints
 
         auth.MapPost("/register", async (
             RegisterRequestDto dto,
-            Register useCase,
+            RegisterCommandHandler useCase,
             CancellationToken ct) =>
         {
             try
@@ -34,7 +34,7 @@ public static class AuthEndpoints
 
         auth.MapPost("/login", async (
             LoginRequestDto dto,
-            Login useCase,
+            LoginCommandHandler useCase,
             CancellationToken ct) =>
         {
             try
@@ -50,7 +50,7 @@ public static class AuthEndpoints
 
         auth.MapPost("/refresh", async (
             RefreshTokenRequestDto dto,
-            RefreshAccessToken useCase,
+            RefreshAccessTokenCommandHandler useCase,
             CancellationToken ct) =>
         {
             try

@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.UseCases.Intelligence;
-using Esatto.Outreach.Application.UseCases.ProjectCases;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.ProjectCases;
 namespace Esatto.Outreach.Api.Endpoints;
 
 public static class CompanyInfoEndpoints
@@ -12,7 +12,7 @@ public static class CompanyInfoEndpoints
 
         // --- COMPANY INFO ---
 
-        companyInfo.MapGet("/", async (GetCompanyInfo useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/", async (GetCompanyInfoQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -28,7 +28,7 @@ public static class CompanyInfoEndpoints
             }
         }).RequireAuthorization();
 
-        companyInfo.MapPut("/", async (CompanyInfoUpdateDto dto, UpdateCompanyInfo useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPut("/", async (CompanyInfoUpdateDto dto, UpdateCompanyInfoCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -44,7 +44,7 @@ public static class CompanyInfoEndpoints
 
         // --- PROJECT CASES ---
 
-        companyInfo.MapGet("/cases", async (GetProjectCases useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/cases", async (GetProjectCasesQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -53,7 +53,7 @@ public static class CompanyInfoEndpoints
             return Results.Ok(list);
         }).RequireAuthorization();
 
-        companyInfo.MapGet("/cases/{id:guid}", async (Guid id, GetProjectCase useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/cases/{id:guid}", async (Guid id, GetProjectCaseQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -62,7 +62,7 @@ public static class CompanyInfoEndpoints
             return pc is null ? Results.NotFound() : Results.Ok(pc);
         }).RequireAuthorization();
 
-        companyInfo.MapPost("/cases", async (ProjectCaseUpdateDto dto, CreateProjectCase useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPost("/cases", async (ProjectCaseUpdateDto dto, CreateProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -75,7 +75,7 @@ public static class CompanyInfoEndpoints
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
         }).RequireAuthorization();
 
-        companyInfo.MapPut("/cases/{id:guid}", async (Guid id, ProjectCaseUpdateDto dto, UpdateProjectCase useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPut("/cases/{id:guid}", async (Guid id, ProjectCaseUpdateDto dto, UpdateProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -88,7 +88,7 @@ public static class CompanyInfoEndpoints
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
         }).RequireAuthorization();
 
-        companyInfo.MapDelete("/cases/{id:guid}", async (Guid id, DeleteProjectCase useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapDelete("/cases/{id:guid}", async (Guid id, DeleteProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();

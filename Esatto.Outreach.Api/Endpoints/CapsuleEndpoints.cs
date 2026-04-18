@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs.Webhooks;
-using Esatto.Outreach.Application.UseCases.Webhooks;
+using Esatto.Outreach.Application.Features.Webhooks;
+using Esatto.Outreach.Application.Features.Webhooks;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -11,7 +11,7 @@ public static class CapsuleEndpoints
         // Webhook endpoint for Capsule CRM (public, no auth)
         app.MapPost("/webhooks/capsule", async (
             HttpContext httpContext,
-            HandleCapsuleWebhook useCase,
+            HandleCapsuleWebhookCommandHandler useCase,
             ILogger<Program> logger,
             CancellationToken ct) =>
         {
@@ -63,7 +63,7 @@ public static class CapsuleEndpoints
 
         // List pending prospects (from Capsule, not yet claimed)
         app.MapGet("/prospects/pending", async (
-            ListPendingProspects useCase,
+            ListPendingProspectsQueryHandler useCase,
             CancellationToken ct) =>
         {
             try
@@ -83,7 +83,7 @@ public static class CapsuleEndpoints
         // Claim a pending prospect
         app.MapPost("/prospects/{id:guid}/claim", async (
             Guid id,
-            ClaimPendingProspect useCase,
+            ClaimPendingProspectCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -106,7 +106,7 @@ public static class CapsuleEndpoints
         // Reject a pending prospect (delete it)
         app.MapPost("/prospects/{id:guid}/pending/reject", async (
             Guid id,
-            RejectPendingProspect useCase,
+            RejectPendingProspectCommandHandler useCase,
             CancellationToken ct) =>
         {
             try

@@ -1,7 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Exceptions;
 using Esatto.Outreach.UnitTests.Helpers;
@@ -14,16 +14,16 @@ public class RefreshAccessTokenTests
 {
     private readonly IRefreshTokenRepository _repoMock;
     private readonly IJwtTokenService _jwtMock;
-    private readonly RefreshAccessToken _useCase;
+    private readonly RefreshAccessTokenCommandHandler _useCase;
 
     public RefreshAccessTokenTests()
     {
         _repoMock = Substitute.For<IRefreshTokenRepository>();
         _jwtMock = Substitute.For<IJwtTokenService>();
 
-        // UserManager is injected but currently unused in the RefreshAccessToken flow,
+        // UserManager is injected but currently unused in the RefreshAccessTokenCommandHandler flow,
         // so we can safely pass null or a dummy mock.
-        _useCase = new RefreshAccessToken(null!, _jwtMock, _repoMock);
+        _useCase = new RefreshAccessTokenCommandHandler(null!, _jwtMock, _repoMock);
     }
 
     [Fact]

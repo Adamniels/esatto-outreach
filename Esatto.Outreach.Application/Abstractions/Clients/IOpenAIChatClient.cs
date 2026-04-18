@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.DTOs.Intelligence;
+using Esatto.Outreach.Application.Features.Intelligence;
 
 namespace Esatto.Outreach.Application.Abstractions.Clients;
 

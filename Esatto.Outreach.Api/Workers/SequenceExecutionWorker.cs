@@ -1,4 +1,4 @@
-using Esatto.Outreach.Application.UseCases.Sequences;
+using Esatto.Outreach.Application.Features.Sequences;
 // using Microsoft.Extensions.Hosting;
 // using Microsoft.Extensions.Logging;
 // using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +24,7 @@ public class SequenceExecutionWorker : BackgroundService
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var orchestrator = scope.ServiceProvider.GetRequiredService<SequenceOrchestrator>();
+                var orchestrator = scope.ServiceProvider.GetRequiredService<SequenceOrchestratorCommandHandler>();
 
                 await orchestrator.ProcessDueStepsAsync(batchSize: 50, stoppingToken);
             }

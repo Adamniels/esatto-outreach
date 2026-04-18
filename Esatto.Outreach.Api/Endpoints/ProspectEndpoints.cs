@@ -1,9 +1,9 @@
 using System.Security.Claims;
-using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.UseCases.Prospects;
-using Esatto.Outreach.Application.UseCases.OutreachGeneration;
-using Esatto.Outreach.Application.UseCases.Intelligence;
+using Esatto.Outreach.Application.Features.Prospects;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.Prospects;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
+using Esatto.Outreach.Application.Features.Intelligence;
 
 namespace Esatto.Outreach.Api.Endpoints;
 
@@ -14,7 +14,7 @@ public static class ProspectEndpoints
         // ============ PROSPECT CRUD ENDPOINTS ============
 
         // Use case is injected from the service container
-        app.MapGet("/prospects", async (ListProspects useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/prospects", async (ListProspectsQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -23,14 +23,14 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectById useCase, CancellationToken ct) =>
+        app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectByIdQueryHandler useCase, CancellationToken ct) =>
         {
             var dto = await useCase.Handle(id, ct);
             return dto is null ? Results.NotFound() : Results.Ok(dto);
         })
         .RequireAuthorization();
 
-        app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects", async (ProspectCreateDto dto, CreateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -44,7 +44,7 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, UpdateProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/prospects/{id:guid}", async (Guid id, ProspectUpdateDto dto, UpdateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -58,7 +58,7 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -79,7 +79,7 @@ public static class ProspectEndpoints
         app.MapPost("/prospects/{id:guid}/contacts", async (
             Guid id,
             CreateContactPersonDto dto,
-            AddContactPerson useCase,
+            AddContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -100,7 +100,7 @@ public static class ProspectEndpoints
             Guid prospectId,
             Guid contactId,
             UpdateContactPersonDto dto,
-            UpdateContactPerson useCase,
+            UpdateContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -115,7 +115,7 @@ public static class ProspectEndpoints
         app.MapDelete("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
             Guid prospectId,
             Guid contactId,
-            DeleteContactPerson useCase,
+            DeleteContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -130,7 +130,7 @@ public static class ProspectEndpoints
         app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/enrich", async (
             Guid prospectId,
             Guid contactId,
-            EnrichContactPerson useCase,
+            EnrichContactPersonCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -147,7 +147,7 @@ public static class ProspectEndpoints
         app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/activate", async (
             Guid prospectId,
             Guid contactId,
-            SetActiveContact useCase,
+            SetActiveContactCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -176,7 +176,7 @@ public static class ProspectEndpoints
 
         app.MapDelete("/prospects/{prospectId:guid}/contacts/active", async (
             Guid prospectId,
-            ClearActiveContact useCase,
+            ClearActiveContactCommandHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -201,7 +201,7 @@ public static class ProspectEndpoints
 
         app.MapGet("/prospects/{prospectId:guid}/contacts/active", async (
             Guid prospectId,
-            GetActiveContact useCase,
+            GetActiveContactQueryHandler useCase,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -224,7 +224,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/email/draft", async (
            Guid id,
-           GenerateMail useCase,
+           GenerateMailCommandHandler useCase,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
@@ -253,7 +253,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/linkedin/draft", async (
            Guid id,
-           GenerateLinkedInMessage useCase,
+           GenerateLinkedInMessageCommandHandler useCase,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
@@ -279,7 +279,7 @@ public static class ProspectEndpoints
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspect useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatRequestDto dto, ChatWithProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
@@ -299,7 +299,7 @@ public static class ProspectEndpoints
             }
         }).RequireAuthorization();
 
-        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChat useCase, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler useCase, CancellationToken ct) =>
         {
             var success = await useCase.Handle(id, ct);
             return success ? Results.NoContent() : Results.NotFound();
@@ -310,7 +310,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
             Guid id,
-            GenerateEntityIntelligence useCase,
+            GenerateEntityIntelligenceCommandHandler useCase,
             ILogger<Program> logger,
             ClaimsPrincipal user,
             CancellationToken ct) =>

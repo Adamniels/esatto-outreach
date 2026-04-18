@@ -4,8 +4,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
 
 using Esatto.Outreach.Domain.Enums;
 

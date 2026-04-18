@@ -102,26 +102,26 @@ public class ProspectTests
         var prospect = TestFactory.CreateValidManualProspect();
         
         // Add multiple contacts
-        prospect.AddContactPerson("Person A", "CEO", "a@test.com");
-        prospect.AddContactPerson("Person B", "CTO", "b@test.com");
-        prospect.AddContactPerson("Person C", "CFO", "c@test.com");
+        prospect.AddContactPersonCommandHandler("Person A", "CEO", "a@test.com");
+        prospect.AddContactPersonCommandHandler("Person B", "CTO", "b@test.com");
+        prospect.AddContactPersonCommandHandler("Person C", "CFO", "c@test.com");
 
         var contactA = prospect.ContactPersons.First(c => c.Name == "Person A");
         var contactB = prospect.ContactPersons.First(c => c.Name == "Person B");
         var contactC = prospect.ContactPersons.First(c => c.Name == "Person C");
 
         // Act - activate B
-        prospect.SetActiveContact(contactB.Id);
+        prospect.SetActiveContactCommandHandler(contactB.Id);
 
         // Assert
-        ObjectAssertion.Should(prospect.GetActiveContact()).Be(contactB);
+        ObjectAssertion.Should(prospect.GetActiveContactQueryHandler()).Be(contactB);
         contactB.IsActive.Should().BeTrue();
 
         // Act - switch to C
-        prospect.SetActiveContact(contactC.Id);
+        prospect.SetActiveContactCommandHandler(contactC.Id);
 
         // Assert
-        ObjectAssertion.Should(prospect.GetActiveContact()).Be(contactC);
+        ObjectAssertion.Should(prospect.GetActiveContactQueryHandler()).Be(contactC);
         contactB.IsActive.Should().BeFalse();
         contactC.IsActive.Should().BeTrue();
         contactA.IsActive.Should().BeFalse();

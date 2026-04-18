@@ -1,7 +1,7 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.DTOs.Intelligence;
-using Esatto.Outreach.Application.DTOs.Outreach;
+using Esatto.Outreach.Application.Features.Intelligence;
+using Esatto.Outreach.Application.Features.OutreachGeneration;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -78,7 +78,7 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
 
         // 4. Hämta aktiv kontaktperson
         ContactPersonContext? activeContactContext = null;
-        var activeContact = prospect.GetActiveContact();
+        var activeContact = prospect.GetActiveContactQueryHandler();
         if (activeContact != null)
         {
             activeContactContext = new ContactPersonContext(

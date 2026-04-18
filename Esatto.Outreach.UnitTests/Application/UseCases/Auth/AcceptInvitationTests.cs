@@ -2,8 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.DTOs.Auth;
-using Esatto.Outreach.Application.UseCases.Auth;
+using Esatto.Outreach.Application.Features.Auth;
+using Esatto.Outreach.Application.Features.Auth;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Exceptions;
 using Esatto.Outreach.UnitTests.Helpers;
@@ -20,7 +20,7 @@ public class AcceptInvitationTests
     private readonly IJwtTokenService _jwt;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
     private readonly IOutreachPromptRepository _promptRepo;
-    private readonly AcceptInvitation _useCase;
+    private readonly AcceptInvitationCommandHandler _useCase;
 
     public AcceptInvitationTests()
     {
@@ -33,7 +33,7 @@ public class AcceptInvitationTests
         _userManager = Substitute.For<UserManager<ApplicationUser>>(
             userStore, null!, null!, null!, null!, null!, null!, null!, null!);
 
-        _useCase = new AcceptInvitation(
+        _useCase = new AcceptInvitationCommandHandler(
             _invitationRepo, _userManager, _jwt, _refreshTokenRepo, _promptRepo);
     }
 

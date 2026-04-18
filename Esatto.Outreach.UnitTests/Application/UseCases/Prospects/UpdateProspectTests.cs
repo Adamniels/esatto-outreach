@@ -1,6 +1,6 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
-using Esatto.Outreach.Application.DTOs.Prospects;
-using Esatto.Outreach.Application.UseCases.Prospects;
+using Esatto.Outreach.Application.Features.Prospects;
+using Esatto.Outreach.Application.Features.Prospects;
 using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.UnitTests.Helpers;
 using FluentAssertions;
@@ -11,12 +11,12 @@ namespace Esatto.Outreach.UnitTests.Application.UseCases.Prospects;
 public class UpdateProspectTests
 {
     private readonly IProspectRepository _repo;
-    private readonly UpdateProspect _useCase;
+    private readonly UpdateProspectCommandHandler _useCase;
 
     public UpdateProspectTests()
     {
         _repo = Substitute.For<IProspectRepository>();
-        _useCase = new UpdateProspect(_repo);
+        _useCase = new UpdateProspectCommandHandler(_repo);
     }
 
     private static ProspectUpdateDto EmptyUpdate() => new(null, null, null, null, null, null, null, null);

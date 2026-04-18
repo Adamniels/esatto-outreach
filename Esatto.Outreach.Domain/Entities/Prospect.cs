@@ -246,7 +246,7 @@ public class Prospect : Entity
     // === HELPER METHODS ===
 
 
-    public void AddContactPerson(string name, string? title = null, string? email = null)
+    public void AddContactPersonCommandHandler(string name, string? title = null, string? email = null)
     {
         if (string.IsNullOrWhiteSpace(name)) return;
 
@@ -303,7 +303,7 @@ public class Prospect : Entity
     /// </summary>
     /// <param name="contactPersonId">ID of the contact to activate</param>
     /// <exception cref="ArgumentException">Thrown when contact not found in this prospect's contacts</exception>
-    public void SetActiveContact(Guid contactPersonId)
+    public void SetActiveContactCommandHandler(Guid contactPersonId)
     {
         var contact = ContactPersons.FirstOrDefault(c => c.Id == contactPersonId);
         if (contact == null)
@@ -324,13 +324,13 @@ public class Prospect : Entity
     /// Gets the currently active contact for this prospect.
     /// </summary>
     /// <returns>The active ContactPerson, or null if no contact is active</returns>
-    public ContactPerson? GetActiveContact()
+    public ContactPerson? GetActiveContactQueryHandler()
         => ContactPersons.FirstOrDefault(c => c.IsActive);
 
     /// <summary>
     /// Clears the active contact (deactivates all contacts).
     /// </summary>
-    public void ClearActiveContact()
+    public void ClearActiveContactCommandHandler()
     {
         foreach (var c in ContactPersons.Where(c => c.IsActive))
         {
