@@ -52,6 +52,9 @@ secrets.json
 Migrations/obj/
 __EFMigrationsHistory
 __EFMigrationsLock
+*.db
+*.db-shm
+*.db-wal
 
 # --- User-specific ---
 *.DotSettings

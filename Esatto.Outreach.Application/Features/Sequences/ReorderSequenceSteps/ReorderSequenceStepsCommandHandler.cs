@@ -14,10 +14,10 @@ public class ReorderSequenceStepsCommandHandler
         _access = access;
     }
 
-    public async Task Handle(Guid sequenceId, ReorderSequenceStepsRequest request, string userId, CancellationToken ct = default)
+    public async Task Handle(ReorderSequenceStepsCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
-        sequence.ReorderSteps(request.StepIdsInOrder);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
+        sequence.ReorderSteps(command.StepIdsInOrder);
         await _repo.UpdateAsync(sequence, ct);
     }
 }

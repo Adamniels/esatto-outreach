@@ -15,7 +15,7 @@ public class ListPendingProspectsQueryHandler
         _logger = logger;
     }
 
-    public async Task<List<PendingProspectDto>> Handle(CancellationToken ct = default)
+    public async Task<List<PendingProspectDto>> Handle(ListPendingProspectsQuery query, CancellationToken ct = default)
     {
         var pendingProspects = await _prospectRepo.ListPendingAsync(ct);
         _logger.LogInformation("Found {Count} pending prospects", pendingProspects.Count);

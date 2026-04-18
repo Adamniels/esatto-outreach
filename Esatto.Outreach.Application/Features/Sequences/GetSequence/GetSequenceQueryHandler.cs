@@ -11,9 +11,9 @@ public class GetSequenceQueryHandler
         _access = access;
     }
 
-    public async Task<SequenceDetailsDto> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<SequenceDetailsDto> Handle(GetSequenceQuery query, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsForReadAsync(id, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsForReadAsync(query.Id, userId, ct);
         return SequenceDetailsDto.FromEntity(sequence);
     }
 }

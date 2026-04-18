@@ -14,9 +14,9 @@ public class PauseSequenceCommandHandler
         _access = access;
     }
 
-    public async Task Handle(Guid sequenceId, string userId, CancellationToken ct = default)
+    public async Task Handle(PauseSequenceCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedAsync(command.SequenceId, userId, ct);
         sequence.Pause();
         await _repo.UpdateAsync(sequence, ct);
     }

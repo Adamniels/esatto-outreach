@@ -8,16 +8,16 @@ public sealed class DeleteOutreachPromptCommandHandler
 
     public DeleteOutreachPromptCommandHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<bool> Handle(DeleteOutreachPromptCommand command, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetByIdAsync(id, userId, ct);
+        var prompt = await _repo.GetByIdAsync(command.Id, userId, ct);
         if (prompt == null)
             return false;
 
         if (prompt.IsActive)
             throw new InvalidOperationException("Cannot delete the active prompt. Activate another prompt first.");
 
-        await _repo.DeleteAsync(id, userId, ct);
+        await _repo.DeleteAsync(command.Id, userId, ct);
         return true;
     }
 }

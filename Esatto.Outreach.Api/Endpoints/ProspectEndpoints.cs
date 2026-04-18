@@ -26,43 +26,46 @@ public static class ProspectEndpoints
         // ============ PROSPECT CRUD ENDPOINTS ============
 
         // Use case is injected from the service container
-        app.MapGet("/prospects", async (ListProspectsQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/prospects", async (ListProspectsQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            var list = await useCase.Handle(userId, ct);
+            var list = await handler.Handle(new ListProspectsQuery(), userId, ct);
             return Results.Ok(list);
         })
         .RequireAuthorization();
 
-        app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectByIdQueryHandler useCase, CancellationToken ct) =>
+        app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectByIdQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var dto = await useCase.Handle(id, ct);
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+            var dto = await handler.Handle(new GetProspectByIdQuery(id), userId, ct);
             return dto is null ? Results.NotFound() : Results.Ok(dto);
         })
         .RequireAuthorization();
 
-        app.MapPost("/prospects", async (CreateProspectRequest request, CreateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects", async (CreateProspectCommand command, CreateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var created = await useCase.Handle(request, userId, ct);
+                var created = await handler.Handle(command, userId, ct);
                 return Results.Created($"/prospects/{created.Id}", created);
             }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         })
         .RequireAuthorization();
 
-        app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectRequest request, UpdateProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectCommand command, UpdateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var updated = await useCase.Handle(id, request, userId, ct);
+                var updated = await handler.Handle(command with { Id = id }, userId, ct);
                 return updated is null ? Results.NotFound() : Results.Ok(updated);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
@@ -70,13 +73,13 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var deleted = await useCase.Handle(id, userId, ct);
+                var deleted = await handler.Handle(new DeleteProspectCommand(id), userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (UnauthorizedAccessException)
@@ -90,8 +93,8 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/contacts", async (
             Guid id,
-            AddContactPersonRequest request,
-            AddContactPersonCommandHandler useCase,
+            AddContactPersonCommand command,
+            AddContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -100,7 +103,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var created = await useCase.Handle(id, request, ct);
+                var created = await handler.Handle(command with { ProspectId = id }, ct);
                 return created is null ? Results.NotFound() : Results.Ok(created);
             }
             catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
@@ -111,15 +114,15 @@ public static class ProspectEndpoints
         app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
             Guid prospectId,
             Guid contactId,
-            UpdateContactPersonRequest request,
-            UpdateContactPersonCommandHandler useCase,
+            UpdateContactPersonCommand command,
+            UpdateContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var updated = await useCase.Handle(prospectId, contactId, request, ct);
+            var updated = await handler.Handle(command with { ProspectId = prospectId, ContactId = contactId }, ct);
             return updated is null ? Results.NotFound() : Results.Ok(updated);
         })
         .RequireAuthorization();
@@ -127,14 +130,14 @@ public static class ProspectEndpoints
         app.MapDelete("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
             Guid prospectId,
             Guid contactId,
-            DeleteContactPersonCommandHandler useCase,
+            DeleteContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var success = await useCase.Handle(prospectId, contactId, ct);
+            var success = await handler.Handle(new DeleteContactPersonCommand(prospectId, contactId), ct);
             return success ? Results.Ok() : Results.NotFound();
         })
         .RequireAuthorization();
@@ -142,14 +145,14 @@ public static class ProspectEndpoints
         app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/enrich", async (
             Guid prospectId,
             Guid contactId,
-            EnrichContactPersonCommandHandler useCase,
+            EnrichContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var enriched = await useCase.Handle(contactId, userId, ct);
+            var enriched = await handler.Handle(new EnrichContactPersonCommand(contactId), userId, ct);
             return enriched is null ? Results.NotFound() : Results.Ok(enriched);
         })
         .RequireAuthorization();
@@ -159,7 +162,7 @@ public static class ProspectEndpoints
         app.MapPost("/prospects/{prospectId:guid}/contacts/{contactId:guid}/activate", async (
             Guid prospectId,
             Guid contactId,
-            SetActiveContactCommandHandler useCase,
+            SetActiveContactCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -168,7 +171,7 @@ public static class ProspectEndpoints
 
             try
             {
-                await useCase.Handle(prospectId, contactId, userId, ct);
+                await handler.Handle(new SetActiveContactCommand(prospectId, contactId), userId, ct);
                 return Results.Ok(new { success = true });
             }
             catch (InvalidOperationException ex)
@@ -188,7 +191,7 @@ public static class ProspectEndpoints
 
         app.MapDelete("/prospects/{prospectId:guid}/contacts/active", async (
             Guid prospectId,
-            ClearActiveContactCommandHandler useCase,
+            ClearActiveContactCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -197,7 +200,7 @@ public static class ProspectEndpoints
 
             try
             {
-                await useCase.Handle(prospectId, userId, ct);
+                await handler.Handle(new ClearActiveContactCommand(prospectId), userId, ct);
                 return Results.NoContent();
             }
             catch (InvalidOperationException ex)
@@ -213,7 +216,7 @@ public static class ProspectEndpoints
 
         app.MapGet("/prospects/{prospectId:guid}/contacts/active", async (
             Guid prospectId,
-            GetActiveContactQueryHandler useCase,
+            GetActiveContactQueryHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -222,7 +225,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var contact = await useCase.Handle(prospectId, userId, ct);
+                var contact = await handler.Handle(new GetActiveContactQuery(prospectId), userId, ct);
                 return contact is null ? Results.NotFound() : Results.Ok(contact);
             }
             catch (UnauthorizedAccessException)
@@ -236,7 +239,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/email/draft", async (
            Guid id,
-           GenerateMailCommandHandler useCase,
+           GenerateMailCommandHandler handler,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
@@ -247,7 +250,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var prospect = await useCase.Handle(id, userId, type, ct);
+                var prospect = await handler.Handle(new GenerateMailCommand(id, type), userId, ct);
                 return Results.Ok(prospect);
             }
             catch (InvalidOperationException ex)
@@ -265,7 +268,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/linkedin/draft", async (
            Guid id,
-           GenerateLinkedInMessageCommandHandler useCase,
+           GenerateLinkedInMessageCommandHandler handler,
            ClaimsPrincipal user,
            string? type,
            CancellationToken ct) =>
@@ -276,7 +279,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var prospect = await useCase.Handle(id, userId, type, ct);
+                var prospect = await handler.Handle(new GenerateLinkedInMessageCommand(id, type), userId, ct);
                 return Results.Ok(prospect);
             }
             catch (InvalidOperationException ex)
@@ -291,14 +294,14 @@ public static class ProspectEndpoints
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectRequest dto, ChatWithProspectCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectCommand dto, ChatWithProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var res = await useCase.Handle(id, userId, dto, ct);
+                var res = await handler.Handle(dto with { ProspectId = id }, userId, ct);
                 return Results.Ok(res);
             }
             catch (InvalidOperationException ex)
@@ -311,9 +314,9 @@ public static class ProspectEndpoints
             }
         }).RequireAuthorization();
 
-        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler useCase, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler handler, CancellationToken ct) =>
         {
-            var success = await useCase.Handle(id, ct);
+            var success = await handler.Handle(new ResetProspectChatCommand(id), ct);
             return success ? Results.NoContent() : Results.NotFound();
         })
         .RequireAuthorization();
@@ -322,7 +325,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/soft-data/generate", async (
             Guid id,
-            GenerateEntityIntelligenceCommandHandler useCase,
+            GenerateEntityIntelligenceCommandHandler handler,
             ILogger<Program> logger,
             ClaimsPrincipal user,
             CancellationToken ct) =>
@@ -332,7 +335,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var softData = await useCase.Handle(id, userId, ct);
+                var softData = await handler.Handle(new GenerateEntityIntelligenceCommand(id), userId, ct);
                 return Results.Ok(softData);
             }
             catch (UnauthorizedAccessException)

@@ -14,16 +14,16 @@ public class RejectPendingProspectCommandHandler
         _logger = logger;
     }
 
-    public async Task<bool> Handle(Guid prospectId, CancellationToken ct = default)
+    public async Task<bool> Handle(RejectPendingProspectCommand command, CancellationToken ct = default)
     {
-        if (prospectId == Guid.Empty) throw new InvalidOperationException("Invalid prospect ID");
-        var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct);
+        if (command.ProspectId == Guid.Empty) throw new InvalidOperationException("Invalid prospect ID");
+        var prospect = await _prospectRepo.GetByIdAsync(command.ProspectId, ct);
         if (prospect == null) return false;
         if (!prospect.IsPending) throw new InvalidOperationException("Can only reject pending prospects");
 
         var prospectName = prospect.Name;
-        await _prospectRepo.DeleteAsync(prospectId, ct);
-        _logger.LogInformation("Rejected and deleted pending prospect: '{ProspectName}' (ID: {ProspectId})", prospectName, prospectId);
+        await _prospectRepo.DeleteAsync(command.ProspectId, ct);
+        _logger.LogInformation("Rejected and deleted pending prospect: '{ProspectName}' (ID: {ProspectId})", prospectName, command.ProspectId);
         return true;
     }
 }

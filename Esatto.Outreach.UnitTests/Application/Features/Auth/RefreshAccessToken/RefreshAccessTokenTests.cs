@@ -29,7 +29,7 @@ public class RefreshAccessTokenTests
     public async Task Handle_WithInvalidToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
-        var req = new RefreshTokenRequest("invalid-token");
+        var req = new RefreshAccessTokenCommand("invalid-token");
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
             .Returns((RefreshToken?)null);
 
@@ -43,7 +43,7 @@ public class RefreshAccessTokenTests
     public async Task Handle_WithRevokedToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
-        var req = new RefreshTokenRequest("revoked-token");
+        var req = new RefreshAccessTokenCommand("revoked-token");
         var token = new RefreshToken { TokenHash = RefreshToken.ComputeTokenHash("revoked-token"), IsRevoked = true };
 
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
@@ -59,7 +59,7 @@ public class RefreshAccessTokenTests
     public async Task Handle_WithExpiredToken_ThrowsAuthenticationFailedException()
     {
         // Arrange
-        var req = new RefreshTokenRequest("expired-token");
+        var req = new RefreshAccessTokenCommand("expired-token");
         var token = new RefreshToken
         {
             TokenHash = RefreshToken.ComputeTokenHash("expired-token"),
@@ -80,7 +80,7 @@ public class RefreshAccessTokenTests
     public async Task Handle_WithValidToken_RotatesTokenAndReturnsNewTokens()
     {
         // Arrange
-        var req = new RefreshTokenRequest("valid-token");
+        var req = new RefreshAccessTokenCommand("valid-token");
         var user = new ApplicationUser { Id = "user-1", Email = "test@test.com", FullName = "Test User" };
         var oldToken = new RefreshToken
         {

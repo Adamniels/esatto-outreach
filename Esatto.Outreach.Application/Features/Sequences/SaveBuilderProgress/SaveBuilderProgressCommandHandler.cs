@@ -14,11 +14,11 @@ public class SaveBuilderProgressCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceViewDto> Handle(Guid id, SaveBuilderProgressRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceViewDto> Handle(SaveBuilderProgressCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedAsync(id, userId, ct);
+        var sequence = await _access.GetOwnedAsync(command.Id, userId, ct);
 
-        sequence.UpdateBuilderStep(request.CurrentBuilderStep);
+        sequence.UpdateBuilderStep(command.CurrentBuilderStep);
 
         await _repo.UpdateAsync(sequence, ct);
         return SequenceViewDto.FromEntity(sequence);

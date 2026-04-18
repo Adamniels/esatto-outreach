@@ -13,13 +13,13 @@ public sealed class DeleteProjectCaseCommandHandler
         _companyRepo = companyRepo;
     }
 
-    public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<bool> Handle(DeleteProjectCaseCommand command, string userId, CancellationToken ct = default)
     {
         var companyId = await _companyRepo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)
             throw new UnauthorizedAccessException("User does not have a company.");
 
-        var pc = await _caseRepo.GetByIdAsync(id, companyId.Value, ct);
+        var pc = await _caseRepo.GetByIdAsync(command.Id, companyId.Value, ct);
         if (pc == null)
             return false;
 

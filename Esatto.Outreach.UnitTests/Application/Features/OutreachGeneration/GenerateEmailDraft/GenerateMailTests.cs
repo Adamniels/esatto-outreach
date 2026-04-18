@@ -65,7 +65,7 @@ public class GenerateMailTests
             .Returns(draftResult);
 
         // Act
-        var result = await _sut.Handle(prospectId, userId, null, CancellationToken.None);
+        var result = await _sut.Handle(new GenerateMailCommand(prospectId, null), userId, CancellationToken.None);
 
         // Assert
         ObjectAssertion.Should(result).NotBeNull();
@@ -101,7 +101,7 @@ public class GenerateMailTests
 
 
         // Act & Assert
-        Func<Task> act = async () => await _sut.Handle(prospectId, "u-1", null, CancellationToken.None);
+        Func<Task> act = async () => await _sut.Handle(new GenerateMailCommand(prospectId, null), "u-1", CancellationToken.None);
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*not found*");
     }

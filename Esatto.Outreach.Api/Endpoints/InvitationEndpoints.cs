@@ -17,13 +17,13 @@ public static class InvitationEndpoints
 
         invitations.MapGet("/validate", async (
             [FromQuery] string? token,
-            ValidateInvitationCommandHandler useCase,
+            ValidateInvitationCommandHandler handler,
             CancellationToken ct) =>
         {
             if (string.IsNullOrEmpty(token))
                 return Results.BadRequest(new { error = "Invalid or expired invitation" });
 
-            var result = await useCase.Handle(token, ct);
+            var result = await handler.Handle(new ValidateInvitationCommand(token), ct);
             if (result == null)
                 return Results.BadRequest(new { error = "Invalid or expired invitation" });
 
@@ -31,13 +31,13 @@ public static class InvitationEndpoints
         });
 
         invitations.MapPost("/accept", async (
-            AcceptInvitationRequest dto,
-            AcceptInvitationCommandHandler useCase,
+            AcceptInvitationCommand dto,
+            AcceptInvitationCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await useCase.Handle(dto, ct);
+                var data = await handler.Handle(dto, ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)
@@ -51,8 +51,8 @@ public static class InvitationEndpoints
         });
 
         invitations.MapPost("/", async (
-            InviteUserRequest dto,
-            InviteUserCommandHandler useCase,
+            InviteUserCommand dto,
+            InviteUserCommandHandler handler,
             ClaimsPrincipal user,
             IConfiguration configuration,
             CancellationToken ct) =>
@@ -64,7 +64,7 @@ public static class InvitationEndpoints
             try
             {
                 var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-                var data = await useCase.Handle(userId, dto.Email, frontendBaseUrl, ct);
+                var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
                 return Results.Ok(data);
             }
             catch (ArgumentException ex)
@@ -80,8 +80,8 @@ public static class InvitationEndpoints
 
         // Backward-compatible legacy route.
         app.MapPost("/company/invitations", async (
-            InviteUserRequest dto,
-            InviteUserCommandHandler useCase,
+            InviteUserCommand dto,
+            InviteUserCommandHandler handler,
             ClaimsPrincipal user,
             IConfiguration configuration,
             CancellationToken ct) =>
@@ -93,7 +93,7 @@ public static class InvitationEndpoints
             try
             {
                 var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-                var data = await useCase.Handle(userId, dto.Email, frontendBaseUrl, ct);
+                var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
                 return Results.Ok(data);
             }
             catch (ArgumentException ex)

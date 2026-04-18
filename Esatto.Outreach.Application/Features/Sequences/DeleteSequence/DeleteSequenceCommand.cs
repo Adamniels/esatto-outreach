@@ -1,3 +1,5 @@
 namespace Esatto.Outreach.Application.Features.Sequences.DeleteSequence;
 
-public sealed record DeleteSequenceCommand;
+public sealed record DeleteSequenceCommand(
+    Guid Id
+);

@@ -11,9 +11,9 @@ public class ResetProspectChatCommandHandler
         _repository = repository;
     }
 
-    public async Task<bool> Handle(Guid prospectId, CancellationToken ct = default)
+    public async Task<bool> Handle(ResetProspectChatCommand command, CancellationToken ct = default)
     {
-        var prospect = await _repository.GetByIdAsync(prospectId, ct);
+        var prospect = await _repository.GetByIdAsync(command.ProspectId, ct);
         if (prospect == null)
             return false;
 

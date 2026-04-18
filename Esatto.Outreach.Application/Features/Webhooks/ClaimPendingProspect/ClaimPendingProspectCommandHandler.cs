@@ -15,19 +15,19 @@ public class ClaimPendingProspectCommandHandler
         _logger = logger;
     }
 
-    public async Task<ProspectViewDto?> Handle(Guid prospectId, string userId, CancellationToken ct = default)
+    public async Task<ProspectViewDto?> Handle(ClaimPendingProspectCommand command, string userId, CancellationToken ct = default)
     {
-        if (prospectId == Guid.Empty) throw new InvalidOperationException("Invalid prospect ID");
+        if (command.ProspectId == Guid.Empty) throw new InvalidOperationException("Invalid prospect ID");
         if (string.IsNullOrWhiteSpace(userId)) throw new InvalidOperationException("User ID is required");
 
-        var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct);
+        var prospect = await _prospectRepo.GetByIdAsync(command.ProspectId, ct);
         if (prospect == null) return null;
         if (!prospect.IsPending) throw new InvalidOperationException("Prospect is not pending");
         if (!prospect.IsFromCrm) throw new InvalidOperationException("Can only claim CRM-imported prospects");
 
         prospect.Claim(userId);
         await _prospectRepo.UpdateAsync(prospect, ct);
-        _logger.LogInformation("Prospect claimed by user: {UserId} - '{ProspectName}' (ID: {ProspectId})", userId, prospect.Name, prospectId);
+        _logger.LogInformation("Prospect claimed by user: {UserId} - '{ProspectName}' (ID: {ProspectId})", userId, prospect.Name, command.ProspectId);
         return ProspectViewDto.FromEntity(prospect);
     }
 }

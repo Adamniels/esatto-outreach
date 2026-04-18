@@ -28,10 +28,10 @@ public sealed class GenerateEntityIntelligenceCommandHandler
         _logger = logger;
     }
 
-    public async Task<EntityIntelligenceDto> Handle(Guid prospectId, string userId, CancellationToken ct = default)
+    public async Task<EntityIntelligenceDto> Handle(GenerateEntityIntelligenceCommand command, string userId, CancellationToken ct = default)
     {
-        var prospect = await _prospectRepo.GetByIdReadOnlyAsync(prospectId, ct)
-            ?? throw new KeyNotFoundException($"Prospect {prospectId} not found.");
+        var prospect = await _prospectRepo.GetByIdReadOnlyAsync(command.ProspectId, ct)
+            ?? throw new KeyNotFoundException($"Prospect {command.ProspectId} not found.");
 
         if (prospect.OwnerId != userId)
             throw new UnauthorizedAccessException("You don't have permission to access this prospect");
@@ -41,9 +41,9 @@ public sealed class GenerateEntityIntelligenceCommandHandler
         var companyDomain = prospect.GetPrimaryWebsite() ?? prospect.Name + ".com";
         var enrichmentResult = await _enrichmentService.EnrichCompanyAsync(prospect.Name, companyDomain, ct);
         var contacts = await _contactDiscovery.FindDecisionMakersAsync(prospect.Name, prospect.GetPrimaryWebsite() ?? "", ct);
-        var trackedProspect = await _prospectRepo.GetByIdAsync(prospectId, ct)
-             ?? throw new KeyNotFoundException($"Prospect {prospectId} not found.");
-        var existingIntelligence = await _enrichmentRepo.GetByProspectIdAsync(prospectId, ct);
+        var trackedProspect = await _prospectRepo.GetByIdAsync(command.ProspectId, ct)
+             ?? throw new KeyNotFoundException($"Prospect {command.ProspectId} not found.");
+        var existingIntelligence = await _enrichmentRepo.GetByProspectIdAsync(command.ProspectId, ct);
 
         if (contacts.Any())
         {
@@ -57,7 +57,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
 
                     if (existingContact == null)
                     {
-                        var newContact = ContactPerson.Create(prospectId, c.Name, c.Title, null, c.LinkedInUrl);
+                        var newContact = ContactPerson.Create(command.ProspectId, c.Name, c.Title, null, c.LinkedInUrl);
                         await _prospectRepo.AddContactPersonAsync(newContact, ct);
                         _logger.LogInformation("Added new contact person: {Name}", c.Name);
                     }
@@ -76,7 +76,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
         if (existingIntelligence is null)
         {
             existingIntelligence = EntityIntelligence.Create(
-                prospectId,
+                command.ProspectId,
                 $"{enrichmentResult.Snapshot.WhatTheyDo} | {enrichmentResult.Snapshot.TargetCustomer}",
                 enrichmentResult,
                 "v2-company-strict"

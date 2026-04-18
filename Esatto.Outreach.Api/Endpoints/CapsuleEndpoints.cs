@@ -14,7 +14,7 @@ public static class CapsuleEndpoints
         // Webhook endpoint for Capsule CRM (public, no auth)
         app.MapPost("/webhooks/capsule", async (
             HttpContext httpContext,
-            HandleCapsuleWebhookCommandHandler useCase,
+            HandleCapsuleWebhookCommandHandler handler,
             ILogger<Program> logger,
             CancellationToken ct) =>
         {
@@ -47,7 +47,7 @@ public static class CapsuleEndpoints
                     logger.LogWarning("Payload is null after deserialization");
                     return Results.BadRequest(new { error = "Payload is required" });
                 }
-                var result = await useCase.Handle(payload, ct);
+                var result = await handler.Handle(new HandleCapsuleWebhookCommand(payload), ct);
                 logger.LogInformation("Webhook processed. Success: {Success}, Message: {Message}",
                     result.Success, result.Message);
                 return result.Success
@@ -66,12 +66,12 @@ public static class CapsuleEndpoints
 
         // List pending prospects (from Capsule, not yet claimed)
         app.MapGet("/prospects/pending", async (
-            ListPendingProspectsQueryHandler useCase,
+            ListPendingProspectsQueryHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var pending = await useCase.Handle(ct);
+                var pending = await handler.Handle(new ListPendingProspectsQuery(), ct);
                 return Results.Ok(pending);
             }
             catch (Exception ex)
@@ -86,7 +86,7 @@ public static class CapsuleEndpoints
         // Claim a pending prospect
         app.MapPost("/prospects/{id:guid}/claim", async (
             Guid id,
-            ClaimPendingProspectCommandHandler useCase,
+            ClaimPendingProspectCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
@@ -96,7 +96,7 @@ public static class CapsuleEndpoints
 
             try
             {
-                var claimed = await useCase.Handle(id, userId, ct);
+                var claimed = await handler.Handle(new ClaimPendingProspectCommand(id), userId, ct);
                 return claimed == null ? Results.NotFound() : Results.Ok(claimed);
             }
             catch (InvalidOperationException ex)
@@ -109,12 +109,12 @@ public static class CapsuleEndpoints
         // Reject a pending prospect (delete it)
         app.MapPost("/prospects/{id:guid}/pending/reject", async (
             Guid id,
-            RejectPendingProspectCommandHandler useCase,
+            RejectPendingProspectCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var deleted = await useCase.Handle(id, ct);
+                var deleted = await handler.Handle(new RejectPendingProspectCommand(id), ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (InvalidOperationException ex)

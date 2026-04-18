@@ -11,15 +11,12 @@ public class ClearActiveContactCommandHandler
         _repository = repository;
     }
 
-    public async Task Handle(
-        Guid prospectId,
-        string userId,
-        CancellationToken ct = default)
+    public async Task Handle(ClearActiveContactCommand command, string userId, CancellationToken ct = default)
     {
-        var prospect = await _repository.GetByIdAsync(prospectId, ct);
+        var prospect = await _repository.GetByIdAsync(command.ProspectId, ct);
 
         if (prospect == null)
-            throw new InvalidOperationException($"Prospect with ID {prospectId} not found");
+            throw new InvalidOperationException($"Prospect with ID {command.ProspectId} not found");
 
         if (prospect.OwnerId != userId)
             throw new UnauthorizedAccessException("You are not authorized to modify this prospect");

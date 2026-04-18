@@ -28,15 +28,15 @@ public sealed class EnrichContactPersonCommandHandler
         _logger = logger;
     }
 
-    public async Task<ContactPersonDto?> Handle(Guid contactId, string userId, CancellationToken ct = default)
+    public async Task<ContactPersonDto?> Handle(EnrichContactPersonCommand command, string userId, CancellationToken ct = default)
     {
-        _logger.LogInformation("Starting personal enrichment for contact {ContactId}", contactId);
+        _logger.LogInformation("Starting personal enrichment for contact {ContactId}", command.ContactId);
 
         // 1. Fetch Contact with Prospect (for ownership validation)
-        var contact = await _prospectRepo.GetContactPersonByIdAsync(contactId, ct);
+        var contact = await _prospectRepo.GetContactPersonByIdAsync(command.ContactId, ct);
         if (contact is null)
         {
-            _logger.LogWarning("Contact {ContactId} not found", contactId);
+            _logger.LogWarning("Contact {ContactId} not found", command.ContactId);
             return null;
         }
 
@@ -44,7 +44,7 @@ public sealed class EnrichContactPersonCommandHandler
         var prospect = await _prospectRepo.GetByIdAsync(contact.ProspectId, ct);
         if (prospect is null || prospect.OwnerId != userId)
         {
-            _logger.LogWarning("Unauthorized access attempt for contact {ContactId} by user {UserId}", contactId, userId);
+            _logger.LogWarning("Unauthorized access attempt for contact {ContactId} by user {UserId}", command.ContactId, userId);
             return null;
         }
 
@@ -76,7 +76,7 @@ public sealed class EnrichContactPersonCommandHandler
 
         await _prospectRepo.UpdateContactPersonAsync(contact, ct);
 
-        _logger.LogInformation("Successfully enriched contact {ContactId}", contactId);
+        _logger.LogInformation("Successfully enriched contact {ContactId}", command.ContactId);
 
         return ContactPersonDto.FromEntity(contact);
     }

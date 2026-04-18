@@ -9,13 +9,13 @@ public sealed class UpdateOutreachPromptCommandHandler
 
     public UpdateOutreachPromptCommandHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<OutreachPromptDto?> Handle(Guid id, string userId, UpdateOutreachPromptRequest dto, CancellationToken ct = default)
+    public async Task<OutreachPromptDto?> Handle(UpdateOutreachPromptCommand command, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetByIdAsync(id, userId, ct);
+        var prompt = await _repo.GetByIdAsync(command.Id, userId, ct);
         if (prompt == null)
             return null;
 
-        prompt.UpdateInstructions(dto.Instructions);
+        prompt.UpdateInstructions(command.Instructions);
         await _repo.UpdateAsync(prompt, ct);
 
         return new OutreachPromptDto(

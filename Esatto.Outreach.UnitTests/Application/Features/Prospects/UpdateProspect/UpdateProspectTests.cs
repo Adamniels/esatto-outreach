@@ -19,14 +19,14 @@ public class UpdateProspectTests
         _useCase = new UpdateProspectCommandHandler(_repo);
     }
 
-    private static UpdateProspectRequest EmptyUpdate() => new(null, null, null, null, null, null, null, null);
+    private static UpdateProspectCommand EmptyUpdate(Guid id) => new(id, null, null, null, null, null, null, null, null);
 
     [Fact]
     public async Task Handle_WhenProspectNotFound_ReturnsNull()
     {
         _repo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Prospect?)null);
 
-        var result = await _useCase.Handle(Guid.NewGuid(), EmptyUpdate(), "any-user");
+        var result = await _useCase.Handle(EmptyUpdate(Guid.NewGuid()), "any-user");
 
         ObjectAssertion.Should(result).BeNull();
     }
@@ -39,7 +39,7 @@ public class UpdateProspectTests
         _repo.GetByIdAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
         // Act: different user "attacker-B" tries to update it
-        var act = () => _useCase.Handle(prospect.Id, EmptyUpdate(), userId: "attacker-B");
+        var act = () => _useCase.Handle(EmptyUpdate(prospect.Id), userId: "attacker-B");
 
         // Assert: must be rejected — this is the core ownership invariant
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -51,10 +51,10 @@ public class UpdateProspectTests
         // Arrange
         var prospect = TestFactory.CreateValidManualProspect(ownerId: "owner-A");
         _repo.GetByIdAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
-        var request = new UpdateProspectRequest("Updated Name", null, null, null, null, null, null, null);
+        var request = new UpdateProspectCommand(prospect.Id, "Updated Name", null, null, null, null, null, null, null);
 
         // Act
-        var result = await _useCase.Handle(prospect.Id, request, userId: "owner-A");
+        var result = await _useCase.Handle(request, userId: "owner-A");
 
         // Assert
         ObjectAssertion.Should(result).NotBeNull();
@@ -68,7 +68,7 @@ public class UpdateProspectTests
         var prospect = TestFactory.CreateValidManualProspect(ownerId: "owner-A");
         _repo.GetByIdAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
-        try { await _useCase.Handle(prospect.Id, EmptyUpdate(), "attacker-B"); } catch { }
+        try { await _useCase.Handle(EmptyUpdate(prospect.Id), "attacker-B"); } catch { }
 
         await _repo.DidNotReceive().UpdateAsync(Arg.Any<Prospect>(), Arg.Any<CancellationToken>());
     }

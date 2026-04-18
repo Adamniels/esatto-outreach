@@ -14,18 +14,18 @@ public class UpdateSequenceCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceViewDto> Handle(Guid id, UpdateSequenceRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceViewDto> Handle(UpdateSequenceCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedAsync(id, userId, ct);
+        var sequence = await _access.GetOwnedAsync(command.Id, userId, ct);
 
         sequence.ApplyMetadataUpdate(
-            request.Title,
-            request.Description,
-            applySettings: request.Settings != null,
-            enrichCompany: request.Settings?.EnrichCompany ?? true,
-            enrichContact: request.Settings?.EnrichContact ?? true,
-            researchSimilarities: request.Settings?.ResearchSimilarities ?? false,
-            maxActiveProspectsPerDay: request.Settings?.MaxActiveProspectsPerDay ?? 20);
+            command.Title,
+            command.Description,
+            applySettings: command.Settings != null,
+            enrichCompany: command.Settings?.EnrichCompany ?? true,
+            enrichContact: command.Settings?.EnrichContact ?? true,
+            researchSimilarities: command.Settings?.ResearchSimilarities ?? false,
+            maxActiveProspectsPerDay: command.Settings?.MaxActiveProspectsPerDay ?? 20);
 
         await _repo.UpdateAsync(sequence, ct);
         return SequenceViewDto.FromEntity(sequence);

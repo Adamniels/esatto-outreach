@@ -1,3 +1,6 @@
 namespace Esatto.Outreach.Application.Features.Sequences.DeleteSequenceStep;
 
-public sealed record DeleteSequenceStepCommand;
+public sealed record DeleteSequenceStepCommand(
+    Guid SequenceId,
+    Guid StepId
+);

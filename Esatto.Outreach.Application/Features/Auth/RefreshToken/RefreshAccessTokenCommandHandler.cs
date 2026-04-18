@@ -25,10 +25,10 @@ public sealed class RefreshAccessTokenCommandHandler
     }
 
     public async Task<AuthResponseDto> Handle(
-        RefreshTokenRequest request,
+        RefreshAccessTokenCommand command,
         CancellationToken ct = default)
     {
-        var refreshToken = await _refreshTokenRepo.GetByTokenAsync(request.RefreshToken, ct);
+        var refreshToken = await _refreshTokenRepo.GetByTokenAsync(command.RefreshToken, ct);
 
         if (refreshToken == null)
             throw new AuthenticationFailedException("Invalid refresh token");

@@ -9,9 +9,9 @@ public sealed class GetOutreachPromptByIdQueryHandler
 
     public GetOutreachPromptByIdQueryHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<OutreachPromptDto?> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<OutreachPromptDto?> Handle(GetOutreachPromptByIdQuery query, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetByIdAsync(id, userId, ct);
+        var prompt = await _repo.GetByIdAsync(query.Id, userId, ct);
         if (prompt == null) return null;
 
         return new OutreachPromptDto(

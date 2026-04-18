@@ -51,20 +51,20 @@ Krav:
     }
 
     public async Task<AuthResponseDto> Handle(
-        RegisterRequest request,
+        RegisterCommand command,
         CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.CompanyName))
+        if (string.IsNullOrWhiteSpace(command.CompanyName))
             throw new ArgumentException("Company name is required");
 
-        var existingCompany = await _companyRepo.GetByNameAsync(request.CompanyName.Trim());
+        var existingCompany = await _companyRepo.GetByNameAsync(command.CompanyName.Trim());
         if (existingCompany != null)
             throw new InvalidOperationException("Company name already exists");
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
         try
         {
-            var company = new Company { Name = request.CompanyName.Trim() };
+            var company = new Company { Name = command.CompanyName.Trim() };
             await _companyRepo.AddAsync(company, ct);
 
             var companyInfo = new CompanyInformation
@@ -75,20 +75,20 @@ Krav:
             };
             await _companyInfoRepo.AddAsync(companyInfo, ct);
 
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            var existingUser = await _userManager.FindByEmailAsync(command.Email);
             if (existingUser != null)
                 throw new InvalidOperationException("Email already registered");
 
             var user = new ApplicationUser
             {
-                UserName = request.Email,
-                Email = request.Email,
-                FullName = request.FullName,
+                UserName = command.Email,
+                Email = command.Email,
+                FullName = command.FullName,
                 CreatedUtc = DateTime.UtcNow,
                 CompanyId = company.Id,
             };
 
-            var result = await _userManager.CreateAsync(user, request.Password);
+            var result = await _userManager.CreateAsync(user, command.Password);
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));

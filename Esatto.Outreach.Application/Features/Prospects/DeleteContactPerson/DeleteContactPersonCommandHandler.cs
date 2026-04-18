@@ -11,9 +11,9 @@ public sealed class DeleteContactPersonCommandHandler
         _repository = repository;
     }
 
-    public async Task<bool> Handle(Guid prospectId, Guid contactId, CancellationToken ct = default)
+    public async Task<bool> Handle(DeleteContactPersonCommand command, CancellationToken ct = default)
     {
-        await _repository.DeleteContactPersonAsync(contactId, ct);
+        await _repository.DeleteContactPersonAsync(command.ContactId, ct);
         return true;
     }
 }

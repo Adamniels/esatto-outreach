@@ -11,16 +11,16 @@ public class DeleteProspectCommandHandler
         _repository = repository;
     }
 
-    public async Task<bool> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<bool> Handle(DeleteProspectCommand command, string userId, CancellationToken ct = default)
     {
-        var prospect = await _repository.GetByIdAsync(id, ct);
+        var prospect = await _repository.GetByIdAsync(command.Id, ct);
         if (prospect == null)
             return false;
 
         if (prospect.OwnerId != userId)
             throw new UnauthorizedAccessException("You don't have permission to delete this prospect");
 
-        await _repository.DeleteAsync(id, ct);
+        await _repository.DeleteAsync(command.Id, ct);
         return true;
     }
 }

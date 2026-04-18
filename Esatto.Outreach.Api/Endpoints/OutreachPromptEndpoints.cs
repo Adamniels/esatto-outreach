@@ -14,29 +14,29 @@ public static class OutreachPromptEndpoints
     public static void MapOutreachPromptEndpoints(this WebApplication app)
     {
         // Get active prompt by type
-        app.MapGet("/settings/outreach-prompts/active/{type}", async (PromptType type, GetActiveOutreachPromptQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/settings/outreach-prompts/active/{type}", async (PromptType type, GetActiveOutreachPromptQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var prompt = await useCase.Handle(userId, type, ct);
+            var prompt = await handler.Handle(new GetActiveOutreachPromptQuery(type), userId, ct);
             return prompt == null ? Results.NotFound(new { error = $"No active {type} prompt found" }) : Results.Ok(prompt);
         }).RequireAuthorization();
 
         // List all prompts
-        app.MapGet("/settings/outreach-prompts", async (ListOutreachPromptsQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapGet("/settings/outreach-prompts", async (ListOutreachPromptsQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var prompts = await useCase.Handle(userId, ct);
+            var prompts = await handler.Handle(new ListOutreachPromptsQuery(), userId, ct);
             return Results.Ok(prompts);
         }).RequireAuthorization();
 
         // Create new prompt
-        app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptRequest dto, CreateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptCommand dto, CreateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -47,7 +47,7 @@ public static class OutreachPromptEndpoints
 
             try
             {
-                var created = await useCase.Handle(userId, dto, ct);
+                var created = await handler.Handle(dto, userId, ct);
                 return Results.Created($"/settings/outreach-prompts/{created.Id}", created);
             }
             catch (ArgumentException ex)
@@ -57,7 +57,7 @@ public static class OutreachPromptEndpoints
         }).RequireAuthorization();
 
         // Update existing prompt
-        app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptRequest dto, UpdateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptCommand dto, UpdateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -68,7 +68,7 @@ public static class OutreachPromptEndpoints
 
             try
             {
-                var updated = await useCase.Handle(id, userId, dto, ct);
+                var updated = await handler.Handle(dto with { Id = id }, userId, ct);
                 return updated == null ? Results.NotFound() : Results.Ok(updated);
             }
             catch (ArgumentException ex)
@@ -78,18 +78,18 @@ public static class OutreachPromptEndpoints
         }).RequireAuthorization();
 
         // Activate specific prompt (deactivates all others)
-        app.MapPost("/settings/outreach-prompts/{id:guid}/activate", async (Guid id, ActivateOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/settings/outreach-prompts/{id:guid}/activate", async (Guid id, ActivateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var activated = await useCase.Handle(id, userId, ct);
+            var activated = await handler.Handle(new ActivateOutreachPromptCommand(id), userId, ct);
             return activated == null ? Results.NotFound() : Results.Ok(activated);
         }).RequireAuthorization();
 
         // Delete prompt
-        app.MapDelete("/settings/outreach-prompts/{id:guid}", async (Guid id, DeleteOutreachPromptCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapDelete("/settings/outreach-prompts/{id:guid}", async (Guid id, DeleteOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -97,7 +97,7 @@ public static class OutreachPromptEndpoints
 
             try
             {
-                var deleted = await useCase.Handle(id, userId, ct);
+                var deleted = await handler.Handle(new DeleteOutreachPromptCommand(id), userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (InvalidOperationException ex)

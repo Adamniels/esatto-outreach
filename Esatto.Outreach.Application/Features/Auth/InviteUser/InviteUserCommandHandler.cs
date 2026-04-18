@@ -21,12 +21,11 @@ public sealed class InviteUserCommandHandler
     }
 
     public async Task<InviteUserResponse> Handle(
+        InviteUserCommand command,
         string createdById,
-        string email,
-        string? frontendBaseUrl,
         CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(email))
+        if (string.IsNullOrWhiteSpace(command.Email))
             throw new ArgumentException("Email is required");
 
         var creator = await _userManager.FindByIdAsync(createdById);
@@ -35,7 +34,7 @@ public sealed class InviteUserCommandHandler
         if (creator.CompanyId == null)
             throw new InvalidOperationException("You must belong to a company to invite others");
 
-        var existingUser = await _userManager.FindByEmailAsync(email);
+        var existingUser = await _userManager.FindByEmailAsync(command.Email);
         if (existingUser != null)
             throw new InvalidOperationException("User with this email already exists");
 
@@ -46,7 +45,7 @@ public sealed class InviteUserCommandHandler
         var invitation = new Invitation
         {
             CompanyId = creator.CompanyId.Value,
-            Email = email.Trim(),
+            Email = command.Email.Trim(),
             TokenHash = hashedToken,
             CreatedById = createdById,
             ExpiresAt = DateTime.UtcNow.AddDays(ExpiryDays),
@@ -55,9 +54,9 @@ public sealed class InviteUserCommandHandler
         await _invitationRepo.AddAsync(invitation, ct);
 
         string? inviteLink = null;
-        if (!string.IsNullOrWhiteSpace(frontendBaseUrl))
+        if (!string.IsNullOrWhiteSpace(command.FrontendBaseUrl))
         {
-            var baseUrl = frontendBaseUrl.TrimEnd('/');
+            var baseUrl = command.FrontendBaseUrl.TrimEnd('/');
             inviteLink = $"{baseUrl}/accept-invite?token={rawToken}";
         }
 

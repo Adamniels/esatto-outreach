@@ -15,7 +15,7 @@ public sealed class UpdateCompanyInfoCommandHandler
         _companyRepo = companyRepo;
     }
 
-    public async Task<CompanyInfoDto?> Handle(string userId, CompanyInfoUpdateDto dto, CancellationToken ct = default)
+    public async Task<CompanyInfoDto?> Handle(UpdateCompanyInfoCommand command, string userId, CancellationToken ct = default)
     {
         var companyId = await _repo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)
@@ -25,7 +25,7 @@ public sealed class UpdateCompanyInfoCommandHandler
         if (company == null)
             throw new UnauthorizedAccessException("Company not found.");
 
-        company.Name = dto.Name;
+        company.Name = command.Name;
         await _companyRepo.UpdateAsync(company, ct);
 
         var info = await _repo.GetByCompanyIdAsync(companyId.Value, ct);
@@ -35,15 +35,15 @@ public sealed class UpdateCompanyInfoCommandHandler
             info = new CompanyInformation
             {
                 CompanyId = companyId.Value,
-                Overview = dto.Overview,
-                ValueProposition = dto.ValueProposition
+                Overview = command.Overview,
+                ValueProposition = command.ValueProposition
             };
             await _repo.AddAsync(info, ct);
         }
         else
         {
-            info.Overview = dto.Overview;
-            info.ValueProposition = dto.ValueProposition;
+            info.Overview = command.Overview;
+            info.ValueProposition = command.ValueProposition;
             info.Touch();
             await _repo.UpdateAsync(info, ct);
         }

@@ -38,8 +38,7 @@ public class AcceptInvitationTests
             _invitationRepo, _userManager, _jwt, _refreshTokenRepo, _promptRepo, _unitOfWork);
     }
 
-    // AcceptInvitationRequest has 4 params: Token, Email, Password, FullName
-    private static AcceptInvitationRequest Req(string token = "tok", string email = "user@esatto.se",
+    private static AcceptInvitationCommand Req(string token = "tok", string email = "user@esatto.se",
         string password = "Pass1234", string? fullName = "Test User")
         => new(token, email, password, fullName);
 

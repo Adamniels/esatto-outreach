@@ -11,12 +11,12 @@ public sealed class ValidateInvitationCommandHandler
         _invitationRepo = invitationRepo;
     }
 
-    public async Task<ValidateInvitationResponse?> Handle(string token, CancellationToken ct = default)
+    public async Task<ValidateInvitationResponse?> Handle(ValidateInvitationCommand command, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrWhiteSpace(command.Token))
             return null;
 
-        var hashedToken = ComputeSha256(token.Trim());
+        var hashedToken = ComputeSha256(command.Token.Trim());
 
         var invitation = await _invitationRepo.GetByTokenAsync(hashedToken, ct);
         if (invitation == null)

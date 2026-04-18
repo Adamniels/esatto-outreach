@@ -8,7 +8,7 @@ public class ListProspectsQueryHandler
     private readonly IProspectRepository _repo;
     public ListProspectsQueryHandler(IProspectRepository repo) => _repo = repo;
 
-    public async Task<IReadOnlyList<ProspectViewDto>> Handle(string userId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ProspectViewDto>> Handle(ListProspectsQuery query, string userId, CancellationToken ct = default)
     {
         var list = await _repo.ListByOwnerAsync(userId, ct);
         return list.Select(ProspectViewDto.FromEntity).ToList();

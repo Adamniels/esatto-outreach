@@ -14,9 +14,9 @@ public class CompleteSequenceSetupCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceViewDto> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<SequenceViewDto> Handle(CompleteSequenceSetupCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(id, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.Id, userId, ct);
         sequence.CompleteWizard();
         await _repo.UpdateAsync(sequence, ct);
         return SequenceViewDto.FromEntity(sequence);

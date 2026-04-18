@@ -14,13 +14,13 @@ public static class AuthEndpoints
                       .RequireRateLimiting("AuthPolicy");
 
         auth.MapPost("/register", async (
-            RegisterRequest dto,
-            RegisterCommandHandler useCase,
+            RegisterCommand dto,
+            RegisterCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await useCase.Handle(dto, ct);
+                var data = await handler.Handle(dto, ct);
                 return Results.Ok(data);
             }
             catch (ArgumentException ex)
@@ -34,13 +34,13 @@ public static class AuthEndpoints
         });
 
         auth.MapPost("/login", async (
-            LoginRequest dto,
-            LoginCommandHandler useCase,
+            LoginCommand dto,
+            LoginCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await useCase.Handle(dto, ct);
+                var data = await handler.Handle(dto, ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)
@@ -50,13 +50,13 @@ public static class AuthEndpoints
         });
 
         auth.MapPost("/refresh", async (
-            RefreshTokenRequest dto,
-            RefreshAccessTokenCommandHandler useCase,
+            RefreshAccessTokenCommand dto,
+            RefreshAccessTokenCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await useCase.Handle(dto, ct);
+                var data = await handler.Handle(dto, ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)

@@ -14,10 +14,10 @@ public class RemoveProspectCommandHandler
         _access = access;
     }
 
-    public async Task Handle(Guid sequenceId, Guid sequenceProspectId, string userId, CancellationToken ct = default)
+    public async Task Handle(RemoveProspectCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
-        sequence.RemoveEnrollment(sequenceProspectId);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
+        sequence.RemoveEnrollment(command.SequenceProspectId);
         await _repo.UpdateAsync(sequence, ct);
     }
 }

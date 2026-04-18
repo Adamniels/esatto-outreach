@@ -15,7 +15,7 @@ public sealed class CreateProjectCaseCommandHandler
         _companyRepo = companyRepo;
     }
 
-    public async Task<ProjectCaseDto> Handle(ProjectCaseUpdateDto dto, string userId, CancellationToken ct = default)
+    public async Task<ProjectCaseDto> Handle(CreateProjectCaseCommand command, string userId, CancellationToken ct = default)
     {
         var companyId = await _companyRepo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)
@@ -24,9 +24,9 @@ public sealed class CreateProjectCaseCommandHandler
         var pc = new ProjectCase
         {
             CompanyId = companyId.Value,
-            ClientName = dto.ClientName,
-            Text = dto.Text,
-            IsActive = dto.IsActive
+            ClientName = command.ClientName,
+            Text = command.Text,
+            IsActive = command.IsActive
         };
 
         await _caseRepo.AddAsync(pc, ct);

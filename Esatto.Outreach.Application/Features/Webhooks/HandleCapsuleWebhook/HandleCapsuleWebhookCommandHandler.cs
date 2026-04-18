@@ -18,9 +18,10 @@ public class HandleCapsuleWebhookCommandHandler
     }
 
     public async Task<WebhookResultDto> Handle(
-        CapsuleWebhookEventDto webhook,
+        HandleCapsuleWebhookCommand command,
         CancellationToken ct = default)
     {
+        var webhook = command.Webhook;
         if (webhook?.Payload == null || webhook.Payload.Count == 0)
         {
             _logger.LogWarning("Webhook missing payload");
@@ -41,8 +42,8 @@ public class HandleCapsuleWebhookCommandHandler
 
         return webhook.Type switch
         {
-            "party/created" => await _createOrUpdateProspect.Handle(party, ct),
-            "party/updated" => await _createOrUpdateProspect.Handle(party, ct),
+            "party/created" => await _createOrUpdateProspect.Handle(new CreateOrUpdateProspectFromCapsuleCommand(party), ct),
+            "party/updated" => await _createOrUpdateProspect.Handle(new CreateOrUpdateProspectFromCapsuleCommand(party), ct),
             "party/deleted" => HandlePartyDeleted(party),
             _ => new WebhookResultDto(false, $"Unknown event: {webhook.Type}")
         };

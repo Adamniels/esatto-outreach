@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Esatto.Outreach.Application.Features.Intelligence.GetCompanyInfo;
-using Esatto.Outreach.Application.Features.Intelligence.Shared;
 using Esatto.Outreach.Application.Features.Intelligence.UpdateCompanyInfo;
 using Esatto.Outreach.Application.Features.ProjectCases.CreateProjectCase;
 using Esatto.Outreach.Application.Features.ProjectCases.DeleteProjectCase;
@@ -17,14 +16,14 @@ public static class CompanyInfoEndpoints
 
         // --- COMPANY INFO ---
 
-        companyInfo.MapGet("/", async (GetCompanyInfoQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/", async (GetCompanyInfoQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var info = await useCase.Handle(userId, ct);
+                var info = await handler.Handle(new GetCompanyInfoQuery(), userId, ct);
                 return info is null ? Results.NotFound() : Results.Ok(info);
             }
             catch (Exception ex)
@@ -33,14 +32,14 @@ public static class CompanyInfoEndpoints
             }
         }).RequireAuthorization();
 
-        companyInfo.MapPut("/", async (CompanyInfoUpdateDto dto, UpdateCompanyInfoCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPut("/", async (UpdateCompanyInfoCommand dto, UpdateCompanyInfoCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var info = await useCase.Handle(userId, dto, ct);
+                var info = await handler.Handle(dto, userId, ct);
                 return info is null ? Results.NotFound() : Results.Ok(info);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
@@ -49,58 +48,58 @@ public static class CompanyInfoEndpoints
 
         // --- PROJECT CASES ---
 
-        companyInfo.MapGet("/cases", async (ListProjectCasesQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/cases", async (ListProjectCasesQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var list = await useCase.Handle(userId, ct);
+            var list = await handler.Handle(new ListProjectCasesQuery(), userId, ct);
             return Results.Ok(list);
         }).RequireAuthorization();
 
-        companyInfo.MapGet("/cases/{id:guid}", async (Guid id, GetProjectCaseQueryHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapGet("/cases/{id:guid}", async (Guid id, GetProjectCaseQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-            var pc = await useCase.Handle(id, userId, ct);
+            var pc = await handler.Handle(new GetProjectCaseQuery(id), userId, ct);
             return pc is null ? Results.NotFound() : Results.Ok(pc);
         }).RequireAuthorization();
 
-        companyInfo.MapPost("/cases", async (ProjectCaseUpdateDto dto, CreateProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPost("/cases", async (CreateProjectCaseCommand dto, CreateProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var pc = await useCase.Handle(dto, userId, ct);
+                var pc = await handler.Handle(dto, userId, ct);
                 return Results.Created($"/settings/company-info/cases/{pc.Id}", pc);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
         }).RequireAuthorization();
 
-        companyInfo.MapPut("/cases/{id:guid}", async (Guid id, ProjectCaseUpdateDto dto, UpdateProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapPut("/cases/{id:guid}", async (Guid id, UpdateProjectCaseCommand dto, UpdateProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var pc = await useCase.Handle(id, dto, userId, ct);
+                var pc = await handler.Handle(dto with { Id = id }, userId, ct);
                 return pc is null ? Results.NotFound() : Results.Ok(pc);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
         }).RequireAuthorization();
 
-        companyInfo.MapDelete("/cases/{id:guid}", async (Guid id, DeleteProjectCaseCommandHandler useCase, ClaimsPrincipal user, CancellationToken ct) =>
+        companyInfo.MapDelete("/cases/{id:guid}", async (Guid id, DeleteProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var deleted = await useCase.Handle(id, userId, ct);
+                var deleted = await handler.Handle(new DeleteProjectCaseCommand(id), userId, ct);
                 return deleted ? Results.NoContent() : Results.NotFound();
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }

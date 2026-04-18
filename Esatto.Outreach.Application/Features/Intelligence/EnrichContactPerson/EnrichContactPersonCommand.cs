@@ -1,3 +1,5 @@
 namespace Esatto.Outreach.Application.Features.Intelligence.EnrichContactPerson;
 
-public sealed record EnrichContactPersonCommand;
+public sealed record EnrichContactPersonCommand(
+    Guid ContactId
+);

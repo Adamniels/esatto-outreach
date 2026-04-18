@@ -9,7 +9,7 @@ public sealed class ListOutreachPromptsQueryHandler
 
     public ListOutreachPromptsQueryHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<IReadOnlyList<OutreachPromptDto>> Handle(string userId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<OutreachPromptDto>> Handle(ListOutreachPromptsQuery query, string userId, CancellationToken ct = default)
     {
         var prompts = await _repo.ListByUserIdAsync(userId, ct);
         return prompts.Select(p => new OutreachPromptDto(

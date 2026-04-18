@@ -14,20 +14,20 @@ public class UpdateSequenceStepCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceStepViewDto> Handle(Guid sequenceId, Guid stepId, UpdateSequenceStepRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceStepViewDto> Handle(UpdateSequenceStepCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
         sequence.UpdateStepDefinition(
-            stepId,
-            request.StepType,
-            request.DelayInDays,
-            request.TimeOfDayToRun,
-            request.GenerationType);
+            command.StepId,
+            command.StepType,
+            command.DelayInDays,
+            command.TimeOfDayToRun,
+            command.GenerationType);
 
         await _repo.UpdateAsync(sequence, ct);
 
-        var step = sequence.SequenceSteps.First(s => s.Id == stepId);
+        var step = sequence.SequenceSteps.First(s => s.Id == command.StepId);
         return SequenceStepViewDto.FromEntity(step);
     }
 }

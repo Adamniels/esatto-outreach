@@ -13,11 +13,11 @@ public class GetActiveContactQueryHandler
     }
 
     public async Task<ContactPersonDto?> Handle(
-        Guid prospectId,
+        GetActiveContactQuery query,
         string userId,
         CancellationToken ct = default)
     {
-        var prospect = await _repository.GetByIdAsync(prospectId, ct);
+        var prospect = await _repository.GetByIdAsync(query.ProspectId, ct);
 
         if (prospect == null)
             return null;

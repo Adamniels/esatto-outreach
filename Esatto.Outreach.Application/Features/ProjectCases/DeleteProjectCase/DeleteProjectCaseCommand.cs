@@ -1,3 +1,5 @@
 namespace Esatto.Outreach.Application.Features.ProjectCases.DeleteProjectCase;
 
-public sealed record DeleteProjectCaseCommand;
+public sealed record DeleteProjectCaseCommand(
+    Guid Id
+);

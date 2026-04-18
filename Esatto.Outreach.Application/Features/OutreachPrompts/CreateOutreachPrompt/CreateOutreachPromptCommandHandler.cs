@@ -10,9 +10,9 @@ public sealed class CreateOutreachPromptCommandHandler
 
     public CreateOutreachPromptCommandHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<OutreachPromptDto> Handle(string userId, CreateOutreachPromptRequest dto, CancellationToken ct = default)
+    public async Task<OutreachPromptDto> Handle(CreateOutreachPromptCommand command, string userId, CancellationToken ct = default)
     {
-        var prompt = OutreachPrompt.Create(userId, dto.Instructions, dto.Type, dto.IsActive);
+        var prompt = OutreachPrompt.Create(userId, command.Instructions, command.Type, command.IsActive);
         var created = await _repo.AddAsync(prompt, ct);
 
         return new OutreachPromptDto(

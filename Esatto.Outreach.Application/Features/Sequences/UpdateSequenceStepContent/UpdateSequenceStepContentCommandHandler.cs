@@ -14,15 +14,15 @@ public class UpdateSequenceStepContentCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceStepViewDto> Handle(Guid sequenceId, Guid stepId, UpdateSequenceStepContentRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceStepViewDto> Handle(UpdateSequenceStepContentCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
-        sequence.UpdateStepGeneratedContent(stepId, request.GeneratedSubject, request.GeneratedBody);
+        sequence.UpdateStepGeneratedContent(command.StepId, command.GeneratedSubject, command.GeneratedBody);
 
         await _repo.UpdateAsync(sequence, ct);
 
-        var step = sequence.SequenceSteps.First(s => s.Id == stepId);
+        var step = sequence.SequenceSteps.First(s => s.Id == command.StepId);
         return SequenceStepViewDto.FromEntity(step);
     }
 }

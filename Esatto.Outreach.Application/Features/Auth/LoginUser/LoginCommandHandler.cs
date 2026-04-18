@@ -28,14 +28,14 @@ public sealed class LoginCommandHandler
     }
 
     public async Task<AuthResponseDto> Handle(
-        LoginRequest request,
+        LoginCommand command,
         CancellationToken ct = default)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var user = await _userManager.FindByEmailAsync(command.Email);
         if (user == null)
             throw new AuthenticationFailedException("Invalid email or password");
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
             throw new AuthenticationFailedException("Invalid email or password");
 

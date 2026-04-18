@@ -20,8 +20,9 @@ public class CreateOrUpdateProspectFromCapsuleCommandHandler
         _logger = logger;
     }
 
-    public async Task<WebhookResultDto> Handle(CapsulePartyDto party, CancellationToken ct = default)
+    public async Task<WebhookResultDto> Handle(CreateOrUpdateProspectFromCapsuleCommand command, CancellationToken ct = default)
     {
+        var party = command.Party;
         if (party.Id <= 0)
             return new WebhookResultDto(false, "Invalid party ID");
         if (string.IsNullOrWhiteSpace(party.Name))

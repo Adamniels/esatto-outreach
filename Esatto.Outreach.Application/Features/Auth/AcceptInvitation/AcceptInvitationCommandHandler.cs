@@ -52,13 +52,13 @@ Krav:
     }
 
     public async Task<AuthResponseDto> Handle(
-        AcceptInvitationRequest request,
+        AcceptInvitationCommand command,
         CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Token))
+        if (string.IsNullOrWhiteSpace(command.Token))
             throw new AuthenticationFailedException("Invalid or expired invitation");
 
-        var hashedToken = ComputeSha256(request.Token.Trim());
+        var hashedToken = ComputeSha256(command.Token.Trim());
 
         var invitation = await _invitationRepo.GetByTokenAsync(hashedToken, ct);
         if (invitation == null)
@@ -68,7 +68,7 @@ Krav:
         if (invitation.ExpiresAt < DateTime.UtcNow)
             throw new AuthenticationFailedException("Invalid or expired invitation");
 
-        if (!string.Equals(request.Email, invitation.Email, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(command.Email, invitation.Email, StringComparison.OrdinalIgnoreCase))
             throw new AuthenticationFailedException("Invalid or expired invitation");
 
         var existingUser = await _userManager.FindByEmailAsync(invitation.Email);
@@ -82,12 +82,12 @@ Krav:
             {
                 UserName = invitation.Email,
                 Email = invitation.Email,
-                FullName = request.FullName,
+                FullName = command.FullName,
                 CreatedUtc = DateTime.UtcNow,
                 CompanyId = invitation.CompanyId,
             };
 
-            var createResult = await _userManager.CreateAsync(user, request.Password);
+            var createResult = await _userManager.CreateAsync(user, command.Password);
             if (!createResult.Succeeded)
             {
                 var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));

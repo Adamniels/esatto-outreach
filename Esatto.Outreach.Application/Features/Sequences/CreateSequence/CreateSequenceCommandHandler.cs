@@ -17,16 +17,16 @@ public class CreateSequenceCommandHandler
         _userManager = userManager;
     }
 
-    public async Task<SequenceViewDto> Handle(CreateSequenceRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceViewDto> Handle(CreateSequenceCommand command, string userId, CancellationToken ct = default)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             throw new UnauthorizedAccessException("User not found");
 
         var sequence = Sequence.Create(
-            request.Title,
-            request.Description,
-            request.Mode,
+            command.Title,
+            command.Description,
+            command.Mode,
             userId);
 
         await _repo.AddAsync(sequence, ct);

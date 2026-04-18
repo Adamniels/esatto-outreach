@@ -29,15 +29,15 @@ public class ChatWithProspectTests
             Substitute.For<ILogger<ChatWithProspectCommandHandler>>());
     }
 
-    private static ChatWithProspectRequest DefaultRequest()
-        => new("Hello AI", null, null, false, 0.7, 1000);
+    private static ChatWithProspectCommand DefaultCommand(Guid prospectId)
+        => new(prospectId, "Hello AI", null, null, false, 0.7, 1000);
 
     [Fact]
     public async Task Handle_WhenProspectNotFound_ThrowsInvalidOperationException()
     {
         _repo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Prospect?)null);
 
-        var act = () => _useCase.Handle(Guid.NewGuid(), "any-user", DefaultRequest());
+        var act = () => _useCase.Handle(DefaultCommand(Guid.NewGuid()), "any-user");
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Prospect not found*");
@@ -51,7 +51,7 @@ public class ChatWithProspectTests
         _repo.GetByIdAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
         // Act: different user "attacker-B" tries to chat about user-A's prospect
-        var act = () => _useCase.Handle(prospect.Id, "attacker-B", DefaultRequest());
+        var act = () => _useCase.Handle(DefaultCommand(prospect.Id), "attacker-B");
 
         // Assert: the ownership gate must block them before any AI call
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -64,7 +64,7 @@ public class ChatWithProspectTests
         var prospect = TestFactory.CreateValidManualProspect(ownerId: "user-A");
         _repo.GetByIdAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
-        try { await _useCase.Handle(prospect.Id, "attacker-B", DefaultRequest()); } catch { }
+        try { await _useCase.Handle(DefaultCommand(prospect.Id), "attacker-B"); } catch { }
 
         await _chat.DidNotReceive().SendChatMessageAsync(
             Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
@@ -87,7 +87,7 @@ public class ChatWithProspectTests
             .Returns((expectedResponse, "response-id-123"));
 
         // Act
-        var result = await _useCase.Handle(prospect.Id, "user-A", DefaultRequest());
+        var result = await _useCase.Handle(DefaultCommand(prospect.Id), "user-A");
 
         // Assert
         ObjectAssertion.Should(result).NotBeNull();

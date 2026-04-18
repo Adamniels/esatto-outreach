@@ -34,9 +34,9 @@ public sealed class ChatWithProspectCommandHandler
         }
     }
 
-    public async Task<ChatWithProspectResponse> Handle(Guid prospectId, string userId, ChatWithProspectRequest request, CancellationToken ct = default)
+    public async Task<ChatWithProspectResponse> Handle(ChatWithProspectCommand command, string userId, CancellationToken ct = default)
     {
-        var prospect = await _repo.GetByIdAsync(prospectId, ct)
+        var prospect = await _repo.GetByIdAsync(command.ProspectId, ct)
             ?? throw new InvalidOperationException("Prospect not found");
 
         if (prospect.OwnerId != userId)
@@ -44,7 +44,7 @@ public sealed class ChatWithProspectCommandHandler
 
         var hasDraft = !string.IsNullOrWhiteSpace(prospect.MailBodyPlain) ||
                             !string.IsNullOrWhiteSpace(prospect.MailBodyHTML);
-        var effectiveUseWeb = request.UseWebSearch ?? false;
+        var effectiveUseWeb = command.UseWebSearch ?? false;
 
         _logger.LogInformation("Handling chat for prospect {ProspectId}. UseWebSearch={UseWebSearch}, HasDraft ={HasDraft}",
           prospect.Id, effectiveUseWeb, hasDraft);
@@ -61,18 +61,18 @@ public sealed class ChatWithProspectCommandHandler
         }
 
         var previousId = prospect.LastOpenAIResponseId;
-        var initialMailContext = BuildInitialMailContext(request.MailTitle, request.MailBodyPlain);
+        var initialMailContext = BuildInitialMailContext(command.MailTitle, command.MailBodyPlain);
 
         var systemPrompt = previousId is null ? GetSystemPrompt(entityContext) : null;
-        var enhancedInput = request.UserInput + "\n\n" + GetJsonFormatReminder();
+        var enhancedInput = command.UserInput + "\n\n" + GetJsonFormatReminder();
 
         (ChatWithProspectResponse response, string newResponseId) = await _chat.SendChatMessageAsync(
             userInput: enhancedInput,
             systemPrompt: systemPrompt,
             previousResponseId: previousId,
-            useWebSearch: request.UseWebSearch,
-            temperature: request.Temperature,
-            maxOutputTokens: request.MaxOutputTokens,
+            useWebSearch: command.UseWebSearch,
+            temperature: command.Temperature,
+            maxOutputTokens: command.MaxOutputTokens,
             initialMailContext: initialMailContext,
             ct: ct
         );

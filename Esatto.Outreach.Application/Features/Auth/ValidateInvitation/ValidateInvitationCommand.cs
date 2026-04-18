@@ -1,3 +1,3 @@
 namespace Esatto.Outreach.Application.Features.Auth.ValidateInvitation;
 
-public sealed record ValidateInvitationCommand;
+public sealed record ValidateInvitationCommand(string Token);

@@ -14,13 +14,13 @@ public sealed class GetProjectCaseQueryHandler
         _companyRepo = companyRepo;
     }
 
-    public async Task<ProjectCaseDto?> Handle(Guid id, string userId, CancellationToken ct = default)
+    public async Task<ProjectCaseDto?> Handle(GetProjectCaseQuery query, string userId, CancellationToken ct = default)
     {
         var companyId = await _companyRepo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)
             return null;
 
-        var pc = await _caseRepo.GetByIdAsync(id, companyId.Value, ct);
+        var pc = await _caseRepo.GetByIdAsync(query.Id, companyId.Value, ct);
         if (pc == null)
             return null;
 

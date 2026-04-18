@@ -13,24 +13,24 @@ public class AddContactPersonCommandHandler
         _repository = repository;
     }
 
-    public async Task<ContactPersonDto?> Handle(Guid prospectId, AddContactPersonRequest request, CancellationToken ct = default)
+    public async Task<ContactPersonDto?> Handle(AddContactPersonCommand command, CancellationToken ct = default)
     {
-        var prospect = await _repository.GetByIdAsync(prospectId, ct);
+        var prospect = await _repository.GetByIdAsync(command.ProspectId, ct);
         if (prospect is null) return null;
 
-        if (string.IsNullOrWhiteSpace(request.Name))
+        if (string.IsNullOrWhiteSpace(command.Name))
             throw new ArgumentException("Name is required");
 
-        var existing = prospect.ContactPersons.FirstOrDefault(c => c.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+        var existing = prospect.ContactPersons.FirstOrDefault(c => c.Name.Equals(command.Name, StringComparison.OrdinalIgnoreCase));
         if (existing != null)
-            throw new InvalidOperationException($"Contact person '{request.Name}' already exists. Use the update endpoint instead.");
+            throw new InvalidOperationException($"Contact person '{command.Name}' already exists. Use the update endpoint instead.");
 
         var person = ContactPerson.Create(
             prospect.Id,
-            request.Name,
-            request.Title,
-            request.Email,
-            request.LinkedInUrl
+            command.Name,
+            command.Title,
+            command.Email,
+            command.LinkedInUrl
         );
 
         await _repository.AddContactPersonAsync(person, ct);

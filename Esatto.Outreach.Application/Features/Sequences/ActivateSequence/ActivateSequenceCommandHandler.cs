@@ -14,9 +14,9 @@ public class ActivateSequenceCommandHandler
         _access = access;
     }
 
-    public async Task Handle(Guid sequenceId, string userId, CancellationToken ct = default)
+    public async Task Handle(ActivateSequenceCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
         sequence.Activate(DateTime.UtcNow);
         await _repo.UpdateAsync(sequence, ct);
     }

@@ -23,11 +23,11 @@ public class GenerateStepContentCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceStepViewDto> Handle(Guid sequenceId, Guid stepId, string userId, CancellationToken ct = default)
+    public async Task<SequenceStepViewDto> Handle(GenerateStepContentCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
-        var step = sequence.GetMutableStep(stepId);
+        var step = sequence.GetMutableStep(command.StepId);
         var prospectId = sequence.GetBaselineProspectIdForContentGeneration();
 
         string? generatorType = step.GenerationType?.ToString();
@@ -44,11 +44,11 @@ public class GenerateStepContentCommandHandler
         var body = string.IsNullOrWhiteSpace(draft.BodyHTML)
             ? (draft.BodyPlain ?? string.Empty)
             : draft.BodyHTML!;
-        sequence.ApplyGeneratedContentFromDraft(stepId, draft.Title, body);
+        sequence.ApplyGeneratedContentFromDraft(command.StepId, draft.Title, body);
 
         await _repo.UpdateAsync(sequence, ct);
 
-        var updated = sequence.SequenceSteps.First(s => s.Id == stepId);
+        var updated = sequence.SequenceSteps.First(s => s.Id == command.StepId);
         return SequenceStepViewDto.FromEntity(updated);
     }
 }

@@ -1,6 +1,5 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Features.OutreachPrompts.Shared;
-using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.Features.OutreachPrompts.GetActiveOutreachPrompt;
 
@@ -10,9 +9,9 @@ public sealed class GetActiveOutreachPromptQueryHandler
 
     public GetActiveOutreachPromptQueryHandler(IOutreachPromptRepository repo) => _repo = repo;
 
-    public async Task<OutreachPromptDto?> Handle(string userId, PromptType type, CancellationToken ct = default)
+    public async Task<OutreachPromptDto?> Handle(GetActiveOutreachPromptQuery query, string userId, CancellationToken ct = default)
     {
-        var prompt = await _repo.GetActiveByUserIdAndTypeAsync(userId, type, ct);
+        var prompt = await _repo.GetActiveByUserIdAndTypeAsync(userId, query.Type, ct);
         if (prompt == null)
             return null;
 

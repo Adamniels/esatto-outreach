@@ -14,15 +14,15 @@ public class AddSequenceStepCommandHandler
         _access = access;
     }
 
-    public async Task<SequenceStepViewDto> Handle(Guid sequenceId, AddSequenceStepRequest request, string userId, CancellationToken ct = default)
+    public async Task<SequenceStepViewDto> Handle(AddSequenceStepCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedWithDetailsAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
         var step = sequence.AddNewStep(
-            request.StepType,
-            request.DelayInDays,
-            request.TimeOfDayToRun,
-            request.GenerationType);
+            command.StepType,
+            command.DelayInDays,
+            command.TimeOfDayToRun,
+            command.GenerationType);
 
         await _repo.AddStepAsync(step, ct);
         return SequenceStepViewDto.FromEntity(step);

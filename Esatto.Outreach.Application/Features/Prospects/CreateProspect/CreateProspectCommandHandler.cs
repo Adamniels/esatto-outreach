@@ -9,19 +9,19 @@ public class CreateProspectCommandHandler
     private readonly IProspectRepository _repo;
     public CreateProspectCommandHandler(IProspectRepository repo) => _repo = repo;
 
-    public async Task<ProspectViewDto> Handle(CreateProspectRequest request, string userId, CancellationToken ct = default)
+    public async Task<ProspectViewDto> Handle(CreateProspectCommand command, string userId, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
+        if (string.IsNullOrWhiteSpace(command.Name))
             throw new ArgumentException("Name is required");
 
         if (string.IsNullOrWhiteSpace(userId))
             throw new ArgumentException("UserId is required");
 
         var entity = Prospect.CreateManual(
-            name: request.Name,
+            name: command.Name,
             ownerId: userId,
-            websiteUrls: request.Websites,
-            notes: request.Notes
+            websiteUrls: command.Websites,
+            notes: command.Notes
         );
 
         var saved = await _repo.AddAsync(entity, ct);

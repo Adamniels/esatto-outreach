@@ -38,7 +38,7 @@ public class GenerateEntityIntelligenceTests
         _prospectRepo.GetByIdReadOnlyAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns((Prospect?)null);
 
-        var act = () => _useCase.Handle(Guid.NewGuid(), "any-user");
+        var act = () => _useCase.Handle(new GenerateEntityIntelligenceCommand(Guid.NewGuid()), "any-user");
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
@@ -51,7 +51,7 @@ public class GenerateEntityIntelligenceTests
         _prospectRepo.GetByIdReadOnlyAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
         // Act: attacker-B requests enrichment on user-A's prospect
-        var act = () => _useCase.Handle(prospect.Id, "attacker-B");
+        var act = () => _useCase.Handle(new GenerateEntityIntelligenceCommand(prospect.Id), "attacker-B");
 
         // Assert: must be rejected immediately
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -66,7 +66,7 @@ public class GenerateEntityIntelligenceTests
         var prospect = TestFactory.CreateValidManualProspect(ownerId: "user-A");
         _prospectRepo.GetByIdReadOnlyAsync(prospect.Id, Arg.Any<CancellationToken>()).Returns(prospect);
 
-        try { await _useCase.Handle(prospect.Id, "attacker-B"); } catch { }
+        try { await _useCase.Handle(new GenerateEntityIntelligenceCommand(prospect.Id), "attacker-B"); } catch { }
 
         await _enrichmentService.DidNotReceive()
             .EnrichCompanyAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());

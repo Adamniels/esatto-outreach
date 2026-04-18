@@ -14,9 +14,9 @@ public class CancelSequenceCommandHandler
         _access = access;
     }
 
-    public async Task Handle(Guid sequenceId, string userId, CancellationToken ct = default)
+    public async Task Handle(CancelSequenceCommand command, string userId, CancellationToken ct = default)
     {
-        var sequence = await _access.GetOwnedAsync(sequenceId, userId, ct);
+        var sequence = await _access.GetOwnedAsync(command.SequenceId, userId, ct);
         sequence.CancelToArchived();
         await _repo.UpdateAsync(sequence, ct);
     }

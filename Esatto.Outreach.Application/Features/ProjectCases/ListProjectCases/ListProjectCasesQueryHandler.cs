@@ -14,7 +14,7 @@ public sealed class ListProjectCasesQueryHandler
         _companyRepo = companyRepo;
     }
 
-    public async Task<List<ProjectCaseDto>> Handle(string userId, CancellationToken ct = default)
+    public async Task<List<ProjectCaseDto>> Handle(ListProjectCasesQuery query, string userId, CancellationToken ct = default)
     {
         var companyId = await _companyRepo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)

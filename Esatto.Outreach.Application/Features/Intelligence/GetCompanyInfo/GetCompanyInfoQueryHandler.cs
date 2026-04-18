@@ -12,7 +12,7 @@ public sealed class GetCompanyInfoQueryHandler
         _repo = repo;
     }
 
-    public async Task<CompanyInfoDto?> Handle(string userId, CancellationToken ct = default)
+    public async Task<CompanyInfoDto?> Handle(GetCompanyInfoQuery query, string userId, CancellationToken ct = default)
     {
         var companyId = await _repo.GetCompanyIdByUserIdAsync(userId, ct);
         if (companyId == null)
