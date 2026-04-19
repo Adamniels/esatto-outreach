@@ -2,6 +2,9 @@ using Esatto.Outreach.Domain.ValueObjects;
 
 namespace Esatto.Outreach.Application.Abstractions.Services;
 
+/// <summary>
+/// Company-only enrichment (no contact discovery). Implementations may call OpenAI, an HTTP agent, etc.
+/// </summary>
 public interface ICompanyEnrichmentService
 {
     /// <summary>

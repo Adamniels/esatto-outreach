@@ -82,7 +82,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
                 command.ProspectId,
                 $"{enrichmentResult.Snapshot.WhatTheyDo} | {enrichmentResult.Snapshot.TargetCustomer}",
                 enrichmentResult,
-                "v2-company-strict"
+                "v3-openai-websearch-json"
             );
             await _enrichmentRepo.AddAsync(existingIntelligence, ct);
         }
@@ -91,7 +91,7 @@ public sealed class GenerateEntityIntelligenceCommandHandler
             existingIntelligence.UpdateResearch(
                 summarizedContext: $"{enrichmentResult.Snapshot.WhatTheyDo} | {enrichmentResult.Snapshot.TargetCustomer}",
                 enrichedData: enrichmentResult,
-                enrichmentVersion: "v2-company-strict"
+                enrichmentVersion: "v3-openai-websearch-json"
             );
         }
 

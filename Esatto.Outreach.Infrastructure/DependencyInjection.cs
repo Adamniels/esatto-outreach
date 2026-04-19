@@ -6,7 +6,7 @@ using System.Text;
 using Esatto.Outreach.Domain.Entities;
 
 
-using Esatto.Outreach.Infrastructure.Services.Scraping;
+using Esatto.Outreach.Infrastructure.Services.ContactDiscovery;
 using Esatto.Outreach.Infrastructure.Services.Enrichment;
 
 
@@ -151,12 +151,9 @@ public static class DependencyInjection
 
         // Soft Data Collection (multi-provider)
 
-        // Scraping & Enrichment
-        services.AddHttpClient<IWebScraperService, WebScraperService>();
-        services.AddHttpClient<DuckDuckGoSerpService>();
-        services.AddScoped<IContactDiscoveryProvider, HybridContactDiscoveryProvider>();
-        services.AddScoped<ICompanyEnrichmentService, CompanyEnrichmentService>();
-        services.AddScoped<ICompanyKnowledgeBaseService, CompanyKnowledgeBaseService>();
+        // Company enrichment (OpenAI web search; swap implementation for HTTP agent later)
+        services.AddScoped<ICompanyEnrichmentService, OpenAiWebSearchCompanyEnrichmentService>();
+        services.AddScoped<IContactDiscoveryProvider, MockContactDiscoveryProvider>();
 
         return services;
 
