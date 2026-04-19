@@ -33,7 +33,7 @@ public class SequenceExecutionWorker : BackgroundService
                         continue;
                     }
 
-                    using var scope = _serviceProvider.CreateScope();
+                    await using var scope = _serviceProvider.CreateAsyncScope();
                     var orchestrator = scope.ServiceProvider.GetRequiredService<SequenceOrchestratorCommandHandler>();
 
                     await orchestrator.ProcessDueStepsAsync(batchSize: 50, stoppingToken);

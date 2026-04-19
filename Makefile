@@ -1,4 +1,4 @@
-.PHONY: build test coverage coverage-summary coverage-report db-up db-down migrate-dev run dev clean
+.PHONY: build test coverage coverage-summary coverage-report db-up db-down migrate-dev db-wipe run dev clean
 
 # Backend Makefile
 
@@ -44,6 +44,11 @@ migrate-dev:
 	ASPNETCORE_ENVIRONMENT=Development DOTNET_ENVIRONMENT=Development dotnet ef database update \
 		--project Esatto.Outreach.Infrastructure/Esatto.Outreach.Infrastructure.csproj \
 		--startup-project Esatto.Outreach.Api/Esatto.Outreach.Api.csproj
+
+# Drops the Development DB and reapplies migrations (empty tables, current schema).
+# Ensure Postgres is running (e.g. make db-up). Uses local connection from appsettings.Development.json.
+db-wipe:
+	bash scripts/db-wipe.sh
 
 run:
 	@echo "Running the API..."

@@ -32,6 +32,7 @@ public class GenerateStepContentCommandHandler
     {
         var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
+        // TODO: not implemented
         if (sequence.Mode != SequenceMode.Focused)
             throw new InvalidOperationException("Per-step generation for multi-mode sequences is not yet implemented.");
 

@@ -150,7 +150,7 @@ app.MapCompanyInfoEndpoints();
 app.MapSequenceEndpoints();
 
 // Keep local/dev startup resilient by creating/updating schema automatically.
-using (var scope = app.Services.CreateScope())
+await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<OutreachDbContext>();
     await db.Database.MigrateAsync();

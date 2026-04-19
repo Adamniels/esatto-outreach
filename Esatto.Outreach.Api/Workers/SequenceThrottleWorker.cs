@@ -34,7 +34,7 @@ public class SequenceThrottleWorker : BackgroundService
                         continue;
                     }
 
-                    using var scope = _serviceProvider.CreateScope();
+                    await using var scope = _serviceProvider.CreateAsyncScope();
                     var handler = scope.ServiceProvider.GetRequiredService<ThrottleSequencesCommandHandler>();
                     await handler.Handle(stoppingToken);
                 }
