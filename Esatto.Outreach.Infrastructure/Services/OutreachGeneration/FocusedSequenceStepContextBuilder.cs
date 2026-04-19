@@ -3,19 +3,12 @@ using Esatto.Outreach.Application.Abstractions.Services;
 using Esatto.Outreach.Application.Features.Intelligence.Shared;
 using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
 using Esatto.Outreach.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
-
 using Esatto.Outreach.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 
-
-/// <summary>
-/// Implementation of outreach context builder.
-/// Orchestrates data fetching from repositories and file system.
-/// Follows Clean Architecture: This is where data orchestration happens.
-/// </summary>
-public sealed class OutreachContextBuilder : IOutreachContextBuilder
+public sealed class FocusedSequenceStepContextBuilder : IFocusedSequenceStepContextBuilder
 {
     private readonly IProspectRepository _prospectRepo;
     private readonly IEntityIntelligenceRepository _enrichmentRepo;
@@ -24,7 +17,7 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
     private readonly IProjectCaseRepository _projectCaseRepo;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public OutreachContextBuilder(
+    public FocusedSequenceStepContextBuilder(
         IProspectRepository prospectRepo,
         IEntityIntelligenceRepository enrichmentRepo,
         IOutreachPromptRepository promptRepo,
@@ -40,43 +33,39 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
         _projectCaseRepo = projectCaseRepo;
     }
 
-    public async Task<OutreachGenerationContext> BuildContextAsync(
+    public async Task<FocusedSequenceStepContext> BuildAsync(
         Guid prospectId,
         string userId,
         OutreachChannel channel,
         bool includeSoftData,
-        CancellationToken cancellationToken = default)
+        int stepNumber,
+        int totalSteps,
+        SequenceStepType stepType,
+        int delayInDays,
+        List<PriorTurn> priorTurns,
+        CancellationToken ct = default)
     {
-        // 1. Hämta prospect
-        var prospect = await _prospectRepo.GetByIdAsync(prospectId, cancellationToken);
-        if (prospect == null)
-            throw new InvalidOperationException($"Prospect with id {prospectId} not found");
+        var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct)
+            ?? throw new InvalidOperationException($"Prospect {prospectId} not found");
 
-        // 2. Fetch General and Channel specific prompts
-        var generalPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, PromptType.General, cancellationToken);
+        var generalPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, PromptType.General, ct)
+            ?? throw new InvalidOperationException("No active general prompt found for this user");
+
         var targetType = channel == OutreachChannel.Email ? PromptType.Email : PromptType.LinkedIn;
-        var specificPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, targetType, cancellationToken);
-        
-        if (generalPrompt == null)
-            throw new InvalidOperationException("No active general prompt template found for this user");
-        if (specificPrompt == null)
-            throw new InvalidOperationException($"No active {channel} prompt template found for this user");
+        var specificPrompt = await _promptRepo.GetActiveByUserIdAndTypeAsync(userId, targetType, ct)
+            ?? throw new InvalidOperationException($"No active {channel} prompt found for this user");
 
         var combinedInstructions = $"{generalPrompt.Instructions}\n\n{specificPrompt.Instructions}";
 
-        // 3. Hämta soft data om det krävs
         EntityIntelligence? entityIntelligence = null;
         if (includeSoftData)
         {
             if (!prospect.EntityIntelligenceId.HasValue)
-                throw new InvalidOperationException("No Entity Intelligence available for this prospect. Generate it first.");
-
-            entityIntelligence = await _enrichmentRepo.GetByIdAsync(prospect.EntityIntelligenceId.Value, cancellationToken);
-            if (entityIntelligence == null)
-                throw new InvalidOperationException("Entity Intelligence record not found.");
+                throw new InvalidOperationException("No Entity Intelligence available. Generate it first.");
+            entityIntelligence = await _enrichmentRepo.GetByIdAsync(prospect.EntityIntelligenceId.Value, ct)
+                ?? throw new InvalidOperationException("Entity Intelligence record not found.");
         }
 
-        // 4. Hämta aktiv kontaktperson
         ContactPersonContext? activeContactContext = null;
         var activeContact = prospect.GetActiveContact();
         if (activeContact != null)
@@ -87,33 +76,25 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
                 Email: activeContact.Email,
                 PersonalHooks: activeContact.PersonalHooks?.Count > 0 ? activeContact.PersonalHooks : null,
                 PersonalNews: activeContact.PersonalNews?.Count > 0 ? activeContact.PersonalNews : null,
-                Summary: activeContact.Summary
-            );
+                Summary: activeContact.Summary);
         }
 
-        // 5. Bygg request DTO från prospect
-        var request = new CustomEmailRequestDto(
+        var prospectInfo = new ProspectInfo(
             ProspectId: prospect.Id,
             Name: prospect.Name,
             About: prospect.About,
             PictureURL: prospect.PictureURL,
             Websites: prospect.Websites?.Select(w => w.Url).ToList(),
             Tags: prospect.Tags?.Select(t => t.Name).ToList(),
-            Notes: prospect.Notes
-        );
+            Notes: prospect.Notes);
 
-        // 6. Hämta användarens namn för signatur
         var user = await _userManager.FindByIdAsync(userId);
         var userFullName = user?.FullName ?? user?.UserName ?? "Unknown User";
 
-        // 7. Get company info and project cases
-        var companyId = await _companyInfoRepo.GetCompanyIdByUserIdAsync(userId, cancellationToken);
-        if (companyId == null)
-            throw new InvalidOperationException("No company associated with this user.");
-
-        var companyInfoEntity = await _companyInfoRepo.GetByCompanyIdAsync(companyId.Value, cancellationToken);
-        if (companyInfoEntity == null)
-            throw new InvalidOperationException("Company information not found.");
+        var companyId = await _companyInfoRepo.GetCompanyIdByUserIdAsync(userId, ct)
+            ?? throw new InvalidOperationException("No company associated with this user.");
+        var companyInfoEntity = await _companyInfoRepo.GetByCompanyIdAsync(companyId, ct)
+            ?? throw new InvalidOperationException("Company information not found.");
 
         var companyInfo = new CompanyInfoDto(
             companyInfoEntity.Id,
@@ -121,21 +102,26 @@ public sealed class OutreachContextBuilder : IOutreachContextBuilder
             companyInfoEntity.Overview,
             companyInfoEntity.ValueProposition);
 
-        var projectCaseEntities = await _projectCaseRepo.ListByCompanyIdAsync(companyId.Value, cancellationToken);
+        var projectCaseEntities = await _projectCaseRepo.ListByCompanyIdAsync(companyId, ct);
         var projectCases = projectCaseEntities
             .Select(pc => new ProjectCaseDto(pc.Id, pc.ClientName, pc.Text, pc.IsActive))
             .ToList();
 
-        // 8. Create and return context
-        return OutreachGenerationContext.Create(
-            companyInfo: companyInfo,
-            projectCases: projectCases,
-            instructions: combinedInstructions,
-            request: request,
-            channel: channel,
-            entityIntelligence: entityIntelligence,
-            activeContact: activeContactContext,
-            userFullName: userFullName
-        );
+        return new FocusedSequenceStepContext
+        {
+            Prospect = prospectInfo,
+            CompanyInfo = companyInfo,
+            Instructions = combinedInstructions,
+            Channel = channel,
+            StepNumber = stepNumber,
+            TotalSteps = totalSteps,
+            StepType = stepType,
+            DelayInDays = delayInDays,
+            ProjectCases = projectCases,
+            EntityIntelligence = entityIntelligence,
+            ActiveContact = activeContactContext,
+            UserFullName = userFullName,
+            PriorTurns = priorTurns
+        };
     }
 }

@@ -1,6 +1,8 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
 using Esatto.Outreach.Application.Features.Sequences.Shared;
+using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.Features.Sequences.GenerateStepContent;
 
@@ -8,21 +10,21 @@ public class GenerateStepContentCommandHandler
 {
     private readonly ISequenceRepository _repo;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IOutreachContextBuilder _contextBuilder;
-    private readonly IOutreachGeneratorFactory _generatorFactory;
+    private readonly IFocusedSequenceStepContextBuilder _focusedContextBuilder;
+    private readonly IFocusedSequenceStepGenerator _focusedGenerator;
     private readonly SequenceAccessCommandHandler _access;
 
     public GenerateStepContentCommandHandler(
         ISequenceRepository repo,
         IUnitOfWork unitOfWork,
-        IOutreachContextBuilder contextBuilder,
-        IOutreachGeneratorFactory generatorFactory,
+        IFocusedSequenceStepContextBuilder focusedContextBuilder,
+        IFocusedSequenceStepGenerator focusedGenerator,
         SequenceAccessCommandHandler access)
     {
         _repo = repo;
         _unitOfWork = unitOfWork;
-        _contextBuilder = contextBuilder;
-        _generatorFactory = generatorFactory;
+        _focusedContextBuilder = focusedContextBuilder;
+        _focusedGenerator = focusedGenerator;
         _access = access;
     }
 
@@ -30,23 +32,46 @@ public class GenerateStepContentCommandHandler
     {
         var sequence = await _access.GetOwnedWithDetailsAsync(command.SequenceId, userId, ct);
 
-        var step = sequence.GetMutableStep(command.StepId);
+        if (sequence.Mode != SequenceMode.Focused)
+            throw new InvalidOperationException("Per-step generation for multi-mode sequences is not yet implemented.");
+
+        var orderedSteps = sequence.SequenceSteps.OrderBy(s => s.OrderIndex).ToList();
+        var currentStep = orderedSteps.FirstOrDefault(s => s.Id == command.StepId)
+            ?? throw new KeyNotFoundException("Step not found in this sequence");
+
+        var stepNumber = orderedSteps.IndexOf(currentStep) + 1; // 1-based
+
+        // Collect all steps before this one that already have generated content
+        var priorTurns = orderedSteps
+            .Take(stepNumber - 1)
+            .Where(s => !string.IsNullOrWhiteSpace(s.GeneratedBody))
+            .Select((s, i) => new PriorTurn(
+                StepNumber: i + 1,
+                StepType: s.StepType,
+                DelayInDays: s.DelayInDays,
+                Subject: s.GeneratedSubject,
+                Body: s.GeneratedBody!))
+            .ToList();
+
         var prospectId = sequence.GetBaselineProspectIdForContentGeneration();
+        var includeSoftData = sequence.IncludeCollectedDataForStepGeneration(currentStep);
+        var channel = currentStep.GetOutreachChannel();
 
-        string? generatorType = step.GenerationType?.ToString();
-        var generator = string.IsNullOrWhiteSpace(generatorType)
-            ? _generatorFactory.GetGenerator()
-            : _generatorFactory.GetGenerator(generatorType);
+        var context = await _focusedContextBuilder.BuildAsync(
+            prospectId,
+            userId,
+            channel,
+            includeSoftData,
+            stepNumber,
+            orderedSteps.Count,
+            currentStep.StepType,
+            currentStep.DelayInDays,
+            priorTurns,
+            ct);
 
-        var channel = step.GetOutreachChannel();
-        var includeSoftData = sequence.IncludeCollectedDataForStepGeneration(step);
+        var draft = await _focusedGenerator.GenerateAsync(context, ct);
 
-        var context = await _contextBuilder.BuildContextAsync(prospectId, userId, channel, includeSoftData, ct);
-        var draft = await generator.GenerateAsync(context, ct);
-
-        var body = string.IsNullOrWhiteSpace(draft.BodyHTML)
-            ? (draft.BodyPlain ?? string.Empty)
-            : draft.BodyHTML!;
+        var body = string.IsNullOrWhiteSpace(draft.BodyHTML) ? draft.BodyPlain : draft.BodyHTML!;
         sequence.ApplyGeneratedContentFromDraft(command.StepId, draft.Title, body);
 
         await _repo.UpdateAsync(sequence, ct);

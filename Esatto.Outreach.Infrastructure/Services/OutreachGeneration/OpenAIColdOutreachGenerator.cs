@@ -11,11 +11,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 
-public sealed class OpenAICustomOutreachGenerator : IOutreachGenerator
+public sealed class OpenAIColdOutreachGenerator : IColdOutreachGenerator
 {
     private readonly HttpClient _http;
     private readonly OpenAiOptions _options;
-    private readonly ILogger<OpenAICustomOutreachGenerator> _logger;
+    private readonly ILogger<OpenAIColdOutreachGenerator> _logger;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -23,10 +23,10 @@ public sealed class OpenAICustomOutreachGenerator : IOutreachGenerator
         WriteIndented = false
     };
 
-    public OpenAICustomOutreachGenerator(
+    public OpenAIColdOutreachGenerator(
         HttpClient http,
         IOptions<OpenAiOptions> options,
-        ILogger<OpenAICustomOutreachGenerator> logger)
+        ILogger<OpenAIColdOutreachGenerator> logger)
     {
         _http = http;
         _http.BaseAddress = new Uri("https://api.openai.com/");
@@ -35,8 +35,8 @@ public sealed class OpenAICustomOutreachGenerator : IOutreachGenerator
     }
 
     public async Task<CustomOutreachDraftDto> GenerateAsync(
-        OutreachGenerationContext context,
-        CancellationToken cancellationToken = default)
+        ColdOutreachContext context,
+        CancellationToken ct = default)
     {
         var jsonFormatSpecifier = context.Channel == OutreachChannel.Email
             ? @"
@@ -50,21 +50,16 @@ public sealed class OpenAICustomOutreachGenerator : IOutreachGenerator
   ""BodyPlain"": ""string""
 }";
 
-        // 1. Bygg upp själva prompten från context
         var userPrompt = BuildPrompt(context) + $@"
 
 Return ONLY a valid JSON object with the following structure, nothing else:{jsonFormatSpecifier}
 Do not include code fences, explanations, or any extra text.
 ";
 
-        // 3. Bygg payload för OpenAI Responses API
         var payload = BuildResponsesPayload(userPrompt);
+        var jsonText = await CallOpenAIAsync(payload, ct);
 
-        // 4. Kör request mot OpenAI Responses API
-        var jsonText = await CallOpenAIAsync(payload, cancellationToken);
-
-        // 5. Försök deserialisera till din DTO
-        CustomOutreachDraftDto? dto = null;
+        CustomOutreachDraftDto? dto;
         try
         {
             dto = JsonSerializer.Deserialize<CustomOutreachDraftDto>(jsonText, new JsonSerializerOptions
@@ -80,11 +75,8 @@ Do not include code fences, explanations, or any extra text.
         if (dto == null)
             throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
 
-        // 6. Säkerställ titel om den saknas
         if (string.IsNullOrWhiteSpace(dto.Title))
-        {
-            dto = dto with { Title = $"Introduktion till {context.Request.Name}".Trim() };
-        }
+            dto = dto with { Title = $"Introduktion till {context.Prospect.Name}".Trim() };
 
         return dto with { Channel = context.Channel };
     }
@@ -97,19 +89,15 @@ Do not include code fences, explanations, or any extra text.
             ["input"] = userPrompt
         };
 
-        // Lägg till web search om aktiverat
         if (_options.UseWebSearch)
         {
-            payload["tools"] = new object[]
-            {
-                new { type = "web_search_preview" }
-            };
+            payload["tools"] = new object[] { new { type = "web_search_preview" } };
         }
 
         return payload;
     }
 
-    private async Task<string> CallOpenAIAsync(object payload, CancellationToken cancellationToken)
+    private async Task<string> CallOpenAIAsync(object payload, CancellationToken ct)
     {
         using var req = new HttpRequestMessage(HttpMethod.Post, "v1/responses");
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
@@ -118,8 +106,8 @@ Do not include code fences, explanations, or any extra text.
         var reqBody = JsonSerializer.Serialize(payload, JsonOpts);
         req.Content = new StringContent(reqBody, Encoding.UTF8, "application/json");
 
-        using var resp = await _http.SendAsync(req, cancellationToken);
-        var body = await resp.Content.ReadAsStringAsync(cancellationToken);
+        using var resp = await _http.SendAsync(req, ct);
+        var body = await resp.Content.ReadAsStringAsync(ct);
 
         if (!resp.IsSuccessStatusCode)
             throw new InvalidOperationException($"OpenAI HTTP {(int)resp.StatusCode}: {body}");
@@ -127,7 +115,6 @@ Do not include code fences, explanations, or any extra text.
         using var doc = JsonDocument.Parse(body);
         var root = doc.RootElement;
 
-        // Extrahera text från Responses API format
         if (root.TryGetProperty("output", out var output) &&
             output.ValueKind == JsonValueKind.Array &&
             output.GetArrayLength() > 0)
@@ -139,9 +126,7 @@ Do not include code fences, explanations, or any extra text.
             {
                 var firstContent = contentArray[0];
                 if (firstContent.TryGetProperty("text", out var text))
-                {
                     return text.GetString()?.Trim() ?? string.Empty;
-                }
             }
         }
 
@@ -165,25 +150,22 @@ Do not include code fences, explanations, or any extra text.
         }));
     }
 
-    private static string BuildPrompt(OutreachGenerationContext context)
+    private static string BuildPrompt(ColdOutreachContext context)
     {
-        var req = context.Request;
-
+        var req = context.Prospect;
         var projectCasesSection = FormatProjectCases(context.ProjectCases);
-
-        // Statisk systemkontext (hårdkodad)
         string targetFormat = context.Channel == OutreachChannel.Email ? "sälj mejl" : "LinkedIn-meddelande";
 
         var systemContext = @$"
             Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt {targetFormat} på svenska (max 500 ord).
-            
+
             === INFORMATION OM OSS ({context.CompanyInfo.Name}) ===
             {context.CompanyInfo.Overview}
             {context.CompanyInfo.ValueProposition}
 
             === TIDIGARE PROJEKT/CASES ===
             {projectCasesSection}
-            
+
             === MÅLFÖRETAG ===
             Företag: {req.Name}
             {(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}")}
@@ -191,10 +173,9 @@ Do not include code fences, explanations, or any extra text.
             {(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}" : "")}
             {(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}")}";
 
-        // Kontaktperson och signatur
         var contactGreeting = context.ActiveContact != null
             ? $@"
-            
+
             === KONTAKTPERSON ===
             Namn: {context.ActiveContact.Name}
             {(string.IsNullOrWhiteSpace(context.ActiveContact.Title) ? "" : $"Titel: {context.ActiveContact.Title}")}
@@ -215,7 +196,6 @@ Do not include code fences, explanations, or any extra text.
             _ => ""
         };
 
-        // Dynamiska instruktioner från databasen
         return systemContext + contactGreeting + outputFormatInstruction + @$"
 
             === INSTRUKTIONER ===
@@ -228,17 +208,3 @@ Do not include code fences, explanations, or any extra text.
             {(context.ActiveContact != null ? $"\n  * Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n  * Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
     }
 }
-// TIDIGARE VERSION AV PROMPTEN:
-// === INSTRUKTIONER ===
-//             Fokusera på hur vi (Esatto AB) kan hjälpa målföretaget. 
-//             Använd informationen ovan om Esatto för att:
-//             - Hitta relevanta cases som liknar kundens bransch eller utmaningar
-//             - Visa konkret förståelse för kundens behov genom att referera till liknande projekt
-//             - Matcha rätt tjänster och metoder till kundens situation
-//             - Skriv i Esattos ton och värderingar (ärlighet, engagemang, omtanke, samarbete)
-
-//             Krav:
-//             - Hook i första meningen.
-//             - 1–2 konkreta värdeförslag anpassade till företaget.
-//             - Referera gärna till ett eller två relevant Esatto-case som exempel
-//             - Avsluta med en enkel call-to-action (t.ex. 'Vill du att jag skickar ett konkret förslag?').";

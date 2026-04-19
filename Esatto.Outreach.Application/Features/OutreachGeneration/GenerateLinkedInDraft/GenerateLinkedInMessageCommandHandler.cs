@@ -7,14 +7,14 @@ namespace Esatto.Outreach.Application.Features.OutreachGeneration.GenerateLinked
 
 public class GenerateLinkedInMessageCommandHandler
 {
-    private readonly IOutreachContextBuilder _contextBuilder;
-    private readonly IOutreachGeneratorFactory _generatorFactory;
+    private readonly IColdOutreachContextBuilder _contextBuilder;
+    private readonly IColdOutreachGeneratorFactory _generatorFactory;
     private readonly IProspectRepository _prospectRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public GenerateLinkedInMessageCommandHandler(
-        IOutreachContextBuilder contextBuilder,
-        IOutreachGeneratorFactory generatorFactory,
+        IColdOutreachContextBuilder contextBuilder,
+        IColdOutreachGeneratorFactory generatorFactory,
         IProspectRepository prospectRepository,
         IUnitOfWork unitOfWork)
     {
@@ -27,19 +27,19 @@ public class GenerateLinkedInMessageCommandHandler
     public async Task<ProspectViewDto> Handle(GenerateLinkedInMessageCommand command, string userId, CancellationToken ct = default)
     {
         bool includeSoftData = !string.IsNullOrWhiteSpace(command.Type) &&
-            (command.Type.Equals(nameof(OutreachGenerationType.UseCollectedData), StringComparison.OrdinalIgnoreCase));
+            command.Type.Equals(nameof(OutreachGenerationType.UseCollectedData), StringComparison.OrdinalIgnoreCase);
 
-        var context = await _contextBuilder.BuildContextAsync(command.Id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);
+        var context = await _contextBuilder.BuildAsync(command.Id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);
 
-        var generator = string.IsNullOrWhiteSpace(command.Type)
-            ? _generatorFactory.GetGenerator()
-            : _generatorFactory.GetGenerator(command.Type);
+        OutreachGenerationType? generationType = string.IsNullOrWhiteSpace(command.Type)
+            ? null
+            : Enum.TryParse<OutreachGenerationType>(command.Type, ignoreCase: true, out var parsed) ? parsed : null;
 
+        var generator = _generatorFactory.GetGenerator(generationType);
         var draft = await generator.GenerateAsync(context, ct);
 
-        var prospect = await _prospectRepository.GetByIdAsync(command.Id, ct);
-        if (prospect == null)
-            throw new InvalidOperationException($"Prospect with id {command.Id} not found");
+        var prospect = await _prospectRepository.GetByIdAsync(command.Id, ct)
+            ?? throw new InvalidOperationException($"Prospect {command.Id} not found");
 
         prospect.UpdateLinkedInMessage(draft.BodyPlain);
         await _prospectRepository.UpdateAsync(prospect, ct);

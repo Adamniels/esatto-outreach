@@ -13,23 +13,22 @@ namespace Esatto.Outreach.UnitTests.Application.Features.OutreachGeneration.Gene
 
 public class GenerateMailTests
 {
-    private readonly IOutreachContextBuilder _contextBuilderMock;
-    private readonly IOutreachGeneratorFactory _factoryMock;
-    private readonly IOutreachGenerator _generatorMock;
+    private readonly IColdOutreachContextBuilder _contextBuilderMock;
+    private readonly IColdOutreachGeneratorFactory _factoryMock;
+    private readonly IColdOutreachGenerator _generatorMock;
     private readonly IProspectRepository _prospectRepoMock;
     private readonly IUnitOfWork _unitOfWorkMock;
     private readonly GenerateMailCommandHandler _sut;
 
     public GenerateMailTests()
     {
-        _contextBuilderMock = Substitute.For<IOutreachContextBuilder>();
-        _factoryMock = Substitute.For<IOutreachGeneratorFactory>();
-        _generatorMock = Substitute.For<IOutreachGenerator>();
+        _contextBuilderMock = Substitute.For<IColdOutreachContextBuilder>();
+        _factoryMock = Substitute.For<IColdOutreachGeneratorFactory>();
+        _generatorMock = Substitute.For<IColdOutreachGenerator>();
         _prospectRepoMock = Substitute.For<IProspectRepository>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
-        _factoryMock.GetGenerator(Arg.Any<string>()).Returns(_generatorMock);
-        _factoryMock.GetGenerator().Returns(_generatorMock);
+        _factoryMock.GetGenerator(Arg.Any<OutreachGenerationType?>()).Returns(_generatorMock);
 
         _sut = new GenerateMailCommandHandler(_contextBuilderMock, _factoryMock, _prospectRepoMock, _unitOfWorkMock);
     }
@@ -46,15 +45,15 @@ public class GenerateMailTests
         _prospectRepoMock.GetByIdAsync(prospectId, Arg.Any<CancellationToken>())
             .Returns(prospect);
 
-        var dummyContext = new OutreachGenerationContext
+        var dummyContext = new ColdOutreachContext
         {
             CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
             Instructions = "test instructions",
-            Request = new CustomEmailRequestDto(prospectId, "Test Name", null, null, null, null, null),
+            Prospect = new ProspectInfo(prospectId, "Test Name", null, null, null, null, null),
             Channel = OutreachChannel.Email
         };
 
-        _contextBuilderMock.BuildContextAsync(prospectId, userId, OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        _contextBuilderMock.BuildAsync(prospectId, userId, OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(dummyContext);
 
         var draftResult = new CustomOutreachDraftDto(
@@ -83,24 +82,22 @@ public class GenerateMailTests
         // Arrange
         var prospectId = Guid.NewGuid();
 
-        var dummyContext = new OutreachGenerationContext
+        var dummyContext = new ColdOutreachContext
         {
             CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
             Instructions = "test",
-            Request = new CustomEmailRequestDto(prospectId, "Test", null, null, null, null, null),
+            Prospect = new ProspectInfo(prospectId, "Test", null, null, null, null, null),
             Channel = OutreachChannel.Email
         };
 
-        _contextBuilderMock.BuildContextAsync(prospectId, "u-1", OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        _contextBuilderMock.BuildAsync(prospectId, "u-1", OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(dummyContext);
 
-        _generatorMock.GenerateAsync(Arg.Any<OutreachGenerationContext>(), Arg.Any<CancellationToken>())
+        _generatorMock.GenerateAsync(Arg.Any<ColdOutreachContext>(), Arg.Any<CancellationToken>())
             .Returns(new CustomOutreachDraftDto("A", "B", "C"));
 
-        // Mock returns null (missing prospect)
         _prospectRepoMock.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns((Prospect)null!);
-
 
         // Act & Assert
         Func<Task> act = async () => await _sut.Handle(new GenerateMailCommand(prospectId, null), "u-1", CancellationToken.None);
