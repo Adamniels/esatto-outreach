@@ -1,5 +1,6 @@
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Application.Abstractions.Services;
+using Esatto.Outreach.Domain.Entities.SequenceFeature;
 using Microsoft.Extensions.Logging;
 
 namespace Esatto.Outreach.Application.Features.Sequences.SequenceOrchestrator;
@@ -25,16 +26,19 @@ public class SequenceOrchestratorCommandHandler
 
     public async Task ProcessDueStepsAsync(int batchSize, CancellationToken ct = default)
     {
-        var dueProspects = await _repo.GetActiveProspectsDueForExecutionAsync(batchSize, ct);
+        var claimedIds = await _repo.ClaimDueActiveProspectsAsync(batchSize, ct);
 
-        if (!dueProspects.Any()) return;
+        if (!claimedIds.Any()) return;
 
-        foreach (var p in dueProspects)
+        foreach (var prospectId in claimedIds)
         {
+            SequenceProspect? enrollment = null;
             try
             {
-                var fullDetails = await _repo.GetProspectExecutionDetailsAsync(p.Id, ct);
+                var fullDetails = await _repo.GetProspectExecutionDetailsAsync(prospectId, ct);
                 if (fullDetails == null) continue;
+
+                enrollment = fullDetails;
 
                 var sequence = fullDetails.Sequence;
 
@@ -61,22 +65,25 @@ public class SequenceOrchestratorCommandHandler
             }
             catch (Exception ex) when (ex.GetType().Name == "DbUpdateConcurrencyException")
             {
-                _logger.LogWarning(ex, "Concurrency conflict for SequenceProspect {Id}; leaving for retry", p.Id);
+                _logger.LogWarning(ex, "Concurrency conflict for SequenceProspect {Id}; leaving for retry", prospectId);
             }
             catch (TimeoutException ex)
             {
-                _logger.LogWarning(ex, "Timeout for SequenceProspect {Id}; leaving for retry", p.Id);
+                _logger.LogWarning(ex, "Timeout for SequenceProspect {Id}; leaving for retry", prospectId);
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                _logger.LogWarning("Unexpected operation cancellation for SequenceProspect {Id}; leaving for retry", p.Id);
+                _logger.LogWarning("Unexpected operation cancellation for SequenceProspect {Id}; leaving for retry", prospectId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to execute sequence step for SequenceProspect {Id}", p.Id);
-                p.MarkFailed($"Execution error: {ex.Message}");
-                await _repo.UpdateAsync(p.Sequence, ct);
-                await _unitOfWork.SaveChangesAsync(ct);
+                _logger.LogError(ex, "Failed to execute sequence step for SequenceProspect {Id}", prospectId);
+                if (enrollment != null)
+                {
+                    enrollment.MarkFailed($"Execution error: {ex.Message}");
+                    await _repo.UpdateAsync(enrollment.Sequence, ct);
+                    await _unitOfWork.SaveChangesAsync(ct);
+                }
             }
         }
     }

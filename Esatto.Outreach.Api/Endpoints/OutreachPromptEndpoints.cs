@@ -16,8 +16,7 @@ public static class OutreachPromptEndpoints
     {
         app.MapGet("/settings/outreach-prompts/active/{type}", async (PromptType type, GetActiveOutreachPromptQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             var prompt = await handler.Handle(new GetActiveOutreachPromptQuery(type), userId, ct);
@@ -26,8 +25,7 @@ public static class OutreachPromptEndpoints
 
         app.MapGet("/settings/outreach-prompts", async (ListOutreachPromptsQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             var prompts = await handler.Handle(new ListOutreachPromptsQuery(), userId, ct);
@@ -36,8 +34,7 @@ public static class OutreachPromptEndpoints
 
         app.MapPost("/settings/outreach-prompts", async (CreateOutreachPromptRequest req, CreateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             if (string.IsNullOrWhiteSpace(req.Instructions))
@@ -56,8 +53,7 @@ public static class OutreachPromptEndpoints
 
         app.MapPut("/settings/outreach-prompts/{id:guid}", async (Guid id, UpdateOutreachPromptRequest req, UpdateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             if (string.IsNullOrWhiteSpace(req.Instructions))
@@ -76,8 +72,7 @@ public static class OutreachPromptEndpoints
 
         app.MapPost("/settings/outreach-prompts/{id:guid}/activate", async (Guid id, ActivateOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             var activated = await handler.Handle(new ActivateOutreachPromptCommand(id), userId, ct);
@@ -86,8 +81,7 @@ public static class OutreachPromptEndpoints
 
         app.MapDelete("/settings/outreach-prompts/{id:guid}", async (Guid id, DeleteOutreachPromptCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             try

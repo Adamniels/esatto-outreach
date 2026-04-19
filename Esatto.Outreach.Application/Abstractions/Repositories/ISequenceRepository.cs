@@ -1,5 +1,4 @@
 using Esatto.Outreach.Domain.Entities.SequenceFeature;
-using Esatto.Outreach.Domain.Enums;
 
 namespace Esatto.Outreach.Application.Abstractions.Repositories;
 
@@ -18,7 +17,11 @@ public interface ISequenceRepository
     Task DeleteAsync(Sequence sequence, CancellationToken ct = default);
     
     // Prospect/Execution Queries
-    Task<IReadOnlyList<SequenceProspect>> GetActiveProspectsDueForExecutionAsync(int batchSize, CancellationToken ct = default);
+    /// <summary>
+    /// Atomically claims up to <paramref name="batchSize"/> due enrollments for execution (lease persisted in the database).
+    /// Returns the ids that were claimed; other workers will not receive the same rows until the lease expires.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ClaimDueActiveProspectsAsync(int batchSize, CancellationToken ct = default);
     Task<int> CountActiveProspectsForSequenceAsync(Guid sequenceId, CancellationToken ct = default);
     Task<IReadOnlyList<SequenceProspect>> GetPendingProspectsAsync(Guid sequenceId, int count, CancellationToken ct = default);
     Task<SequenceProspect?> GetProspectExecutionDetailsAsync(Guid sequenceProspectId, CancellationToken ct = default);

@@ -57,8 +57,7 @@ public static class InvitationEndpoints
             ClaimsPrincipal user,
             CancellationToken ct)
         {
-            var userId = user.GetRequiredUserId();
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             var data = await handler.Handle(new InviteUserCommand(req.Email), userId, ct);

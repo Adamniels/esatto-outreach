@@ -96,6 +96,9 @@ public class RefreshAccessTokenTests
         _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
             .Returns(oldToken);
 
+        _repoMock.TryRevokeActiveTokenAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+
         _jwtMock.GenerateAccessToken(user)
             .Returns(("new-access-token", DateTime.UtcNow.AddHours(1)));
 
@@ -110,14 +113,48 @@ public class RefreshAccessTokenTests
         result.AccessToken.Should().Be("new-access-token");
         result.RefreshToken.Should().Be("new-refresh-token");
 
-        // Ensure old token was revoked
-        oldToken.IsRevoked.Should().BeTrue();
-        await _repoMock.Received(1).UpdateAsync(oldToken, Arg.Any<CancellationToken>());
+        await _repoMock.Received(1).TryRevokeActiveTokenAsync(
+            oldToken.Id,
+            Arg.Any<DateTime>(),
+            Arg.Any<CancellationToken>());
 
         // Ensure new token was stored
         await _repoMock.Received(1).AddAsync(Arg.Is<RefreshToken>(t =>
             t.TokenHash == RefreshToken.ComputeTokenHash("new-refresh-token") &&
             t.UserId == "user-1"), Arg.Any<CancellationToken>());
         await _unitOfWorkMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WhenAtomicRevokeFails_ThrowsAuthenticationFailedException()
+    {
+        // Arrange — concurrent rotation already revoked the token at the database
+        var req = new RefreshAccessTokenCommand("valid-token");
+        var user = new ApplicationUser { Id = "user-1", Email = "test@test.com", FullName = "Test User" };
+        var oldToken = new RefreshToken
+        {
+            TokenHash = RefreshToken.ComputeTokenHash("valid-token"),
+            IsRevoked = false,
+            ExpiresAt = DateTime.UtcNow.AddDays(1),
+            User = user,
+            UserId = user.Id
+        };
+
+        _repoMock.GetByTokenAsync(req.RefreshToken, Arg.Any<CancellationToken>())
+            .Returns(oldToken);
+
+        _repoMock.TryRevokeActiveTokenAsync(Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        // Act & Assert
+        Func<Task> act = async () => await _useCase.Handle(req);
+        await act.Should().ThrowAsync<AuthenticationFailedException>()
+            .WithMessage("Refresh token has already been used");
+
+        await _repoMock.Received(1).TryRevokeActiveTokenAsync(
+            oldToken.Id,
+            Arg.Any<DateTime>(),
+            Arg.Any<CancellationToken>());
+        await _repoMock.DidNotReceive().AddAsync(Arg.Any<RefreshToken>(), Arg.Any<CancellationToken>());
     }
 }

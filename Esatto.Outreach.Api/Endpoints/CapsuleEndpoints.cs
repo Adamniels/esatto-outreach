@@ -90,8 +90,7 @@ public static class CapsuleEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             try
@@ -113,8 +112,7 @@ public static class CapsuleEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             try

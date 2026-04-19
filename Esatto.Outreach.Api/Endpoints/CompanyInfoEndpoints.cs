@@ -20,8 +20,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapGet("/", async (GetCompanyInfoQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -36,8 +35,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapPut("/", async (UpdateCompanyInfoRequest req, UpdateCompanyInfoCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -52,8 +50,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapGet("/cases", async (ListProjectCasesQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             var list = await handler.Handle(new ListProjectCasesQuery(), userId, ct);
             return Results.Ok(list);
@@ -61,8 +58,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapGet("/cases/{id:guid}", async (Guid id, GetProjectCaseQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             var pc = await handler.Handle(new GetProjectCaseQuery(id), userId, ct);
             return pc is null ? Results.NotFound() : Results.Ok(pc);
@@ -70,8 +66,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapPost("/cases", async (CreateProjectCaseRequest req, CreateProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -83,8 +78,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapPut("/cases/{id:guid}", async (Guid id, UpdateProjectCaseRequest req, UpdateProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -96,8 +90,7 @@ public static class CompanyInfoEndpoints
 
         companyInfo.MapDelete("/cases/{id:guid}", async (Guid id, DeleteProjectCaseCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {

@@ -34,6 +34,8 @@ public sealed class RefreshAccessTokenCommandHandler
         await _unitOfWork.BeginTransactionAsync(ct);
         try
         {
+        var utcNow = DateTime.UtcNow;
+
         var refreshToken = await _refreshTokenRepo.GetByTokenAsync(command.RefreshToken, ct);
 
         if (refreshToken == null)
@@ -42,14 +44,15 @@ public sealed class RefreshAccessTokenCommandHandler
         if (refreshToken.IsRevoked)
             throw new AuthenticationFailedException("Refresh token has been revoked");
 
-        if (refreshToken.ExpiresAt < DateTime.UtcNow)
+        if (refreshToken.ExpiresAt < utcNow)
             throw new AuthenticationFailedException("Refresh token has expired");
+
+        var revoked = await _refreshTokenRepo.TryRevokeActiveTokenAsync(refreshToken.Id, utcNow, ct);
+        if (!revoked)
+            throw new AuthenticationFailedException("Refresh token has already been used");
 
         var (accessToken, expiresAt) = _jwtService.GenerateAccessToken(refreshToken.User);
         var newRefreshToken = _jwtService.GenerateRefreshToken();
-
-        refreshToken.IsRevoked = true;
-        await _refreshTokenRepo.UpdateAsync(refreshToken, ct);
 
         await _refreshTokenRepo.AddAsync(new RefreshTokenEntity
         {

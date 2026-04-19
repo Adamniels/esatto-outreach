@@ -28,8 +28,7 @@ public static class ProspectEndpoints
 
         app.MapGet("/prospects", async (ListProspectsQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
             var list = await handler.Handle(new ListProspectsQuery(), userId, ct);
             return Results.Ok(list);
         })
@@ -37,8 +36,7 @@ public static class ProspectEndpoints
 
         app.MapGet("/prospects/{id:guid}", async (Guid id, GetProspectByIdQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             var dto = await handler.Handle(new GetProspectByIdQuery(id), userId, ct);
             return dto is null ? Results.NotFound() : Results.Ok(dto);
@@ -47,8 +45,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects", async (CreateProspectRequest req, CreateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -61,8 +58,7 @@ public static class ProspectEndpoints
 
         app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectRequest req, UpdateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
             try
             {
                 var updated = await handler.Handle(new UpdateProspectCommand(id, req.Name, req.Websites, req.Notes, req.Status, req.MailTitle, req.MailBodyPlain, req.MailBodyHtml, req.LinkedInMessage), userId, ct);
@@ -75,8 +71,7 @@ public static class ProspectEndpoints
 
         app.MapDelete("/prospects/{id:guid}", async (Guid id, DeleteProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
             try
             {
                 var deleted = await handler.Handle(new DeleteProspectCommand(id), userId, ct);
@@ -98,8 +93,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -120,8 +114,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -142,8 +135,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -164,8 +156,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             var enriched = await handler.Handle(new EnrichContactPersonCommand(contactId), userId, ct);
             return enriched is null ? Results.NotFound() : Results.Ok(enriched);
@@ -181,8 +172,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -210,8 +200,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -235,8 +224,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -259,8 +247,7 @@ public static class ProspectEndpoints
            string? type,
            CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             try
@@ -287,8 +274,7 @@ public static class ProspectEndpoints
            string? type,
            CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            if (!user.TryGetUserId(out var userId))
                 return Results.Unauthorized();
 
             try
@@ -310,8 +296,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectRequest req, ChatWithProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -330,8 +315,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/chat/reset", async (Guid id, ResetProspectChatCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {
@@ -354,8 +338,7 @@ public static class ProspectEndpoints
             ClaimsPrincipal user,
             CancellationToken ct) =>
         {
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+            if (!user.TryGetUserId(out var userId)) return Results.Unauthorized();
 
             try
             {

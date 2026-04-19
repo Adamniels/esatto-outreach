@@ -23,8 +23,20 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         await _db.RefreshTokens.AddAsync(refreshToken, ct);
     }
 
-    public async Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct = default)
+    public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         _db.RefreshTokens.Update(refreshToken);
+        return Task.CompletedTask;
+    }
+
+    public async Task<bool> TryRevokeActiveTokenAsync(Guid refreshTokenId, DateTime utcNow, CancellationToken ct = default)
+    {
+        return await _db.RefreshTokens
+            .Where(rt => rt.Id == refreshTokenId && !rt.IsRevoked && rt.ExpiresAt > utcNow)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(rt => rt.IsRevoked, true)
+                    .SetProperty(rt => rt.UpdatedUtc, utcNow),
+                ct) > 0;
     }
 }
