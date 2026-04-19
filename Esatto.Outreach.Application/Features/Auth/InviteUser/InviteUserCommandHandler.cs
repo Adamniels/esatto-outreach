@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Esatto.Outreach.Application.Abstractions.Repositories;
 using Esatto.Outreach.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace Esatto.Outreach.Application.Features.Auth.InviteUser;
 
@@ -10,17 +11,20 @@ public sealed class InviteUserCommandHandler
     private readonly IInvitationRepository _invitationRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly string? _frontendBaseUrl;
 
     private const int ExpiryDays = 7;
 
     public InviteUserCommandHandler(
         IInvitationRepository invitationRepo,
         UserManager<ApplicationUser> userManager,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IConfiguration configuration)
     {
         _invitationRepo = invitationRepo;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
+        _frontendBaseUrl = configuration["Frontend:BaseUrl"];
     }
 
     public async Task<InviteUserResponse> Handle(
@@ -58,9 +62,9 @@ public sealed class InviteUserCommandHandler
         await _unitOfWork.SaveChangesAsync(ct);
 
         string? inviteLink = null;
-        if (!string.IsNullOrWhiteSpace(command.FrontendBaseUrl))
+        if (!string.IsNullOrWhiteSpace(_frontendBaseUrl))
         {
-            var baseUrl = command.FrontendBaseUrl.TrimEnd('/');
+            var baseUrl = _frontendBaseUrl.TrimEnd('/');
             inviteLink = $"{baseUrl}/accept-invite?token={rawToken}";
         }
 

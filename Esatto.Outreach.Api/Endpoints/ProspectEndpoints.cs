@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Esatto.Outreach.Api.Requests.Prospects;
 using Esatto.Outreach.Application.Features.Prospects.AddContactPerson;
 using Esatto.Outreach.Application.Features.Prospects.ClearActiveContact;
 using Esatto.Outreach.Application.Features.Prospects.CreateProspect;
@@ -25,7 +26,6 @@ public static class ProspectEndpoints
     {
         // ============ PROSPECT CRUD ENDPOINTS ============
 
-        // Use case is injected from the service container
         app.MapGet("/prospects", async (ListProspectsQueryHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -45,27 +45,27 @@ public static class ProspectEndpoints
         })
         .RequireAuthorization();
 
-        app.MapPost("/prospects", async (CreateProspectCommand command, CreateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects", async (CreateProspectRequest req, CreateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var created = await handler.Handle(command, userId, ct);
+                var created = await handler.Handle(new CreateProspectCommand(req.Name, req.Websites, req.Notes), userId, ct);
                 return Results.Created($"/prospects/{created.Id}", created);
             }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         })
         .RequireAuthorization();
 
-        app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectCommand command, UpdateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPut("/prospects/{id:guid}", async (Guid id, UpdateProspectRequest req, UpdateProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var updated = await handler.Handle(command with { Id = id }, userId, ct);
+                var updated = await handler.Handle(new UpdateProspectCommand(id, req.Name, req.Websites, req.Notes, req.Status, req.MailTitle, req.MailBodyPlain, req.MailBodyHtml, req.LinkedInMessage), userId, ct);
                 return updated is null ? Results.NotFound() : Results.Ok(updated);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
@@ -84,7 +84,7 @@ public static class ProspectEndpoints
             }
             catch (UnauthorizedAccessException)
             {
-                return Results.StatusCode(403); // Forbidden
+                return Results.StatusCode(403);
             }
         })
         .RequireAuthorization();
@@ -93,7 +93,7 @@ public static class ProspectEndpoints
 
         app.MapPost("/prospects/{id:guid}/contacts", async (
             Guid id,
-            AddContactPersonCommand command,
+            AddContactPersonRequest req,
             AddContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
@@ -103,7 +103,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var created = await handler.Handle(command with { ProspectId = id }, userId, ct);
+                var created = await handler.Handle(new AddContactPersonCommand(id, req.Name, req.Title, req.Email, req.LinkedInUrl), userId, ct);
                 return created is null ? Results.NotFound() : Results.Ok(created);
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(403); }
@@ -115,7 +115,7 @@ public static class ProspectEndpoints
         app.MapPut("/prospects/{prospectId:guid}/contacts/{contactId:guid}", async (
             Guid prospectId,
             Guid contactId,
-            UpdateContactPersonCommand command,
+            UpdateContactPersonRequest req,
             UpdateContactPersonCommandHandler handler,
             ClaimsPrincipal user,
             CancellationToken ct) =>
@@ -125,7 +125,7 @@ public static class ProspectEndpoints
 
             try
             {
-                var updated = await handler.Handle(command with { ProspectId = prospectId, ContactId = contactId }, userId, ct);
+                var updated = await handler.Handle(new UpdateContactPersonCommand(prospectId, contactId, req.Name, req.Title, req.Email, req.LinkedInUrl, req.PersonalHooks, req.PersonalNews, req.GeneralInfo), userId, ct);
                 return updated is null ? Results.NotFound() : Results.Ok(updated);
             }
             catch (UnauthorizedAccessException)
@@ -279,7 +279,6 @@ public static class ProspectEndpoints
         }).RequireAuthorization();
 
         // ============ LINKEDIN ENDPOINTS ============
-        // LinkedIn message generation is similar to email, but we can have a separate endpoint for clarity
 
         app.MapPost("/prospects/{id:guid}/linkedin/draft", async (
            Guid id,
@@ -309,14 +308,14 @@ public static class ProspectEndpoints
 
         // ============ CHAT ENDPOINTS ============
 
-        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectCommand dto, ChatWithProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        app.MapPost("/prospects/{id:guid}/chat", async (Guid id, ChatWithProspectRequest req, ChatWithProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
             try
             {
-                var res = await handler.Handle(dto with { ProspectId = id }, userId, ct);
+                var res = await handler.Handle(new ChatWithProspectCommand(id, req.UserInput, req.MailTitle, req.MailBodyPlain, req.UseWebSearch, req.Temperature, req.MaxOutputTokens), userId, ct);
                 return Results.Ok(res);
             }
             catch (InvalidOperationException ex)

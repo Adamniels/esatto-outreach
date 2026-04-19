@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Esatto.Outreach.Api.Requests.Sequences;
 using Esatto.Outreach.Application.Features.Sequences.ActivateSequence;
 using Esatto.Outreach.Application.Features.Sequences.AddSequenceStep;
 using Esatto.Outreach.Application.Features.Sequences.CancelSequence;
@@ -28,13 +29,13 @@ public static class SequenceEndpoints
                        .RequireAuthorization();
 
         // Sequences CRUD
-        group.MapPost("/", async (CreateSequenceCommand cmd, CreateSequenceCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPost("/", async (CreateSequenceRequest req, CreateSequenceCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.GetRequiredUserId();
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
             try
             {
-                var created = await handler.Handle(cmd, userId, ct);
+                var created = await handler.Handle(new CreateSequenceCommand(req.Title, req.Description, req.Mode), userId, ct);
                 return Results.Created($"/sequences/{created.Id}", created);
             }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
@@ -55,11 +56,11 @@ public static class SequenceEndpoints
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
         });
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateSequenceCommand req, UpdateSequenceCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPut("/{id:guid}", async (Guid id, UpdateSequenceRequest req, UpdateSequenceCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { Id = id }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new UpdateSequenceCommand(id, req.Title, req.Description, req.Settings), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
         });
@@ -74,31 +75,31 @@ public static class SequenceEndpoints
         });
 
         // Step Management
-        group.MapPost("/{id:guid}/steps", async (Guid id, AddSequenceStepCommand req, AddSequenceStepCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/steps", async (Guid id, AddSequenceStepRequest req, AddSequenceStepCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { SequenceId = id }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new AddSequenceStepCommand(id, req.StepType, req.DelayInDays, req.TimeOfDayToRun, req.GenerationType), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
-        group.MapPut("/{id:guid}/steps/{stepId:guid}", async (Guid id, Guid stepId, UpdateSequenceStepCommand req, UpdateSequenceStepCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPut("/{id:guid}/steps/{stepId:guid}", async (Guid id, Guid stepId, UpdateSequenceStepRequest req, UpdateSequenceStepCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { SequenceId = id, StepId = stepId }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new UpdateSequenceStepCommand(id, stepId, req.StepType, req.DelayInDays, req.TimeOfDayToRun, req.GenerationType), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
-        group.MapPut("/{id:guid}/steps/{stepId:guid}/content", async (Guid id, Guid stepId, UpdateSequenceStepContentCommand req, UpdateSequenceStepContentCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPut("/{id:guid}/steps/{stepId:guid}/content", async (Guid id, Guid stepId, UpdateSequenceStepContentRequest req, UpdateSequenceStepContentCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { SequenceId = id, StepId = stepId }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new UpdateSequenceStepContentCommand(id, stepId, req.GeneratedSubject, req.GeneratedBody), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
@@ -114,22 +115,22 @@ public static class SequenceEndpoints
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
-        group.MapPut("/{id:guid}/steps/reorder", async (Guid id, ReorderSequenceStepsCommand req, ReorderSequenceStepsCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPut("/{id:guid}/steps/reorder", async (Guid id, ReorderSequenceStepsRequest req, ReorderSequenceStepsCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { await handler.Handle(req with { SequenceId = id }, userId, ct); return Results.NoContent(); }
+            try { await handler.Handle(new ReorderSequenceStepsCommand(id, req.StepIdsInOrder), userId, ct); return Results.NoContent(); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return Results.BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
         // Prospect Enrollment
-        group.MapPost("/{id:guid}/prospects", async (Guid id, EnrollProspectCommand req, EnrollProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPost("/{id:guid}/prospects", async (Guid id, EnrollProspectRequest req, EnrollProspectCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { SequenceId = id }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new EnrollProspectCommand(id, req.ProspectId, req.ContactPersonId), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
@@ -143,11 +144,11 @@ public static class SequenceEndpoints
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });
 
-        group.MapPut("/{id:guid}/progress", async (Guid id, SaveBuilderProgressCommand req, SaveBuilderProgressCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
+        group.MapPut("/{id:guid}/progress", async (Guid id, SaveBuilderProgressRequest req, SaveBuilderProgressCommandHandler handler, ClaimsPrincipal user, CancellationToken ct) =>
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-            try { return Results.Ok(await handler.Handle(req with { Id = id }, userId, ct)); }
+            try { return Results.Ok(await handler.Handle(new SaveBuilderProgressCommand(id, req.CurrentBuilderStep), userId, ct)); }
             catch (KeyNotFoundException e) { return Results.NotFound(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Results.BadRequest(new { error = e.Message }); }
         });

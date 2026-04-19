@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Esatto.Outreach.Api.Requests.Auth;
 using Esatto.Outreach.Application.Features.Auth.AcceptInvitation;
+using Esatto.Outreach.Domain.Exceptions;
 using Esatto.Outreach.Application.Features.Auth.InviteUser;
 using Esatto.Outreach.Application.Features.Auth.ValidateInvitation;
 
@@ -30,13 +32,13 @@ public static class InvitationEndpoints
         });
 
         invitations.MapPost("/accept", async (
-            AcceptInvitationCommand dto,
+            AcceptInvitationRequest req,
             AcceptInvitationCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await handler.Handle(dto, ct);
+                var data = await handler.Handle(new AcceptInvitationCommand(req.Token, req.Email, req.Password, req.FullName), ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)
@@ -50,18 +52,16 @@ public static class InvitationEndpoints
         });
 
         static async Task<IResult> InviteUser(
-            InviteUserCommand dto,
+            InviteUserRequest req,
             InviteUserCommandHandler handler,
             ClaimsPrincipal user,
-            IConfiguration configuration,
             CancellationToken ct)
         {
             var userId = user.GetRequiredUserId();
             if (string.IsNullOrEmpty(userId))
                 return Results.Unauthorized();
 
-            var frontendBaseUrl = configuration["Frontend:BaseUrl"];
-            var data = await handler.Handle(dto with { FrontendBaseUrl = frontendBaseUrl }, userId, ct);
+            var data = await handler.Handle(new InviteUserCommand(req.Email), userId, ct);
             return Results.Ok(data);
         }
 

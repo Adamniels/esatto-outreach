@@ -1,3 +1,4 @@
+using Esatto.Outreach.Api.Requests.Auth;
 using Esatto.Outreach.Application.Features.Auth.LoginUser;
 using Esatto.Outreach.Application.Features.Auth.RefreshToken;
 using Esatto.Outreach.Application.Features.Auth.RegisterUser;
@@ -14,13 +15,13 @@ public static class AuthEndpoints
                       .RequireRateLimiting("AuthPolicy");
 
         auth.MapPost("/register", async (
-            RegisterCommand dto,
+            RegisterRequest req,
             RegisterCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await handler.Handle(dto, ct);
+                var data = await handler.Handle(new RegisterCommand(req.Email, req.Password, req.FullName, req.CompanyName), ct);
                 return Results.Ok(data);
             }
             catch (ArgumentException ex)
@@ -34,13 +35,13 @@ public static class AuthEndpoints
         });
 
         auth.MapPost("/login", async (
-            LoginCommand dto,
+            LoginRequest req,
             LoginCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await handler.Handle(dto, ct);
+                var data = await handler.Handle(new LoginCommand(req.Email, req.Password), ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)
@@ -50,13 +51,13 @@ public static class AuthEndpoints
         });
 
         auth.MapPost("/refresh", async (
-            RefreshAccessTokenCommand dto,
+            RefreshTokenRequest req,
             RefreshAccessTokenCommandHandler handler,
             CancellationToken ct) =>
         {
             try
             {
-                var data = await handler.Handle(dto, ct);
+                var data = await handler.Handle(new RefreshAccessTokenCommand(req.RefreshToken), ct);
                 return Results.Ok(data);
             }
             catch (AuthenticationFailedException)
