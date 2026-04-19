@@ -8,35 +8,27 @@ namespace Esatto.Outreach.Application.Features.OutreachGeneration.GenerateLinked
 public class GenerateLinkedInMessageCommandHandler
 {
     private readonly IColdOutreachContextBuilder _contextBuilder;
-    private readonly IColdOutreachGeneratorFactory _generatorFactory;
+    private readonly IColdOutreachGenerator _generator;
     private readonly IProspectRepository _prospectRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public GenerateLinkedInMessageCommandHandler(
         IColdOutreachContextBuilder contextBuilder,
-        IColdOutreachGeneratorFactory generatorFactory,
+        IColdOutreachGenerator generator,
         IProspectRepository prospectRepository,
         IUnitOfWork unitOfWork)
     {
         _contextBuilder = contextBuilder;
-        _generatorFactory = generatorFactory;
+        _generator = generator;
         _prospectRepository = prospectRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<ProspectViewDto> Handle(GenerateLinkedInMessageCommand command, string userId, CancellationToken ct = default)
     {
-        bool includeSoftData = !string.IsNullOrWhiteSpace(command.Type) &&
-            command.Type.Equals(nameof(OutreachGenerationType.UseCollectedData), StringComparison.OrdinalIgnoreCase);
-
-        var context = await _contextBuilder.BuildAsync(command.Id, userId, OutreachChannel.LinkedIn, includeSoftData, ct);
-
-        OutreachGenerationType? generationType = string.IsNullOrWhiteSpace(command.Type)
-            ? null
-            : Enum.TryParse<OutreachGenerationType>(command.Type, ignoreCase: true, out var parsed) ? parsed : null;
-
-        var generator = _generatorFactory.GetGenerator(generationType);
-        var draft = await generator.GenerateAsync(context, ct);
+        var strategy = ParseStrategy(command.Type);
+        var context = await _contextBuilder.BuildAsync(command.Id, userId, OutreachChannel.LinkedIn, strategy, ct);
+        var draft = await _generator.GenerateAsync(context, ct);
 
         var prospect = await _prospectRepository.GetByIdAsync(command.Id, ct)
             ?? throw new InvalidOperationException($"Prospect {command.Id} not found");
@@ -46,4 +38,9 @@ public class GenerateLinkedInMessageCommandHandler
         await _unitOfWork.SaveChangesAsync(ct);
         return ProspectViewDto.FromEntity(prospect);
     }
+
+    private static OutreachGenerationType ParseStrategy(string? type) =>
+        Enum.TryParse<OutreachGenerationType>(type, ignoreCase: true, out var parsed)
+            ? parsed
+            : OutreachGenerationType.WebSearch;
 }

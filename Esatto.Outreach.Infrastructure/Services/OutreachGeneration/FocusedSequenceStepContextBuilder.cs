@@ -37,7 +37,7 @@ public sealed class FocusedSequenceStepContextBuilder : IFocusedSequenceStepCont
         Guid prospectId,
         string userId,
         OutreachChannel channel,
-        bool includeSoftData,
+        OutreachGenerationType strategy,
         int stepNumber,
         int totalSteps,
         SequenceStepType stepType,
@@ -45,6 +45,7 @@ public sealed class FocusedSequenceStepContextBuilder : IFocusedSequenceStepCont
         List<PriorTurn> priorTurns,
         CancellationToken ct = default)
     {
+        var fetchIntelligence = strategy == OutreachGenerationType.UseCollectedData;
         var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct)
             ?? throw new InvalidOperationException($"Prospect {prospectId} not found");
 
@@ -58,7 +59,7 @@ public sealed class FocusedSequenceStepContextBuilder : IFocusedSequenceStepCont
         var combinedInstructions = $"{generalPrompt.Instructions}\n\n{specificPrompt.Instructions}";
 
         EntityIntelligence? entityIntelligence = null;
-        if (includeSoftData)
+        if (fetchIntelligence)
         {
             if (!prospect.EntityIntelligenceId.HasValue)
                 throw new InvalidOperationException("No Entity Intelligence available. Generate it first.");
@@ -113,6 +114,7 @@ public sealed class FocusedSequenceStepContextBuilder : IFocusedSequenceStepCont
             CompanyInfo = companyInfo,
             Instructions = combinedInstructions,
             Channel = channel,
+            Strategy = strategy,
             StepNumber = stepNumber,
             TotalSteps = totalSteps,
             StepType = stepType,

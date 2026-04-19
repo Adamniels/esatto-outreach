@@ -134,11 +134,9 @@ public static class DependencyInjection
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
         // Outreach generation — cold outreach (one-off prospect emails/LinkedIn)
-        services.Configure<OutreachGenerationOptions>(configuration.GetSection(OutreachGenerationOptions.SectionName));
         services.AddHttpClient<OpenAIColdOutreachGenerator>();
-        services.AddHttpClient<CollectedDataColdOutreachGenerator>();
+        services.AddScoped<IColdOutreachGenerator>(sp => sp.GetRequiredService<OpenAIColdOutreachGenerator>());
         services.AddScoped<IColdOutreachContextBuilder, ColdOutreachContextBuilder>();
-        services.AddScoped<IColdOutreachGeneratorFactory, ColdOutreachGeneratorFactory>();
 
         // Outreach generation — focused sequence steps (multi-turn conversation thread)
         services.AddHttpClient<OpenAIFocusedSequenceStepGenerator>();

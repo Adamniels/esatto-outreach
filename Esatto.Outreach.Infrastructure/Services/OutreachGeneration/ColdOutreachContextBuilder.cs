@@ -37,9 +37,10 @@ public sealed class ColdOutreachContextBuilder : IColdOutreachContextBuilder
         Guid prospectId,
         string userId,
         OutreachChannel channel,
-        bool includeSoftData,
+        OutreachGenerationType strategy,
         CancellationToken ct = default)
     {
+        var fetchIntelligence = strategy == OutreachGenerationType.UseCollectedData;
         var prospect = await _prospectRepo.GetByIdAsync(prospectId, ct)
             ?? throw new InvalidOperationException($"Prospect {prospectId} not found");
 
@@ -53,7 +54,7 @@ public sealed class ColdOutreachContextBuilder : IColdOutreachContextBuilder
         var combinedInstructions = $"{generalPrompt.Instructions}\n\n{specificPrompt.Instructions}";
 
         EntityIntelligence? entityIntelligence = null;
-        if (includeSoftData)
+        if (fetchIntelligence)
         {
             if (!prospect.EntityIntelligenceId.HasValue)
                 throw new InvalidOperationException("No Entity Intelligence available. Generate it first.");
@@ -108,6 +109,7 @@ public sealed class ColdOutreachContextBuilder : IColdOutreachContextBuilder
             CompanyInfo = companyInfo,
             Instructions = combinedInstructions,
             Channel = channel,
+            Strategy = strategy,
             ProjectCases = projectCases,
             EntityIntelligence = entityIntelligence,
             ActiveContact = activeContactContext,

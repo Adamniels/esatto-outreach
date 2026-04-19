@@ -14,7 +14,6 @@ namespace Esatto.Outreach.UnitTests.Application.Features.OutreachGeneration.Gene
 public class GenerateMailTests
 {
     private readonly IColdOutreachContextBuilder _contextBuilderMock;
-    private readonly IColdOutreachGeneratorFactory _factoryMock;
     private readonly IColdOutreachGenerator _generatorMock;
     private readonly IProspectRepository _prospectRepoMock;
     private readonly IUnitOfWork _unitOfWorkMock;
@@ -23,14 +22,11 @@ public class GenerateMailTests
     public GenerateMailTests()
     {
         _contextBuilderMock = Substitute.For<IColdOutreachContextBuilder>();
-        _factoryMock = Substitute.For<IColdOutreachGeneratorFactory>();
         _generatorMock = Substitute.For<IColdOutreachGenerator>();
         _prospectRepoMock = Substitute.For<IProspectRepository>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
 
-        _factoryMock.GetGenerator(Arg.Any<OutreachGenerationType?>()).Returns(_generatorMock);
-
-        _sut = new GenerateMailCommandHandler(_contextBuilderMock, _factoryMock, _prospectRepoMock, _unitOfWorkMock);
+        _sut = new GenerateMailCommandHandler(_contextBuilderMock, _generatorMock, _prospectRepoMock, _unitOfWorkMock);
     }
 
     [Fact]
@@ -50,10 +46,11 @@ public class GenerateMailTests
             CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
             Instructions = "test instructions",
             Prospect = new ProspectInfo(prospectId, "Test Name", null, null, null, null, null),
-            Channel = OutreachChannel.Email
+            Channel = OutreachChannel.Email,
+            Strategy = OutreachGenerationType.WebSearch
         };
 
-        _contextBuilderMock.BuildAsync(prospectId, userId, OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        _contextBuilderMock.BuildAsync(prospectId, userId, OutreachChannel.Email, OutreachGenerationType.WebSearch, Arg.Any<CancellationToken>())
             .Returns(dummyContext);
 
         var draftResult = new CustomOutreachDraftDto(
@@ -87,10 +84,11 @@ public class GenerateMailTests
             CompanyInfo = new CompanyInfoDto(Guid.NewGuid(), "Test", "Test", "Test"),
             Instructions = "test",
             Prospect = new ProspectInfo(prospectId, "Test", null, null, null, null, null),
-            Channel = OutreachChannel.Email
+            Channel = OutreachChannel.Email,
+            Strategy = OutreachGenerationType.WebSearch
         };
 
-        _contextBuilderMock.BuildAsync(prospectId, "u-1", OutreachChannel.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+        _contextBuilderMock.BuildAsync(prospectId, "u-1", OutreachChannel.Email, OutreachGenerationType.WebSearch, Arg.Any<CancellationToken>())
             .Returns(dummyContext);
 
         _generatorMock.GenerateAsync(Arg.Any<ColdOutreachContext>(), Arg.Any<CancellationToken>())

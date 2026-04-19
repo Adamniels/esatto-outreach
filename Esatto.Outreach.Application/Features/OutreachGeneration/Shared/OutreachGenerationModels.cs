@@ -46,6 +46,7 @@ public sealed record ColdOutreachContext
     public required CompanyInfoDto CompanyInfo { get; init; }
     public required string Instructions { get; init; }
     public required OutreachChannel Channel { get; init; }
+    public required OutreachGenerationType Strategy { get; init; }
     public List<ProjectCaseDto>? ProjectCases { get; init; }
     public EntityIntelligence? EntityIntelligence { get; init; }
     public ContactPersonContext? ActiveContact { get; init; }
@@ -59,6 +60,7 @@ public sealed record FocusedSequenceStepContext
     public required CompanyInfoDto CompanyInfo { get; init; }
     public required string Instructions { get; init; }
     public required OutreachChannel Channel { get; init; }
+    public required OutreachGenerationType Strategy { get; init; }
     public required int StepNumber { get; init; }
     public required int TotalSteps { get; init; }
     public required SequenceStepType StepType { get; init; }

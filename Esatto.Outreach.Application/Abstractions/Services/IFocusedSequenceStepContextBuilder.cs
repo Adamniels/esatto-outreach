@@ -9,7 +9,7 @@ public interface IFocusedSequenceStepContextBuilder
         Guid prospectId,
         string userId,
         OutreachChannel channel,
-        bool includeSoftData,
+        OutreachGenerationType strategy,
         int stepNumber,
         int totalSteps,
         SequenceStepType stepType,

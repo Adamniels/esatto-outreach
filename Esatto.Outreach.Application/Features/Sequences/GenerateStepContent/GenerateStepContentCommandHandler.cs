@@ -54,14 +54,14 @@ public class GenerateStepContentCommandHandler
             .ToList();
 
         var prospectId = sequence.GetBaselineProspectIdForContentGeneration();
-        var includeSoftData = sequence.IncludeCollectedDataForStepGeneration(currentStep);
+        var strategy = currentStep.GenerationType ?? OutreachGenerationType.WebSearch;
         var channel = currentStep.GetOutreachChannel();
 
         var context = await _focusedContextBuilder.BuildAsync(
             prospectId,
             userId,
             channel,
-            includeSoftData,
+            strategy,
             stepNumber,
             orderedSteps.Count,
             currentStep.StepType,

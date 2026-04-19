@@ -405,7 +405,4 @@ public class Sequence : Entity
         EnsureCanCancel();
         SetStatus(SequenceStatus.Archived);
     }
-
-    public bool IncludeCollectedDataForStepGeneration(SequenceStep step) =>
-        Mode == SequenceMode.Focused && step.GenerationType == OutreachGenerationType.UseCollectedData;
 }

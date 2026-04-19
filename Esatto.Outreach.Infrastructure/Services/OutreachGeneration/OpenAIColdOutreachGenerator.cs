@@ -1,210 +1,133 @@
-using Esatto.Outreach.Infrastructure.Options;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.Options;
 using Esatto.Outreach.Application.Abstractions.Services;
-using Esatto.Outreach.Application.Features.Intelligence.Shared;
 using Esatto.Outreach.Application.Features.OutreachGeneration.Shared;
+using Esatto.Outreach.Domain.Entities;
 using Esatto.Outreach.Domain.Enums;
-using Microsoft.Extensions.Logging;
+using Esatto.Outreach.Infrastructure.Options;
+using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace Esatto.Outreach.Infrastructure.Services.OutreachGeneration;
 
-public sealed class OpenAIColdOutreachGenerator : IColdOutreachGenerator
+public sealed class OpenAIColdOutreachGenerator : OpenAIOutreachGeneratorBase, IColdOutreachGenerator
 {
-    private readonly HttpClient _http;
-    private readonly OpenAiOptions _options;
-    private readonly ILogger<OpenAIColdOutreachGenerator> _logger;
-
-    private static readonly JsonSerializerOptions JsonOpts = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
-
     public OpenAIColdOutreachGenerator(
         HttpClient http,
-        IOptions<OpenAiOptions> options,
-        ILogger<OpenAIColdOutreachGenerator> logger)
+        IOptions<OpenAiOptions> options)
+        : base(http, options)
     {
-        _http = http;
-        _http.BaseAddress = new Uri("https://api.openai.com/");
-        _options = options.Value;
-        _logger = logger;
     }
 
-    public async Task<CustomOutreachDraftDto> GenerateAsync(
-        ColdOutreachContext context,
-        CancellationToken ct = default)
+    public async Task<CustomOutreachDraftDto> GenerateAsync(ColdOutreachContext context, CancellationToken ct = default)
     {
-        var jsonFormatSpecifier = context.Channel == OutreachChannel.Email
-            ? @"
-{
-  ""Title"": ""string"",
-  ""BodyPlain"": ""string"",
-  ""BodyHTML"": ""string""
-}"
-            : @"
-{
-  ""BodyPlain"": ""string""
-}";
+        bool useWebSearch = context.Strategy == OutreachGenerationType.WebSearch;
 
-        var userPrompt = BuildPrompt(context) + $@"
+        if (context.Strategy == OutreachGenerationType.UseCollectedData && context.EntityIntelligence == null)
+            throw new InvalidOperationException("Strategy is UseCollectedData but no Entity Intelligence is in context. Generate it first.");
 
-Return ONLY a valid JSON object with the following structure, nothing else:{jsonFormatSpecifier}
-Do not include code fences, explanations, or any extra text.
-";
+        var prompt = BuildPrompt(context) + $"\n\n{BuildJsonInstruction(context.Channel)}";
 
-        var payload = BuildResponsesPayload(userPrompt);
-        var jsonText = await CallOpenAIAsync(payload, ct);
+        var jsonText = await CallWithStringInputAsync(prompt, useWebSearch, ct);
 
-        CustomOutreachDraftDto? dto;
-        try
-        {
-            dto = JsonSerializer.Deserialize<CustomOutreachDraftDto>(jsonText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException($"Failed to parse model JSON output: {jsonText}", ex);
-        }
-
-        if (dto == null)
-            throw new InvalidOperationException($"Model returned null or invalid JSON: {jsonText}");
-
-        if (string.IsNullOrWhiteSpace(dto.Title))
-            dto = dto with { Title = $"Introduktion till {context.Prospect.Name}".Trim() };
-
-        return dto with { Channel = context.Channel };
-    }
-
-    private object BuildResponsesPayload(string userPrompt)
-    {
-        var payload = new Dictionary<string, object>
-        {
-            ["model"] = _options.Model,
-            ["input"] = userPrompt
-        };
-
-        if (_options.UseWebSearch)
-        {
-            payload["tools"] = new object[] { new { type = "web_search_preview" } };
-        }
-
-        return payload;
-    }
-
-    private async Task<string> CallOpenAIAsync(object payload, CancellationToken ct)
-    {
-        using var req = new HttpRequestMessage(HttpMethod.Post, "v1/responses");
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
-        req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        var reqBody = JsonSerializer.Serialize(payload, JsonOpts);
-        req.Content = new StringContent(reqBody, Encoding.UTF8, "application/json");
-
-        using var resp = await _http.SendAsync(req, ct);
-        var body = await resp.Content.ReadAsStringAsync(ct);
-
-        if (!resp.IsSuccessStatusCode)
-            throw new InvalidOperationException($"OpenAI HTTP {(int)resp.StatusCode}: {body}");
-
-        using var doc = JsonDocument.Parse(body);
-        var root = doc.RootElement;
-
-        if (root.TryGetProperty("output", out var output) &&
-            output.ValueKind == JsonValueKind.Array &&
-            output.GetArrayLength() > 0)
-        {
-            var firstOutput = output[0];
-            if (firstOutput.TryGetProperty("content", out var contentArray) &&
-                contentArray.ValueKind == JsonValueKind.Array &&
-                contentArray.GetArrayLength() > 0)
-            {
-                var firstContent = contentArray[0];
-                if (firstContent.TryGetProperty("text", out var text))
-                    return text.GetString()?.Trim() ?? string.Empty;
-            }
-        }
-
-        throw new InvalidOperationException("Could not extract content from OpenAI Responses API response");
-    }
-
-    private static string FormatProjectCases(List<ProjectCaseDto>? projectCases)
-    {
-        if (projectCases is not { Count: > 0 })
-            return "Inga tidigare projekt tillgängliga.";
-
-        var activeCases = projectCases.Where(c => c.IsActive).ToList();
-        if (activeCases.Count == 0)
-            return "Inga aktiva projekt tillgängliga.";
-
-        return string.Join("\n\n", activeCases.Select(c =>
-        {
-            var name = c.ClientName ?? "Okänt företag";
-            var text = c.Text ?? "";
-            return string.IsNullOrWhiteSpace(text) ? $"• {name}" : $"• {name}: {text}";
-        }));
+        return ParseAndValidate(jsonText, context.Channel, $"Introduktion till {context.Prospect.Name}");
     }
 
     private static string BuildPrompt(ColdOutreachContext context)
     {
         var req = context.Prospect;
-        var projectCasesSection = FormatProjectCases(context.ProjectCases);
+        var sb = new StringBuilder();
+
         string targetFormat = context.Channel == OutreachChannel.Email ? "sälj mejl" : "LinkedIn-meddelande";
+        sb.AppendLine($"Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt {targetFormat} på svenska (max 500 ord).");
+        sb.AppendLine();
+        sb.AppendLine($"=== OM OSS ({context.CompanyInfo.Name}) ===");
+        sb.AppendLine(context.CompanyInfo.Overview);
+        sb.AppendLine(context.CompanyInfo.ValueProposition);
+        sb.AppendLine();
+        sb.AppendLine("=== CASE STUDIES ===");
+        sb.AppendLine(FormatProjectCases(context.ProjectCases));
+        sb.AppendLine();
+        sb.AppendLine("=== MÅLFÖRETAG ===");
+        sb.AppendLine($"Företag: {req.Name}");
+        if (!string.IsNullOrWhiteSpace(req.About)) sb.AppendLine($"Om företaget: {req.About}");
+        if (req.Websites?.Any() == true) sb.AppendLine($"Webbplatser: {string.Join(", ", req.Websites)}");
+        if (req.Tags?.Any() == true) sb.AppendLine($"Taggar: {string.Join(", ", req.Tags)}");
+        if (!string.IsNullOrWhiteSpace(req.Notes)) sb.AppendLine($"Anteckningar: {req.Notes}");
 
-        var systemContext = @$"
-            Du är en säljare på {context.CompanyInfo.Name} och ska skriva ett kort, personligt {targetFormat} på svenska (max 500 ord).
-
-            === INFORMATION OM OSS ({context.CompanyInfo.Name}) ===
-            {context.CompanyInfo.Overview}
-            {context.CompanyInfo.ValueProposition}
-
-            === TIDIGARE PROJEKT/CASES ===
-            {projectCasesSection}
-
-            === MÅLFÖRETAG ===
-            Företag: {req.Name}
-            {(string.IsNullOrWhiteSpace(req.About) ? "" : $"Om företaget: {req.About}")}
-            {(req.Websites?.Any() == true ? $"Webbplatser: {string.Join(", ", req.Websites)}" : "")}
-            {(req.Tags?.Any() == true ? $"Taggar: {string.Join(", ", req.Tags)}" : "")}
-            {(string.IsNullOrWhiteSpace(req.Notes) ? "" : $"Anteckningar: {req.Notes}")}";
-
-        var contactGreeting = context.ActiveContact != null
-            ? $@"
-
-            === KONTAKTPERSON ===
-            Namn: {context.ActiveContact.Name}
-            {(string.IsNullOrWhiteSpace(context.ActiveContact.Title) ? "" : $"Titel: {context.ActiveContact.Title}")}
-            {(string.IsNullOrWhiteSpace(context.ActiveContact.Email) ? "" : $"E-post: {context.ActiveContact.Email}")}
-            {(context.ActiveContact.PersonalHooks?.Any() == true ? $"Personliga hooks: {string.Join(", ", context.ActiveContact.PersonalHooks)}" : "")}
-            {(context.ActiveContact.PersonalNews?.Any() == true ? $"Senaste nyheter: {string.Join(", ", context.ActiveContact.PersonalNews)}" : "")}
-            {(string.IsNullOrWhiteSpace(context.ActiveContact.Summary) ? "" : $"Sammanfattning: {context.ActiveContact.Summary}")}"
-            : "";
-
-        var signatureInstruction = !string.IsNullOrWhiteSpace(context.UserFullName)
-            ? $"\n- Avsluta meddelandet med din signatur: '{context.UserFullName}, Esatto AB'"
-            : "";
-
-        var outputFormatInstruction = context.Channel switch
+        if (context.Strategy == OutreachGenerationType.UseCollectedData && context.EntityIntelligence != null)
         {
-            OutreachChannel.Email => "\n- Skriv i ett format som är lätt att konvertera till ett mejl, med en tydlig ämnesrad och en personlig, engagerande brödtext.",
-            OutreachChannel.LinkedIn => "\n- Skriv i ett format som passar för ett LinkedIn-meddelande, med en hook i början och en personlig, engagerande ton.",
+            sb.AppendLine();
+            sb.AppendLine(BuildCollectedDataSection(context.EntityIntelligence));
+        }
+
+        if (context.ActiveContact != null)
+        {
+            sb.AppendLine();
+            sb.AppendLine(BuildContactSection(context.ActiveContact));
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("=== INSTRUKTIONER ===");
+        sb.AppendLine(context.Instructions);
+        sb.AppendLine();
+        sb.AppendLine("VIKTIGT:");
+
+        if (context.Strategy == OutreachGenerationType.UseCollectedData)
+        {
+            sb.AppendLine("- Använd informationen under INSAMLAD DATA för att hitta en konkret koppling till kunden.");
+            sb.AppendLine($"- Matcha kundens utmaningar med {context.CompanyInfo.Name}s tjänster.");
+        }
+        else
+        {
+            sb.AppendLine($"- Fokusera på hur {context.CompanyInfo.Name} kan hjälpa målföretaget.");
+            sb.AppendLine("- Matcha rätt tjänster till kundens situation.");
+        }
+
+        sb.AppendLine("- Skriv personligt och engagerande.");
+
+        if (context.ActiveContact != null)
+            sb.AppendLine($"- Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}");
+        else
+            sb.AppendLine("- Ingen kontaktperson angiven — skriv generellt. Använd INTE platshållare som [Namn]. Starta med 'Hej,'.");
+
+        if (!string.IsNullOrWhiteSpace(context.UserFullName))
+            sb.AppendLine($"- Signera med: '{context.UserFullName}, {context.CompanyInfo.Name}'");
+
+        var channelInstruction = context.Channel switch
+        {
+            OutreachChannel.Email => "- Skriv med tydlig ämnesrad och engagerande brödtext.",
+            OutreachChannel.LinkedIn => "- Skriv med en hook i början och personlig ton.",
             _ => ""
         };
+        if (!string.IsNullOrWhiteSpace(channelInstruction)) sb.AppendLine(channelInstruction);
 
-        return systemContext + contactGreeting + outputFormatInstruction + @$"
+        return sb.ToString().TrimEnd();
+    }
 
-            === INSTRUKTIONER ===
-            {context.Instructions}
+    private static string BuildCollectedDataSection(EntityIntelligence intelligence)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("=== INSAMLAD DATA OM MÅLFÖRETAGET ===");
 
-            VIKTIGT:
-            - Fokusera på hur vi ({context.CompanyInfo.Name}) kan hjälpa målföretaget.
-            - Match rätt tjänster och metoder till kundens situation.
-            - Skriv personligt och engagerande.
-            {(context.ActiveContact != null ? $"\n  * Tilltala kontaktpersonen med namn: {context.ActiveContact.Name}" : "\n  * Då ingen kontaktperson finns angiven: Skriv generellt till företaget. Använd INTE placeholders som [Namn]. Starta med 'Hej,' eller liknande.")}{signatureInstruction}";
+        if (intelligence.EnrichedData != null)
+        {
+            var ed = intelligence.EnrichedData;
+            sb.AppendLine($"Snapshot: {ed.Snapshot.WhatTheyDo}. Verksamhet: {ed.Snapshot.HowTheyOperate}. Målkund: {ed.Snapshot.TargetCustomer}.");
+            sb.AppendLine($"Affärsmodell: {ed.Profile.BusinessModel} | Kundtyp: {ed.Profile.CustomerType} | Teknik: {ed.Profile.TechnologyPosture}");
+
+            if (ed.Challenges.Confirmed.Any())
+                sb.AppendLine($"Bekräftade utmaningar: {string.Join("; ", ed.Challenges.Confirmed.Select(c => c.ChallengeDescription))}");
+            if (ed.Challenges.Inferred.Any())
+                sb.AppendLine($"Troliga utmaningar: {string.Join("; ", ed.Challenges.Inferred.Select(c => c.ChallengeDescription))}");
+            if (ed.OutreachHooks.Any())
+                sb.AppendLine($"Relevanta händelser: {string.Join("; ", ed.OutreachHooks.Select(h => $"{h.Date}: {h.HookDescription}"))}");
+            sb.AppendLine($"(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
+        }
+        else if (!string.IsNullOrWhiteSpace(intelligence.SummarizedContext))
+        {
+            sb.AppendLine(intelligence.SummarizedContext);
+            sb.AppendLine($"(Data insamlad: {intelligence.ResearchedAt:yyyy-MM-dd})");
+        }
+
+        return sb.ToString().TrimEnd();
     }
 }

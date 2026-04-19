@@ -9,6 +9,6 @@ public interface IColdOutreachContextBuilder
         Guid prospectId,
         string userId,
         OutreachChannel channel,
-        bool includeSoftData,
+        OutreachGenerationType strategy,
         CancellationToken ct = default);
 }
